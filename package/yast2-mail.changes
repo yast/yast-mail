@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 30 18:31:02 CEST 2002 - mvidner@suse.cz
+
+- Amavis checkbox moved to the first dialog so that
+  it does not imply scanning incoming mail only (#17731).
+- 2.6.15
+
+-------------------------------------------------------------------
 Mon Aug 26 14:53:03 CEST 2002 - mvidner@suse.cz
 
 - Unify the no connection case so that also postfix is always started;
