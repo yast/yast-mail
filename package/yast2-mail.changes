@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Wed Jul 23 11:31:42 CEST 2003 - mvidner@suse.cz
+
+- Implemented postfix delivery mode (#26052).
+- Reverted the fetchmail run mode switch (#22903).
+- Adjusted for the switch to amavisd-new. (Widget visible only if
+  the package is on the installasion source)
+- MailAliases does not import Summary and Report anymore (build fix).
+- 2.8.2
+
+-------------------------------------------------------------------
 Fri Jun 20 13:12:49 CEST 2003 - mvidner@suse.cz
 
 - Split the general dialog into outgoing and incoming again (~#17731).
