@@ -31,6 +31,17 @@
      */
     global symbol mta = `sendmail;
 
+    boolean create_config = false;
+    /**
+     * If SENDMAIL_TYPE/POSTFIX_CREATECF is not yes, the user
+     * does not want SuSEconfig to modify sendmail.cf/main.cf.
+     * So we will warn him before setting it to yes.
+     * @return	Is it yes?
+     */
+    global define boolean CreateConfig () ``{
+	return create_config;
+    }
+
     /**
      * `permanent, `dialup or `none
      */
@@ -193,6 +204,20 @@
 	    return false;
 	}
 	// read 2
+	// create_config
+	if (mta == `sendmail)
+	{
+	    create_config = SCR::Read (.sysconfig.sendmail.SENDMAIL_TYPE) == "yes";
+	}
+	else if (mta == `postfix)
+	{
+	    create_config = SCR::Read (.sysconfig.postfix.POSTFIX_CREATECF) == "yes";
+	}
+	else
+	{
+	    return false;
+	}
+	
 	// connection_type:
 	boolean nc = false;
 	boolean ex = false;
@@ -469,6 +494,21 @@
      * @return success
      */
     define boolean WriteGeneral () ``{
+	// create_config
+	// if the user wanted it false, we did not proceed
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.sysconfig.sendmail.SENDMAIL_TYPE, "yes");
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.sysconfig.postfix.POSTFIX_CREATECF, "yes");
+	}
+	else
+	{
+	    return false;
+	}
+
 	// connection_type
 	if (mta == `sendmail)
 	{

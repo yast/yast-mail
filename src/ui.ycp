@@ -192,6 +192,20 @@ global define symbol ReadDialog () ``{
     boolean was_ok = Mail::Read ( callback );
 
     // TODO FIXME possibly handle the abort
+    if (was_ok)
+    {
+	if (! Mail::CreateConfig ())
+	{
+	    string setting = (Mail::mta == `sendmail)? "SENDMAIL_TYPE":"POSTFIX_CREATECF";
+	    // Translators: continue/cancel dialog
+	    // %1 is a sysconfig variable name
+	    was_ok = UI::ContinueCancelPopup (sformat (_(
+"The setting %1 is turned off so you have
+probably modified the configuration files directly.
+If you continue, it will be turned on and
+SuSEconfig will overwrite your changes."), setting));
+	}
+    }
 
     return ( was_ok? `next : `abort );
 }
