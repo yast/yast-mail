@@ -11,7 +11,7 @@ Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
 Requires:	yast2 yast2-trans-mail yast2-lib-sequencer
-Requires:	yast2-lib-wizard >= 2.5.8
+Requires:	yast2-lib-wizard >= 2.5.12
 Requires:	yast2-lib-network
 Requires:	yast2-agent-targetpkg
 Requires:	yast2-agent-ini >= 2.5.8
