@@ -135,7 +135,7 @@ especially for <b>root</b>), to a remote address, or to a list of addresses.</p>
 ") +
 	    // Translators: aliases dialog help, part 2 of 2
 	    _("
-<p>See the <a href=\"man_aliases\">aliases(5)</a> manual page
+<p>See the aliases(5) manual page
 for a description of advanced features.</p>
 ");
     }
