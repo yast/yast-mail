@@ -5,7 +5,7 @@
 #
 
 clientsdir = $(YAST2DIR)/clients
-includedir = $(YAST2DIR)/include/mail
+yincludedir = $(YAST2DIR)/include/mail
 menudir = $(YAST2DIR)/menuentries
 modulesdir = $(YAST2DIR)/modules
 
@@ -14,7 +14,7 @@ clients_DATA =			\
 	mail_auto.ycp	\
 	mail_write.ycp
 
-include_DATA =			\
+yinclude_DATA =			\
 	helps.ycp		\
 	ui.ycp
 
@@ -24,4 +24,4 @@ menu_DATA =			\
 modules_DATA =			\
 	Mail.ycp
 
-EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(modules_DATA)
+EXTRA_DIST = $(clients_DATA) $(yinclude_DATA) $(menu_DATA) $(modules_DATA)
