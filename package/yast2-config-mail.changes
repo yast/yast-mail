@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Fri Feb  1 16:41:54 CET 2002 - mvidner@suse.cz
+
+- Service activation. (#12986)
+- Autoinstallation can disable suseconfig and service activation.
+- Aliases and Virtual domains moved out of the main workflow. (#12952)
+- Fixed SENDMAIL_ARGS for dial-up.
+- Input of Domains to masquerade fixed.
+- Had the English texts proofread.
+- 2.5.7
+
+-------------------------------------------------------------------
 Mon Jan 28 15:03:02 CET 2002 - mvidner@suse.cz
 
 - Check if cf files are not to be touched (MAIL_CREATE_CONFIG).
