@@ -196,7 +196,7 @@ global define symbol ReadDialog () ``{
     {
 	if (! Mail::CreateConfig ())
 	{
-	    string setting = (Mail::mta == `sendmail)? "SENDMAIL_TYPE":"POSTFIX_CREATECF";
+	    string setting = "MAIL_CREATE_CONFIG";
 	    // Translators: continue/cancel dialog
 	    // %1 is a sysconfig variable name
 	    was_ok = UI::ContinueCancelPopup (sformat (_(
