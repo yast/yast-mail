@@ -46,7 +46,7 @@
 
     // The settings are in the first argument
     map settings = select (args, 0, $[]);
-    y2milestone("Imported: (%1)", settings);
+    // y2milestone("Imported: (%1)", settings); // may contain passwords
 
     Mail::Import ( settings );
 
