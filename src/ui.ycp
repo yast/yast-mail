@@ -239,6 +239,7 @@ SuSEconfig will overwrite manual changes.
 	    // b) user installed a different MTA -> knowledgeable enough to
 	    // ba) never see this message anyway
 	    // bb) read English
+	    // TODO: look at exim and mention it in the popup
 	    // Translators: error popup
 	    UI::ErrorPopup (_("YaST2 can only configure Postfix and Sendmail
 but neither of them is installed."));
@@ -367,6 +368,8 @@ global symbol preselect_connection_type = nil;
 global define symbol ConnectionTypeDialog () ``{
     Wizard::SetScreenShotName ("mail-1-conntype");
 
+    list(symbol) widgets = [];
+
     symbol ct = Mail::connection_type;
     if (preselect_connection_type != nil)
     {
@@ -379,28 +382,44 @@ global define symbol ConnectionTypeDialog () ``{
 	`Frame (
 	    // Translators: frame label
 	    _("Connection type"),
-	    `RadioButtonGroup (
-		`id (`ctg),
-		`HSquash (
-		    `VBox (
-			`VSpacing (0.2),
-			// Translators: radio button label
-			`Left (`RadioButton (`id (`permanent), `opt (`notify), _("&Permanent"), ct == `permanent)),
-			// Translators: radio button label
-			`Left (`RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup)),
-			// Translators: radio button label
-			`Left (`RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none)),
-/*
-			`VSpacing (0.5),
-			`Left (`RadioButton (`id (`dont), _("Do not configure"), false)),
-*/
-			`VSpacing (0.2)
-			)
-		    )
+	    RadioButtonVBox (
+		`ctg,
+		[
+		    // Translators: radio button label
+		    `RadioButton (`id (`permanent), `opt (`notify), _("&Permanent"), ct == `permanent),
+		    // Translators: radio button label
+		    `RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup),
+		    // Translators: radio button label
+		    `RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none),
+		    ]
 		)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (),
+    boolean amavis_allowed = Mail::amavis_allowed;
+
+    term amavis_t = nil;
+    if (amavis_allowed)
+    {
+	amavis_t = `Left (WJ_MakeWidget (`use_amavis));
+	widgets = add (widgets, `use_amavis);
+    }
+    else
+    {
+	amavis_t = `Empty (`id (`use_amavis));
+    }
+
+    contents = `HSquash (
+	`VBox (
+	    contents,
+	    `VSpacing (1),
+	    amavis_t
+	    )
+	);
+
+    Wizard::SetContentsButtons (caption, contents,
+				WJ_MakeHelp (
+				    prepend (widgets,
+					     ConnectionTypeDialogHelp ())),
 				BackButtonLabel (), NextButtonLabel ());
     any ret = nil;
     while (true)
@@ -408,12 +427,15 @@ global define symbol ConnectionTypeDialog () ``{
 	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 	if (ct == `permanent || ct == `dialup)
 	{
+	    UI::ChangeWidget (`id (`use_amavis), `Enabled, true);
 	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel());
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
 	}
 	else if (ct == `none)
 	{
+	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
+	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
 	    UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
 	    //argh, slow
 	    //Wizard::ReplaceNextButton (finish_button);
@@ -425,15 +447,24 @@ global define symbol ConnectionTypeDialog () ``{
 	    ret = `abort;
 	}
 
-	if (ret == `back || ret == `next ||
+	if (ret == `back ||
 	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
 	{
 	    break;
+	}
+	else if (ret == `next)
+	{
+	    if (WJ_Validate (widgets))
+	    {
+		break;
+	    }
 	}
     }
 
     if (ret == `next)
     {
+	WJ_Set (widgets);
+
 	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 	Mail::Touch (Mail::connection_type != ct);
 	Mail::connection_type = ct;
@@ -479,7 +510,6 @@ global define symbol BasicDialog () ``{
 	    );
     buttons = add (buttons, `outgoing_details);
 
-    boolean amavis_allowed = Mail::amavis_allowed;
     term i_contents = `VBox ();
 
     list(symbol) fm_widgets = [];
@@ -524,19 +554,6 @@ global define symbol BasicDialog () ``{
     }
     i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
 
-
-    if (amavis_allowed)
-    {
-//	i_contents = add (i_contents, `VSpacing (1));
-	// Translators: check box label
-	i_contents = add (i_contents, `Left (WJ_MakeWidget (`use_amavis)));
-	widgets = add (widgets, `use_amavis);
-    }
-    else
-    {
-	contents = add (contents, `Empty (`id (`use_amavis)));
-    }
-
     i_contents = add (i_contents, WJ_MakeWidget (`root_alias));
     widgets = add (widgets, `root_alias);
 
@@ -555,17 +572,16 @@ global define symbol BasicDialog () ``{
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
 
     // frame label
-    term o_frame = `Frame (_("Outgoing mail"), `HSquash (o_contents));
+    term o_frame = `Frame (_("Outgoing mail"), o_contents);
     // frame label
-    term i_frame = `Frame (_("Incoming mail"), `HSquash (i_contents));
-    term contents = `VBox (
+    term i_frame = `Frame (_("Incoming mail"), i_contents);
+    term contents = `HSquash ( `VBox (
 	`VStretch (),
 	o_frame,
 	`VStretch (),
-//	`VSpacing (0.2),
 	i_frame,
 	`VStretch ()
-	);
+	));
 
     string help = ""; //TODO
     Wizard::SetContentsButtons (
