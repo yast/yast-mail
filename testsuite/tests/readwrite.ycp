@@ -9,7 +9,7 @@
  * $Id$
  */
 {
-    // testedfiles: Mail.ycp MailAliases.ycp Require.ycp Service.ycp Testsuite.ycp
+    // testedfiles: Mail.ycp MailAliases.ycp Package.ycp PackageSystem.ycp Require.ycp Service.ycp Testsuite.ycp
 
     include "testsuite.ycp";
 
