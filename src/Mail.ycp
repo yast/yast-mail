@@ -545,13 +545,14 @@
 	}
 
 	// local_domains
-	string ld_s = mergestring (local_domains, " ");
 	if (mta == `sendmail)
 	{
+	    string ld_s = mergestring (local_domains, " ");
 	    SCR::Write (.rc.sendmail.SENDMAIL_LOCALHOST, ld_s);
 	}
 	else if (mta == `postfix)
 	{
+	    string ld_s = mergestring (local_domains, ","); // noted in #12672
 	    SCR::Write (.rc.postfix.POSTFIX_LOCALDOMAINS, ld_s);
 	}
 	else
