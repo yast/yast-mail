@@ -35,7 +35,7 @@ import "Label";
  * @param address an address to check
  * @return valid?
  */
-global define boolean check_mail_local_part (string address) ``{
+define boolean check_mail_local_part (string address) ``{
     return address != "" && findfirstof (address, " ") == nil;
 }
 
@@ -45,7 +45,7 @@ global define boolean check_mail_local_part (string address) ``{
  * A list to check entered user names against.
  * It is initialized on first use.
  */
-global list<string> local_users = nil;
+list<string> local_users = nil;
 
 /**
  * Read user names from passwd.
@@ -53,7 +53,7 @@ global list<string> local_users = nil;
  * "+" is filtered out.
  * @return user name list
  */
-global define list<string> GetLocalUsers () ``{
+define list<string> GetLocalUsers () ``{
     if (local_users == nil)
     {
 	// initialize the list
@@ -77,7 +77,7 @@ global define list<string> GetLocalUsers () ``{
  * @param alist	a list
  * @return	a string
  */
-global define string listToString (list<string> alist) ``{
+define string listToString (list<string> alist) ``{
     return mergestring (alist, ", ");
 }
 
@@ -88,7 +88,7 @@ global define string listToString (list<string> alist) ``{
  * @param astring	a string
  * @return		a list of strings
  */
-global define list<string> stringToList (string astring) ``{
+define list<string> stringToList (string astring) ``{
     list<string> alist = splitstring (astring, " ,;");
     return filter (`s, alist, ``(s != ""));
 }
@@ -98,31 +98,31 @@ global define list<string> stringToList (string astring) ``{
 /**
  * A replacement for the Next button: "Finish", `next
  */
-global term finish_button = `PushButton (`id (`next),
+term finish_button = `PushButton (`id (`next),
 					 `opt (`default, `key_F10),
 					 Label::FinishButton());
 /**
  * @struct fetchmail
  *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
  */
-global map fetchmail_item = $[];
+map fetchmail_item = $[];
 
 // don't forget to reset it!
-global boolean fetchmail_item_touched = false;
+boolean fetchmail_item_touched = false;
 
 
-global define string Get_foo () ``{
+define string Get_foo () ``{
     return fetchmail_item["protocol"]:"";
 }
 
-global define void Set_foo (symbol id) ``{
+define void Set_foo (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["protocol"]:"" != val);
     fetchmail_item = add (fetchmail_item, "protocol", val);
 }
 
-global define boolean Validate_foo (symbol id) ``{
+define boolean Validate_foo (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!Hostname::CheckDomain (val))
     {
@@ -135,17 +135,17 @@ global define boolean Validate_foo (symbol id) ``{
     return true;
 }
 
-global define string Get_outgoing_mail_server () ``{
+define string Get_outgoing_mail_server () ``{
      return Mail::outgoing_mail_server;
 }
 
-global define void Set_outgoing_mail_server (symbol id) ``{
+define void Set_outgoing_mail_server (symbol id) ``{
     string oms = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::outgoing_mail_server != oms);
     Mail::outgoing_mail_server = oms;
 }
 
-global define boolean Validate_outgoing_mail_server(symbol id) ``{
+define boolean Validate_outgoing_mail_server(symbol id) ``{
     // when validating: may be enclosed in brackets (prevents mx lookups)
     string oms = (string) UI::QueryWidget (`id (id), `Value);
     // watch this: "[", no brackets, "]"
@@ -166,17 +166,17 @@ global define boolean Validate_outgoing_mail_server(symbol id) ``{
 }
 
 
-global define string Get_from_header () ``{
+define string Get_from_header () ``{
      return Mail::from_header;
 }
 
-global define void Set_from_header (symbol id) ``{
+define void Set_from_header (symbol id) ``{
     string fh = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::from_header != fh);
     Mail::from_header = fh;
 }
 
-global define boolean Validate_from_header (symbol id) ``{
+define boolean Validate_from_header (symbol id) ``{
     string fh = (string) UI::QueryWidget (`id (id), `Value);
     if (fh != "" && ! Hostname::CheckDomain (fh))
     {
@@ -187,17 +187,17 @@ global define boolean Validate_from_header (symbol id) ``{
     return true;
 }
 
-global define string Get_local_domains () ``{
+define string Get_local_domains () ``{
      return listToString (Mail::local_domains);
 }
 
-global define void Set_local_domains (symbol id) ``{
+define void Set_local_domains (symbol id) ``{
     list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
     Mail::Touch (Mail::local_domains != lld);
     Mail::local_domains = lld;
 }
 
-global define boolean Validate_local_domains (symbol id) ``{
+define boolean Validate_local_domains (symbol id) ``{
     list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
     if (find (string s, lld, ``(! Hostname::CheckDomain (s))) != nil)
     {
@@ -208,32 +208,32 @@ global define boolean Validate_local_domains (symbol id) ``{
     return true;
 }
 
-global define boolean Get_listen_remote () ``{
+define boolean Get_listen_remote () ``{
     return Mail::listen_remote;
 }
 
-global define void Set_listen_remote (symbol id) ``{
+define void Set_listen_remote (symbol id) ``{
     boolean lr = (boolean) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::listen_remote != lr);
     Mail::listen_remote = lr;
 }
 
-global define boolean Get_use_amavis () ``{
+define boolean Get_use_amavis () ``{
     return Mail::use_amavis;
 }
 
-global define void Set_use_amavis (symbol id) ``{
+define void Set_use_amavis (symbol id) ``{
     boolean am = (boolean) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::use_amavis != am);
     Mail::use_amavis = am;
 }
 
 
-global define string Get_fm_server () ``{
+define string Get_fm_server () ``{
     return fetchmail_item["server"]:"";
 }
 
-global define void Set_fm_server (symbol id) ``{
+define void Set_fm_server (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["server"]:"" != val);
@@ -241,7 +241,7 @@ global define void Set_fm_server (symbol id) ``{
 }
 
 // also used for smtp_auth server
-global define boolean Validate_fm_server (symbol id) ``{
+define boolean Validate_fm_server (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!Hostname::CheckDomain (val))
     {
@@ -254,22 +254,22 @@ global define boolean Validate_fm_server (symbol id) ``{
     return true;
 }
 
-global define string Get_fm_protocol () ``{
+define string Get_fm_protocol () ``{
     return fetchmail_item["protocol"]:"AUTO";
 }
 
-global define void Set_fm_protocol (symbol id) ``{
+define void Set_fm_protocol (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["protocol"]:"" != val);
     fetchmail_item = add (fetchmail_item, "protocol", val);
 }
 
-global define string Get_fm_remote_user () ``{
+define string Get_fm_remote_user () ``{
     return fetchmail_item["remote_user"]:"";
 }
 
-global define void Set_fm_remote_user (symbol id) ``{
+define void Set_fm_remote_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["remote_user"]:"" != val);
@@ -277,7 +277,7 @@ global define void Set_fm_remote_user (symbol id) ``{
 }
 
 // also used for smtp_auth user
-global define boolean Validate_fm_remote_user (symbol id) ``{
+define boolean Validate_fm_remote_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (val == "")
     {
@@ -289,11 +289,11 @@ global define boolean Validate_fm_remote_user (symbol id) ``{
     return true;
 }
 
-global define string Get_fm_password () ``{
+define string Get_fm_password () ``{
     return fetchmail_item["password"]:"";
 }
 
-global define void Set_fm_password (symbol id) ``{
+define void Set_fm_password (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["password"]:"" != val);
@@ -301,18 +301,18 @@ global define void Set_fm_password (symbol id) ``{
 }
 
 
-global define string Get_fm_local_user () ``{
+define string Get_fm_local_user () ``{
     return fetchmail_item["local_user"]:"";
 }
 
-global define void Set_fm_local_user (symbol id) ``{
+define void Set_fm_local_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
 	(fetchmail_item["local_user"]:"" != val);
     fetchmail_item = add (fetchmail_item, "local_user", val);
 }
 
-global define boolean Validate_fm_local_user (symbol id) ``{
+define boolean Validate_fm_local_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!check_mail_local_part (val))
     {
@@ -325,17 +325,17 @@ global define boolean Validate_fm_local_user (symbol id) ``{
     return true;
 }
 
-global define string Get_root_alias () ``{
+define string Get_root_alias () ``{
     return MailAliases::root_alias;
 }
 
-global define void Set_root_alias (symbol id) ``{
+define void Set_root_alias (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (MailAliases::root_alias != val);
     MailAliases::root_alias = val;
 }
 
-global define boolean Validate_root_alias (symbol id) ``{
+define boolean Validate_root_alias (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     // user@machine, \\root - too much variation, don't check yet
     if (false)
@@ -348,7 +348,7 @@ global define boolean Validate_root_alias (symbol id) ``{
     return true;
 }
 
-global define symbol Get_delivery_mode () ``{
+define symbol Get_delivery_mode () ``{
     map scr2ui = $[
 	`local: `dm_local,
 	`procmail: `dm_procmail,
@@ -358,7 +358,7 @@ global define symbol Get_delivery_mode () ``{
     return val;
 }
 
-global define void Set_delivery_mode (symbol id) ``{
+define void Set_delivery_mode (symbol id) ``{
     symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
     map ui2scr = $[
 	`dm_local: `local,
@@ -370,7 +370,7 @@ global define void Set_delivery_mode (symbol id) ``{
     Mail::postfix_mda = val;
 }
 
-global define boolean Validate_delivery_mode (symbol id) ``{
+define boolean Validate_delivery_mode (symbol id) ``{
     symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
     // Procmail is only OK if root has an alias
     // Because postfix runs procmail as nobody instead of root
@@ -403,15 +403,15 @@ global define boolean Validate_delivery_mode (symbol id) ``{
     return true;
 }
 
-global define list Choices_protocol () ``{
+define list Choices_protocol () ``{
     return Mail::protocol_choices;
 }
 
-global define list Choices_local_user () ``{
+define list Choices_local_user () ``{
     return GetLocalUsers ();
 }
 
-global define list Choices_delivery_mode () ``{
+define list Choices_delivery_mode () ``{
 
     return [
 	    // combo box choice:
@@ -432,7 +432,7 @@ global define list Choices_delivery_mode () ``{
 /**
  * @ref widget_def
  */
-global map Widgets = $[
+map Widgets = $[
     `foo: $[
 	"widget": `TextEntry (),
 	"opt": `opt (`notify), // optional

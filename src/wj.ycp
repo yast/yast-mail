@@ -32,7 +32,7 @@ include "mail/widgets.ycp";
  * @param keys	which members to put in the table
  * @return	an item list
  */
-global define list<term> makeItems (list<map> data, list<string> keys) ``{
+define list<term> makeItems (list<map> data, list<string> keys) ``{
     integer i = 0;
     return maplist (map d, data, ``{
 	term t = `item (`id (i));
@@ -44,7 +44,7 @@ global define list<term> makeItems (list<map> data, list<string> keys) ``{
     });
 }
 
-global boolean edit_touched = false;
+boolean edit_touched = false;
 
 /**
  * A generic handler for editing tables.
@@ -58,7 +58,7 @@ global boolean edit_touched = false;
  * @param table_widget	id of the table (usually a symbol)
  * @return		the edited data
  */
-global define list<map> EditTable (symbol action,
+define list<map> EditTable (symbol action,
 				   list<map> data,
 				   list<string> keys,
 				   map (map,list<map>) editEntryP,
@@ -151,7 +151,7 @@ define any fake_nil () ``{
  * @param id which widget
  * @return a widget term
  */
-global define term WJ_MakeWidget (symbol id) ``{
+define term WJ_MakeWidget (symbol id) ``{
     map w_def = Widgets[id]:$[];
     term widget = w_def["widget"]:`CheckBox ();
     if (widget == nil)
@@ -180,7 +180,7 @@ global define term WJ_MakeWidget (symbol id) ``{
  * Uses a global Widgets map. @ref widget_def
  * @param id which widget
  */
-global define void WJ_GetWidget (symbol id) ``{
+define void WJ_GetWidget (symbol id) ``{
     // "get" returns string or boolean:
     any () e = Widgets[id, "get"]:fake_nil;
     UI::ChangeWidget (`id (id), `Value, e ());
@@ -195,7 +195,7 @@ global define void WJ_GetWidget (symbol id) ``{
  *   or		a symbol - lookup its help string in Widgets
  * @return concatenated strings
  */
-global define string WJ_MakeHelp (list items) ``{
+define string WJ_MakeHelp (list items) ``{
     string ret = "";
     foreach (any item, items, ``{
 	if (!is (item, string))
@@ -212,7 +212,7 @@ global define string WJ_MakeHelp (list items) ``{
  * @param id a widget id
  * @return always true
  */
-global define boolean WJ_Validate_True (symbol id) ``{
+define boolean WJ_Validate_True (symbol id) ``{
     return true;
 }
 
@@ -223,7 +223,7 @@ global define boolean WJ_Validate_True (symbol id) ``{
  * @param	widgets which widgets to validate
  * @return	true if all widgets are ok
  */
-global define boolean WJ_Validate (list<symbol> widgets) ``{
+define boolean WJ_Validate (list<symbol> widgets) ``{
     boolean ok = true;
     foreach (symbol id, widgets, ``{
 	if (ok)
@@ -249,7 +249,7 @@ global define boolean WJ_Validate (list<symbol> widgets) ``{
     return ok;
 }
 
-global define void WJ_Set_Missing (symbol id) ``{
+define void WJ_Set_Missing (symbol id) ``{
     // report as the caller
     y2error (1, "WJ: Missing Set definition for %1", id);
 }
@@ -260,7 +260,7 @@ global define void WJ_Set_Missing (symbol id) ``{
  * Uses a global Widgets map. @ref widget_def
  * @param	widgets which widgets to commit
  */
-global define void WJ_Set (list<symbol> widgets) ``{
+define void WJ_Set (list<symbol> widgets) ``{
     foreach (symbol id, widgets, ``{
 
 	void (symbol) set_it = Widgets[id, "set"]:WJ_Set_Missing;
@@ -279,7 +279,7 @@ global define void WJ_Set (list<symbol> widgets) ``{
  * @param	rbs	a list of widgets, usually RadioButtons
  * @return	widget
  */
-global define term RadioButtonVBox (symbol g_id,
+define term RadioButtonVBox (symbol g_id,
 				    list<term> rbs) ``{
     term spacing = `VSpacing (0.2);
     term rb_vbox = `VBox (spacing);

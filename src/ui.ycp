@@ -40,7 +40,7 @@ include "mail/wj.ycp";
  * Read settings dialog
  * @return `abort or `next
  */
-global define symbol ReadDialog () ``{
+define symbol ReadDialog () ``{
     Wizard::SetScreenShotName ("mail-0-read");
     // Set help text
     Wizard::RestoreHelp (ReadDialogHelp ());
@@ -102,7 +102,7 @@ but neither of them is installed."));
  * Confirmation dialog before saving and installing needed packages
  * @return `back or `next
  */
-global define symbol ConfirmDialog () ``{
+define symbol ConfirmDialog () ``{
     // continue-cancel popup
     string message1 = _("The configuration will be written now.\n");
     string message2 = Mail::ProbePackages ();
@@ -113,7 +113,7 @@ global define symbol ConfirmDialog () ``{
  * Write settings dialog
  * @return `abort or `next
  */
-global define symbol WriteDialog () ``{
+define symbol WriteDialog () ``{
     if (Mode::screen_shot)
     {
 	y2milestone ("Screenshot mode - skipping Write");
@@ -149,7 +149,7 @@ global define symbol WriteDialog () ``{
  * (only for autoinstallation, otherwise probed in Mail::Read)
  * @return `abort or `next
  */
-global define symbol MtaSelectionDialog () ``{
+define symbol MtaSelectionDialog () ``{
     Wizard::SetScreenShotName ("mail-0-mta");
 
     symbol mta = Mail::mta;
@@ -215,13 +215,13 @@ global define symbol MtaSelectionDialog () ``{
  * A command line argument can override what is read from SCR.
  * Used when starting mail from lan/modem.
  */
-global symbol preselect_connection_type = nil;
+symbol preselect_connection_type = nil;
 
 /**
  * D1
  * @return `back, `abort, `next or `none
  */
-global define symbol ConnectionTypeDialog () ``{
+define symbol ConnectionTypeDialog () ``{
     Wizard::SetScreenShotName ("mail-1-conntype");
 
     list<symbol> widgets = [];
@@ -337,7 +337,7 @@ global define symbol ConnectionTypeDialog () ``{
  * D2
  * @return `back, `abort, `next or `outgoing_details
  */
-global define symbol OutgoingDialog () ``{
+define symbol OutgoingDialog () ``{
     Wizard::SetScreenShotName ("mail-21-outgoing");
 
     // what buttons can be used to leave this dialog
@@ -418,7 +418,7 @@ global define symbol OutgoingDialog () ``{
  * D2
  * @return `back, `abort, `next or `outgoing_details
  */
-global define symbol IncomingDialog () ``{
+define symbol IncomingDialog () ``{
     Wizard::SetScreenShotName ("mail-22-incoming");
 
     list<symbol> buttons = [];
@@ -587,7 +587,7 @@ the value of POSTFIX_LOCALDOMAINS in /etc/sysconfig/postfix will be set to
  * @param username a string
  * @return Whether a string contains only valid user name characters
  */
-global define boolean check_username (string username) ``{
+define boolean check_username (string username) ``{
 //DUH, auth_dialogs.ycp, users.ycp and Users.ycp have conflicing definitions!
     string valid_logname_chars  = "0123456789abcdefghijklmnopqrstuvwxyz-_";
 
@@ -601,7 +601,7 @@ global define boolean check_username (string username) ``{
  * (taken from y2c_users ui.ycp)
  * @return Describe a valid username
  */
-global define string valid_username () ``{
+define string valid_username () ``{
     // There is a check whether the information from the UI is
     // correct and complete.  The login name may contain only
     // certain characters and must begin with a letter.
@@ -619,7 +619,7 @@ Please try again.
  * @param address an address to check
  * @return valid?
  */
-global define boolean check_mail_address (string address) ``{
+define boolean check_mail_address (string address) ``{
     list<string> parts = splitstring (address, "@");
     if (size (parts) != 2)
     {
@@ -637,7 +637,7 @@ global define boolean check_mail_address (string address) ``{
  * @param existing	current masqueading list
  * @return		$["comment": "", "user": "address":] or $[] on cancel
  */
-global define map MasqueradeUserPopup (map default, list<map> existing) ``{
+define map MasqueradeUserPopup (map default, list<map> existing) ``{
     string user = lookup (default, "user", "");
     string address = lookup (default, "address", "");
     list<string> forbidden = maplist (map e, existing, ``( e["user"]:"" ));
@@ -718,7 +718,7 @@ global define map MasqueradeUserPopup (map default, list<map> existing) ``{
  * D2.1
  * @return `back, `abort or `next
  */
-global define symbol OutgoingDetailsDialog () ``{
+define symbol OutgoingDetailsDialog () ``{
     Wizard::SetScreenShotName ("mail-2o-outgoing-details");
 
     string mod = listToString (Mail::masquerade_other_domains);
@@ -892,7 +892,7 @@ global define symbol OutgoingDetailsDialog () ``{
  * Outgoing server authentification
  * @return `back, `abort or `next
  */
-global define symbol OutgoingAuthOptions() ``{
+define symbol OutgoingAuthOptions() ``{
     Wizard::SetScreenShotName ("mail-2o-outgoing-authentication");
 
     //string mod = listToString (Mail::masquerade_other_domains);
@@ -999,7 +999,7 @@ global define symbol OutgoingAuthOptions() ``{
  * @param existing	unused
  * @return edited data (with no other fields) or $[] on cancel
  */
-global define map FetchmailPopup (map default, list<map> existing) ``{
+define map FetchmailPopup (map default, list<map> existing) ``{
     fetchmail_item = default;
     fetchmail_item_touched = false;
 
@@ -1067,7 +1067,7 @@ global define map FetchmailPopup (map default, list<map> existing) ``{
  * D3
  * @return `back, `abort or `next
  */
-global define symbol DownloadingDialog () ``{
+define symbol DownloadingDialog () ``{
     Wizard::SetScreenShotName ("mail-2ia-download");
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
     list<map> fm = Mail::fetchmail;
@@ -1176,7 +1176,7 @@ global define symbol DownloadingDialog () ``{
  * @param existing	current entry list
  * @return		$["comment": ""?, "alias": "destinations":] or $[] on cancel
  */
-global define map AliasPopup (map default, list<map> existing) ``{
+define map AliasPopup (map default, list<map> existing) ``{
     string alias = lookup (default, "alias", "");
     string destinations = lookup (default, "destinations", "");
     list<string> forbidden = maplist (map e, existing, ``( e["alias"]:"" ));
@@ -1251,7 +1251,7 @@ global define map AliasPopup (map default, list<map> existing) ``{
  * D1.1
  * @return `back, `abort or `next
  */
-global define symbol AliasesDialog () ``{
+define symbol AliasesDialog () ``{
     Wizard::SetScreenShotName ("mail-2ib-aliases");
     list<map> aliases = MailAliases::MergeRootAlias (MailAliases::aliases);
 
@@ -1332,7 +1332,7 @@ global define symbol AliasesDialog () ``{
  * D1.2
  * @return `back, `abort or `next
  */
-global define symbol VirtualDialog () ``{
+define symbol VirtualDialog () ``{
     Wizard::SetScreenShotName ("mail-2ic-virtdomains");
     list<map> vu = Mail::virtual_users;
 
@@ -1411,11 +1411,11 @@ global define symbol VirtualDialog () ``{
  * A Wizard Sequencer helper
  * @return	`next
  */
-global define symbol JustNext () ``{
+define symbol JustNext () ``{
     return `next;
 }
 
-global map dialogs = $[
+map dialogs = $[
     "read"	: [ ``( ReadDialog () ), true ],
     "confirm"	: [ ``( ConfirmDialog () ), true],
     "write"	: [ ``( WriteDialog () ), true ],
@@ -1433,7 +1433,7 @@ global map dialogs = $[
     "common-next":	[ ``( JustNext () ), true ],
     ];
 
-global map common_sequence = $[
+map common_sequence = $[
     //"ws_start" : must be defined in an overriding sequence
     "connection_type" :
     $[
@@ -1491,7 +1491,7 @@ global map common_sequence = $[
  * Whole configuration of mail
  * @return `back, `abort or `next
  */
-global define symbol MailSequence () ``{
+define symbol MailSequence () ``{
     map sequence = $[
 	"ws_start" : "read",
 	"read" :
@@ -1533,7 +1533,7 @@ global define symbol MailSequence () ``{
  * For use with autoinstallation.
  * @return `back, `abort or `next
  */
-global define symbol MailAutoSequence () ``{
+define symbol MailAutoSequence () ``{
     map sequence = $[
 	"ws_start":	"mta",
 	"mta":

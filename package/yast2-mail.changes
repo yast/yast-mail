@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Feb 10 09:52:34 CET 2004 - lslezak@suse.cz
+
+- removed globals
+- removed *.y2cc file
+- version 2.9.3
+
+-------------------------------------------------------------------
 Fri Jan 30 17:52:19 CET 2004 - mvidner@suse.cz
 
 - NI fixes to make it build

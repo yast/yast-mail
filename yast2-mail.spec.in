@@ -48,8 +48,6 @@ Group:		System/YaST
 @clientdir@/mail_*.ycp
 %dir @moduledir@
 @moduledir@/Mail.y*
-%dir @configdir@
-@configdir@/mail.y2cc
 %dir @desktopdir@
 @desktopdir@/mail.desktop
 %dir @scrconfdir@

@@ -16,9 +16,6 @@ myynclude_DATA =		\
 	widgets.ycp		\
 	ui.ycp
 
-config_DATA =			\
-	mail.y2cc
-
 desktop_DATA =			\
 	mail.desktop
 
@@ -27,6 +24,6 @@ module_DATA =			\
 	Mail.ycp
 
 
-EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(config_DATA) $(module_DATA) $(desktop_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA)
 
 include $(top_srcdir)/Makefile.am.common
