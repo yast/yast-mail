@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 12 16:14:32 CEST 2002 - arvin@suse.de
+
+- use proper namespace for Args and CallFunction (#16776)
+
+-------------------------------------------------------------------
 Thu Jul 11 09:55:18 CEST 2002 - mvidner@suse.cz
 
 - minor dependency and build adjustments

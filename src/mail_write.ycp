@@ -21,7 +21,7 @@
  * @param first a map of mail settings
  * @return boolean success of operation
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example any ret = CallModule ("mail_write", [ mm ]);
+ * @example any ret = WFM::CallModule ("mail_write", [ mm ]);
  */
 
 {
@@ -30,15 +30,15 @@
     import "Mail";
     import "Progress";
 
-    list args = Args ();
+    list args = WFM::Args ();
     if ( size (args) <= 0 )
     {
 	y2error ("NOT writing, probably some mistake...");
 	return false;
     }
-    if ( !is ( Args (0), map ) )
+    if ( !is ( WFM::Args (0), map ) )
     {
-	y2error ("Bad argument for mail write: %1", Args (0));
+	y2error ("Bad argument for mail write: %1", WFM::Args (0));
 	return false;
     }
 

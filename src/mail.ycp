@@ -32,7 +32,7 @@
     y2milestone ("----------------------------------------");
 
     /* parse arguments */
-    list args = Args ();
+    list args = WFM::Args ();
     string first_arg = args[0]:"";
     if (first_arg == "permanent")
     {
