@@ -25,6 +25,8 @@ my $leading_comment;
 my @table;
 my $trailing_comment;
 
+my $modified;
+
 # Parser features:
 
 my $filename;
@@ -159,7 +161,9 @@ sub write_comment ($)
 #
 sub write_file ()
 {
-    open (FILE, ">$filename.YaST2.new");
+    return "true" if (! $modified);
+
+    open (FILE, ">$filename.YaST2.new") or return log_error ("Creating file");
     write_comment ($leading_comment);
     foreach my $entry (@table)
     {
@@ -169,9 +173,10 @@ sub write_file ()
     write_comment ($trailing_comment);
     close (FILE);
 
-    rename $filename, "$filename.YaST2.save" || return log_error ("Creating backup");
-    rename "$filename.YaST2.new", $filename || return log_error ("Moving temp file");
+    rename $filename, "$filename.YaST2.save" or return log_error ("Creating backup");
+    rename "$filename.YaST2.new", $filename or return log_error ("Moving temp file");
 
+    $modified = 0;
     return "true";
 }
 
@@ -205,6 +210,7 @@ else
 }
 
 parse_file ();
+$modified = 0;
 #print STDERR scalar(@table), " items\n";
 
 while ( <STDIN> )
@@ -215,7 +221,11 @@ while ( <STDIN> )
     {
 	if ($path eq ".")
 	{
-	    ycp::Return (["leading_comment", "table", "trailing_comment"]);
+	    ycp::Return (["leading_comment", "meta", "table", "trailing_comment"]);
+	}
+	elsif ($path eq ".meta")
+	{
+	    ycp::Return (["filename"]);
 	}
 	else
 	{
@@ -230,14 +240,17 @@ while ( <STDIN> )
 	if ($path eq ".trailing_comment" && ! ref ($argument))
 	{
 	    $trailing_comment = $argument;
+	    $modified = 1;
 	}
 	elsif ($path eq ".leading_comment" && ! ref ($argument))
 	{
 	    $leading_comment = $argument;
+	    $modified = 1;
 	}
 	elsif ($path eq ".table" && ref ($argument) eq "ARRAY")
 	{
 	    @table = @{$argument};
+	    $modified = 1;
 	}
 	elsif ($path eq "." && !defined ($argument))
 	{
@@ -267,6 +280,10 @@ while ( <STDIN> )
 	{
 	    ycp::Return ($leading_comment);
 	}
+	elsif ($path eq ".meta.filename")
+	{
+	    ycp::Return ($filename);
+	}
 	else
 	{
 	    y2error ("Unrecognized path! '$path'");
@@ -278,6 +295,7 @@ while ( <STDIN> )
     # result: we should exit
     elsif ($command eq "result")
     {
+	write_file ();
 	exit;
     }
 
