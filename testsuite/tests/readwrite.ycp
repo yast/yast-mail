@@ -42,11 +42,6 @@
 		    ],
 		],
 	    ],
-	// targetpkg:
-	"targetpkg": $[
-	    // sendmail
-	    "installed": true,
-	    ],
 	// Mail itself:
 	"sysconfig": $[
 	    "mail": $[
@@ -102,6 +97,9 @@
 		],
 	    ],
 	];
+
+    import "Pkg"; // override
+    Pkg::FAKE (`IsProvided, true);
 
     block dont_abort = ``{return false;};
     Progress::off ();

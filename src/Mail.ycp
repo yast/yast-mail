@@ -177,7 +177,7 @@
 	if (use_amavis)
 	{
 	    string pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
-	    if (! SCR::Read (.targetpkg.installed, pkg))
+	    if (! Installed (pkg))
 	    {
 		install_packages = add (install_packages, pkg);
 		// Translators: popup message part, ends with a newline
@@ -187,7 +187,7 @@
 
 	if (connection_type == `dialup &&
 	    size (fetchmail) > 0 &&
-	    ! SCR::Read (.targetpkg.installed, "fetchmail"))
+	    ! Installed ("fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
 	    // Translators: popup message part, ends with a newline
@@ -205,10 +205,23 @@
      * @return true/false
      */
     define boolean AvailableForInstallation (string package) ``{
+	// will it work yet?
+	return Pkg::IsAvailable (package);
+
 	string cmd = "/usr/bin/grep -q '^RpmName:[ \t]*%1$' %2";
 	string pkd = "/var/adm/current_package_descr/suse/setup/descr/common.pkd";
 	return SCR::Execute (.target.bash, sformat (cmd, package, pkd)) == 0;
     }
+
+    /**
+     * Is a package installed?
+     * @param	package package name, without version or .rpm suffix
+     * @return true/false
+     */
+    define boolean Installed (string package) ``{
+	return Pkg::IsProvided (package);
+    }
+
     /* ---------------------------------------------------------------- */
 
     /**
@@ -301,7 +314,7 @@
 
 	// amavis
 	string amavis_pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
-	amavis_allowed = SCR::Read (.targetpkg.installed, amavis_pkg) ||
+	amavis_allowed = Installed (amavis_pkg) ||
 	    AvailableForInstallation (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
@@ -452,11 +465,11 @@ a fixed format to be readable by YaST2.  For details, see
      * Detect the MTA installed
      */
     define void ReadMta () ``{
-	if (SCR::Read (.targetpkg.installed, "sendmail"))
+	if (Installed ("sendmail"))
 	{
 	    mta = `sendmail;
 	}
-	else if (SCR::Read (.targetpkg.installed, "postfix"))
+	else if (Installed ("postfix"))
 	{
 	    mta = `postfix;
 	}
