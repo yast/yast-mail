@@ -701,6 +701,13 @@ global define symbol OutgoingDetailsDialog () ``{
 	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
 	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
 
+	// Kludge, because a `Table still does not have a shortcut.
+	// watch out, a textentry sends UI too
+	if (ret != `masqdomains)
+	{
+	    UI::SetFocus (`id (`tab));
+	}
+
 	ret = UI::UserInput ();
 	if (ret == `cancel)
 	{
@@ -1004,6 +1011,9 @@ global define symbol DownloadingDialog () ``{
 	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
 	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
 
+	// Kludge, because a `Table still does not have a shortcut.
+	UI::SetFocus (`id (`tab));
+
 	ret = UI::UserInput ();
 	if (ret == `cancel)
 	{
@@ -1143,6 +1153,9 @@ global define symbol AliasesDialog () ``{
 	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
 	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
 	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
+
+	// Kludge, because a `Table still does not have a shortcut.
+	UI::SetFocus (`id (`tab));
 
 	ret = UI::UserInput ();
 	if (ret == `cancel)
@@ -1301,6 +1314,9 @@ global define symbol VirtualDialog () ``{
 	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
 	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
 	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
+
+	// Kludge, because a `Table still does not have a shortcut.
+	UI::SetFocus (`id (`tab));
 
 	ret = UI::UserInput ();
 	if (ret == `cancel)
