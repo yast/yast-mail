@@ -33,8 +33,6 @@ y2milestone("Mail auto started");
 
 import "Mail";
 import "Mode";
-
-Mode::config = true;
 import "Mail";
 include "mail/ui.ycp";
 
