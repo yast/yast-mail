@@ -390,6 +390,37 @@
 	return true;
     }
 
+    // document and TEST
+    define list(map) mergeTables (list(map) new, list(map) old) ``{
+	map new_m = listmap (map e, new,
+			     ``([
+				    e["key"]:"",
+				    [ e["comment"]:"", e["value"]:"" ]
+				    ]));
+	map old_m = listmap (map e, old,
+			     ``([
+				    e["key"]:"",
+				    [ e["comment"]:"", e["value"]:"" ]
+				    ]));
+	list(map) replaced = maplist (map e, old, ``{
+	    string k = e["key"]:"";
+	    list cv = new_m[k]:[];
+	    if (size (cv) > 0)
+	    {
+		new_m[k] = []; // ok, newly constructed
+		return $["key": k, "comment": cv[0]:"", "value": cv[1]:""];
+	    }
+	    else
+	    {
+		return $["key": k, "comment": e["comment"]:"", "value": e["value"]:""];
+	    }
+	});
+	list(map) filtered = filter (map e, new, ``(
+					 size (new_m[ e["key"]:"" ]:[]) > 0)
+	    );
+	return flatten ([replaced, filtered]);
+    }
+
     /**
      * Update the SCR according to mail settings
      * @param abort A block that can be called by Write to find
@@ -405,30 +436,229 @@
 	// TODO FIXME Names of real stages
 	// We do not set help text here, because it was set outside
 	Progress::New (caption, " ", 0, [
-			   _("Write the settings"),
+			   _("Write general settings"),
+			   _("Write masquerading settings"),
+			   _("Write downloading settings"),
+			   _("Write alias tables"),
 			   _("Run SuSEconfig"),
 			   ],
 		       [], "");
 
-	// TODO FIXME: your code here (store the above mentioned variables)...
-	integer stage = 0;
-	while (stage < 2)
-	{
-	    Progress::NextStage ();
-	    write_aborted = eval (abort);
-	    if (write_aborted)
-	    {
-		break;
-	    }
-	    write_aborted = false;
-
-	    sleep (500);
-	    stage = stage + 1;
-	};
-
-	// increase the progress to "finish"
+	// announce 1
 	Progress::NextStage ();
-	return !write_aborted;
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// write 1
+	// connection_type
+	if (mta == `sendmail)
+	{
+	    path nc = .rc.sendmail.SENDMAIL_NOCANONIFY;
+	    path ex = .rc.sendmail.SENDMAIL_EXPENSIVE;
+	    if (connection_type == `permanent)
+	    {
+		SCR::Write (nc, "no");
+		SCR::Write (ex, "no");
+	    }
+	    else if (connection_type == `dialup)
+	    {
+		SCR::Write (nc, "yes");
+		SCR::Write (ex, "yes");
+	    }
+	    else if (connection_type == `none)
+	    {
+		SCR::Write (nc, "yes");
+		SCR::Write (ex, "no");
+	    }
+	    else
+	    {
+		y2internal("Unrecognized connection_type: %1", connection_type);
+		return false;
+	    }
+	}
+	else if (mta == `postfix)
+	{
+	    path nd = .rc.postfix.POSTFIX_NODNS;
+	    path di = .rc.postfix.POSTFIX_DIALUP;
+	    if (connection_type == `permanent)
+	    {
+		SCR::Write (nd, "no");
+		SCR::Write (di, "no");
+	    }
+	    else if (connection_type == `dialup)
+	    {
+		SCR::Write (nd, "yes");
+		SCR::Write (di, "yes");
+	    }
+	    else if (connection_type == `none)
+	    {
+		SCR::Write (nd, "yes");
+		SCR::Write (di, "no");
+	    }
+	    else
+	    {
+		y2internal("Unrecognized connection_type: %1", connection_type);
+		return false;
+	    }
+	}
+	else
+	{
+	    return false;
+	}
+
+	// local_domains
+	string ld_s = mergestring (local_domains, " ");
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.rc.sendmail.SENDMAIL_LOCALHOST, ld_s);
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.rc.postfix.POSTFIX_LOCALDOMAINS, ld_s);
+	}
+	else
+	{
+	    return false;
+	}
+
+	// outgoing_mail_server
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.rc.sendmail.SENDMAIL_SMARTHOST, outgoing_mail_server);
+	}
+	else if (mta == `postfix)
+	{
+	    string oms = sformat ("[%1]", outgoing_mail_server);
+	    SCR::Write (.rc.postfix.POSTFIX_RELAYHOST, oms);
+	}
+	else
+	{
+	    return false;
+	}
+
+	// announce 2
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// write 2
+	// from_header
+	SCR::Write (.rc.system.FROM_HEADER, from_header);
+	// masquerade_other_domains
+	string mod = mergestring (masquerade_other_domains, " ");
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.rc.sendmail.MASQUERADE_DOMAINS, mod);
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.rc.postfix.POSTFIX_MASQUERADE_DOMAIN, mod);
+	}
+	else
+	{
+	    return false;
+	}
+
+	// masquerade_users
+	list(map) mu_raw = maplist (map e, masquerade_users,
+				    ``($[
+					   "comment"	: e["comment"]:"",
+					   // TODO check that nonempty
+					   "key"	: e["user"]:"",
+					   "value"	: e["address"]:"",
+					   ]));
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.mail.sendmail.generics.table, mu_raw);
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.mail.postfix.sendercanonical.table, mu_raw);
+	}
+	else
+	{
+	    return false;
+	}
+
+
+	// TODO only if dialup - how to skip in progress?
+	// announce 3
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// write 3
+	// fetchmail
+	SCR::Write (.mail.fetchmail.accounts, fetchmail);
+
+
+
+	// announce 4
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// write 4
+	// aliases
+	path alias_path = nil;
+	if (mta == `sendmail)
+	{
+	    alias_path = .mail.sendmail.aliases.table;
+	}
+	else if (mta == `postfix)
+	{
+	    alias_path = .mail.postfix.aliases.table;
+	}
+	else
+	{
+	    return false;
+	}
+	list(map) a_raw = maplist (map e, aliases,
+				   ``($[
+					  "comment"	: e["comment"]:"",
+					  "key"		: e["alias"]:"",
+					  "value"	: e["destinations"]:"",
+					  ]));
+	if (merge_aliases)
+	{
+	    a_raw = mergeTables (a_raw, SCR::Read (alias_path));
+	}
+	SCR::Write (alias_path, a_raw);
+
+
+	// virtual_users
+	list(map) v_raw = maplist (map e, virtual_users,
+				   ``($[
+					  "comment"	: e["comment"]:"",
+					  "key"		: e["alias"]:"",
+					  "value"	: e["destinations"]:"",
+					  ]));
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.mail.sendmail.virtuser.table, v_raw);
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.mail.postfix.virtual.table, v_raw);
+	}
+	else
+	{
+	    return false;
+	}
+
+
+
+	//TODO at the end:
+	//flush the agents
+	//run SuSEconfig with the necessary modules
+
+	// complete
+	Progress::NextStage ();
+	return true;
     }
 
     /**
@@ -438,8 +668,38 @@
      * @return True on success
      */
     global define boolean Import (map settings) ``{
-	// TODO FIXME: your code here (fill the above mentioned variables)...
-	sleep (3000);
+	if (size (settings) == 0)
+	{
+	    //Provide defaults for autoinstallation editing:
+	    //Leave empty.
+	    return true;
+	}
+
+	boolean missing = false;
+	foreach (`k, ["mta", "connection_type", "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases", "merge_aliases", "virtual_users"], ``{
+	    if (! haskey (settings, k))
+	    {
+		y2error ("Missing at Import: '%1'.", k);
+		missing = true;
+	    }
+	});
+	if (missing)
+	{
+	    return false;
+	}
+
+	mta = settings["mta"]: `other;
+	connection_type = settings["connection_type"]: `none;
+	local_domains = settings["local_domains"]: [];
+	outgoing_mail_server = settings["outgoing_mail_server"]: "";
+	from_header = settings["from_header"]: "";
+	masquerade_other_domains = settings["masquerade_other_domains"]: [];
+	masquerade_users = settings["masquerade_users"]: [];
+	fetchmail = settings["fetchmail"]: [];
+	aliases = settings["aliases"]: [];
+	merge_aliases = settings["merge_aliases"]: false;
+	virtual_users = settings["virtual_users"]: [];
+
 	return true;
     }
 
@@ -449,9 +709,19 @@
      * @return Dumped settings (later acceptable by Import ())
      */
     global define map Export () ``{
-	// TODO FIXME: your code here (return the above mentioned variables)...
-	sleep (3000);
-	return $[];
+	return $[
+	    "mta": mta,
+	    "connection_type": connection_type,
+	    "local_domains": local_domains,
+	    "outgoing_mail_server": outgoing_mail_server,
+	    "from_header": from_header,
+	    "masquerade_other_domains": masquerade_other_domains,
+	    "masquerade_users": masquerade_users,
+	    "fetchmail": fetchmail,
+	    "aliases": aliases,
+	    "merge_aliases": merge_aliases,
+	    "virtual_users": virtual_users,
+	    ];
     }
 
     /**
