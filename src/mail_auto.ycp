@@ -71,6 +71,7 @@ else if(func == "Summary") {
 /* Reset configuration */
 else if (func == "Reset") {
     Mail::Import($[]);
+    Mail::touched = false;
     ret = $[];
 }
 else if (func == "Packages") {
@@ -86,6 +87,21 @@ else if (func == "Change") {
 /* Return actual state */
 else if (func == "Export") {
     ret = Mail::Export();
+}
+/**
+ * Return if configuration  was changed
+ * return boolean
+ */
+else if (func == "GetModified") {
+    ret = Maile::touched;
+}
+/**
+ * Set modified flag
+ * return boolean
+ */
+else if (func == "SetModified") {
+    Mail::touched = true;
+    ret = true;
 }
 /* Write givven settings */
 else if (func == "Write") {
