@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Aug  5 15:20:49 CEST 2002 - mvidner@suse.cz
+
+- Fixed saving the fetchmail configuration
+  with a permanent connection (#17417).
+- Fixed help text in the connection type dialog.
+- 2.6.11
+
+-------------------------------------------------------------------
 Wed Jul 31 19:03:19 CEST 2002 - mvidner@suse.cz
 
 - Added comments for translators
