@@ -1,25 +1,25 @@
 /**
  * File:
- *   rc_sendmail.scr
+ *   cfg_sendmail.scr
  * Summary:
  *   SCR Agent for reading/writing /etc/sysconfig/sendmail
- *   using the rc-agent
+ *   using the ini-agent
  * Access:
  *   read/write
  * Authors:
  *   Martin Vidner <mvidner@suse.cz>
  * See:
- *   yast2-agent-rcconfig/rcconfig_agent.html
+ *   yast2-agent-ini/ini.html
  *   libscr
  *   man sendmail
  * Example:
- *   Dir(.rc.sendmail)
+ *   Dir(.sysconfig.sendmail)
  *   (["SENDMAIL_SMARTHOST", "SENDMAIL_LOCALHOST", ... ])
  **
- *   Read(.rc.sendmail.SENDMAIL_LOCALHOST)
+ *   Read(.sysconfig.sendmail.SENDMAIL_LOCALHOST)
  *   ("localhost")
  **
- *   Write(.rc.sendmail.SENDMAIL_LOCALHOST, "localhost courant")
+ *   Write(.sysconfig.sendmail.SENDMAIL_LOCALHOST, "localhost courant")
  *   (true)
  *
  * $Id$
@@ -28,8 +28,8 @@
  * (formerly <tt>/etc/rc.config.d/sendmail.rc.config</tt>)
  * in an easy manner.
  */
-.rc.sendmail
+.sysconfig.sendmail
 
-`ag_rcconfig(
-  RcFile("/etc/sysconfig/sendmail")
+`ag_ini(
+  SysConfigFile("/etc/sysconfig/sendmail")
 )

@@ -1,21 +1,21 @@
 /**
  * File:
- *   rc_mail.scr
+ *   cfg_mail.scr
  * Summary:
  *   SCR Agent for reading/writing /etc/sysconfig/mail
- *   using the rc-agent
+ *   using the ini-agent
  * Access:
  *   read/write
  * Authors:
  *   Martin Vidner <mvidner@suse.cz>
  * See:
- *   yast2-agent-rcconfig/rcconfig_agent.html
+ *   yast2-agent-ini/ini.html
  *   libscr
  * Example:
- *   Read(.rc.mail.FROM_HEADER)
+ *   Read(.sysconfig.mail.FROM_HEADER)
  *   ("mycompany.com")
  **
- *   Write(.rc.mail.FROM_HEADER, "MyCompany.com")
+ *   Write(.sysconfig.mail.FROM_HEADER, "MyCompany.com")
  *   (true)
  *
  * $Id$
@@ -23,8 +23,8 @@
  * Read/Sets the values defined in <tt>/etc/sysconfig/mail</tt>
  * in an easy manner.
  */
-.rc.mail
+.sysconfig.mail
 
-`ag_rcconfig(
-  RcFile("/etc/sysconfig/mail")
+`ag_ini(
+  SysConfigFile("/etc/sysconfig/mail")
 )
