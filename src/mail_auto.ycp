@@ -73,6 +73,9 @@ else if (func == "Reset") {
     Mail::Import($[]);
     ret = $[];
 }
+else if (func == "Read") {
+    ret = Mail::Read(``{});
+}
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
     ret = MailAutoSequence();

@@ -912,7 +912,7 @@ a fixed format to be readable by YaST2.  For details, see
 
 	boolean missing = false;
 	// don't require listen_remote for compatibility
-	foreach (`k, ["mta", "connection_type",  "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases",  "virtual_users"], ``{
+	foreach (`k, ["mta", "connection_type"], ``{
 	    if (! haskey (settings, k))
 	    {
 		y2error ("Missing at Import: '%1'.", k);
