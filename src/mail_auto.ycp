@@ -65,7 +65,7 @@ if(func == "Import") {
     ret = Mail::Import(param);
 }
 /* Create a  summary*/
-if(func == "Summary") {
+else if(func == "Summary") {
     ret = Mail::Summary();
 }
 /* Reset configuration */
