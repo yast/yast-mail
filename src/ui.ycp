@@ -569,12 +569,19 @@ define symbol IncomingDialog () ``{
 	    if (Mail::fetchmail != [] && Mail::local_domains == [] &&
 		Mail::mta == `postfix)
 	    {
-		// FIXME popup text should be adapted to written value...
-		// popup text (do not change values)
-		if (Popup::YesNo (_("In order to be able to deliver mail to your local MTA,
-the value of POSTFIX_LOCALDOMAINS in /etc/sysconfig/postfix will be set to
-\"\$myhostname, localhost.\$mydomain, \$mydomain\".")))
-			Mail::local_domains = [ "\\$myhostname", "localhost.\\$mydomain", "\\$mydomain"];
+		list<string> ld = [ "\\$myhostname",
+				    "localhost.\\$mydomain",
+				    "\\$mydomain" ];
+		// popup text
+		// %1: variable name (eg. POSTFIX_LOCALDOMAINS)
+		// %2: file name (eg. /etc/sysconfig/postfix)
+		// %3: value (about 50 characters)
+		if (Popup::YesNo (sformat (_("To be able to deliver mail to your local MTA,
+the value of %1 in %2 will be set to
+\"%3\"."), "POSTFIX_LOCALDOMAINS", "/etc/sysconfig/postfix", mergestring (ld, ", "))))
+		{
+		    Mail::local_domains = ld;
+		}
 	    }
 	}
     }
