@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Mar 25 18:19:24 CET 2004 - mvidner@suse.cz
+
+- fixed local domain checking to allow "\$" (#36871)
+- 2.9.10
+
+-------------------------------------------------------------------
 Fri Mar 12 17:43:28 CET 2004 - mvidner@suse.cz
 
 - improved amavis help text (#17731)

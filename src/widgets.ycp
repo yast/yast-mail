@@ -199,7 +199,22 @@ define void Set_local_domains (symbol id) ``{
 
 define boolean Validate_local_domains (symbol id) ``{
     list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
-    if (find (string s, lld, ``(! Hostname::CheckDomain (s))) != nil)
+    // find one that fails
+    if (find (string s, lld, {
+	// #36871
+	// Strip \$ which marks postfix substitutions:
+	// Verify that they only occur together
+	// and then remove them individually. Elementary, dear Watson.
+	if (regexpmatch (s, "\\\\[^$]") ||
+	    regexpmatch (s, "\\\\$") ||
+	    regexpmatch (s, "[^\\]\\$") ||
+	    regexpmatch (s, "^\\$"))
+	{
+	    return true;
+	}
+	s = deletechars (s, "\\$");
+	return ! Hostname::CheckDomain (s);
+    }) != nil)
     {
 	UI::SetFocus (`id (id));
 	Popup::Error (Hostname::ValidDomain ());
