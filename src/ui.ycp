@@ -33,6 +33,11 @@ include "wizard/sequencer.ycp";
 include "mail/helps.ycp";
 
 /**
+ * A replacement for the Next button: "Finish", `next
+ */
+global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
+
+/**
  * Whole configuration of mail
  * @return `back, `abort or `next
  */
@@ -112,6 +117,8 @@ global define symbol MainSequence () ``{
 	    "connection_type":	``( ConnectionTypeDialog () ),
 	    "outgoing":		``( OutgoingDialog () ),
 	    "masquerading":	``( MasqueradingDialog () ),
+	    "skip?":		[ ``( DialupOnly () ), true ],
+//	    "skip?":		[ ``( (Mail::connection_type == `dialup) ? `next : `skip ), true],
 	    "downloading":	``( DownloadingDialog () ),
 	    "aliases":		``( AliasesDialog () ),
 	    "virtual":		``( VirtualDialog () ),
@@ -128,14 +135,18 @@ global define symbol MainSequence () ``{
 	"outgoing" :
 	$[
 	    `abort	: `abort,
-	    `next	: "downloading",
+	    `next	: "skip?",
 	    `masqdetail : "masquerading",
 	],
-
 	"masquerading" :
 	$[
 	    `abort	: `abort,
 	    `ok		: "outgoing",
+	],
+	"skip?" :
+	$[
+	    `next	: "downloading",
+	    `skip	: "aliases",
 	],
 	"downloading" :
 	$[
@@ -201,50 +212,6 @@ global define symbol WriteDialog () ``{
     // TODO FIXME possibly handle the abort
 
     return ( was_ok? `next : `abort );
-}
-
-/**
- * Overview dialog
- */
-global define symbol OverviewDialog () ``{
-    string caption = _("Mail overview");
-    // TODO FIXME: real data for the table
-    term contents =
-						 // For translators: Header of the table with installed cards
-	Wizard_hw::ConfiguredContent ( `header ( _("Number"),
-						 // For translators: Header of the table with installed cards
-						 _("Mail")),
-						 [],
-						 nil, nil, nil, nil );
-    contents = Wizard_hw::SpacingAround ( contents, 1.5, 1.5, 1.0, 1.0 );
-
-
-    Wizard::SetContentsButtons (caption,
-				contents,
-				OverviewDialogHelp (),
-				BackButtonLabel (),
-				FinishButtonLabel () );
-
-    any ret = nil;
-    while (true)
-    {
-	ret = UI::UserInput ();
-	if (ret == `abort)
-	{
-	    // TODO FIXME: check for change of the configuration
-	    if ( UI::ReallyAbortPopup ( true ) )
-		break;
-	    else
-		continue;
-	}
-	else
-	{
-	    /* TODO FIXME: your code ... */
-	    break;
-	}
-    }
-
-    return ret;
 }
 
 /* ---------------------------------------------------------------- */
@@ -359,9 +326,9 @@ global define symbol ConnectionTypeDialog () ``{
 		`HSquash (
 		    `VBox (
 			`VSpacing (0.2),
-			`Left (`RadioButton (`id (`permanent), _("&Permanent"), ct == `permanent)),
-			`Left (`RadioButton (`id (`dialup), _("&Dial-up"), ct == `dialup)),
-			`Left (`RadioButton (`id (`none), _("No &connection"), ct == `none)),
+			`Left (`RadioButton (`id (`permanent), `opt (`notify), _("&Permanent"), ct == `permanent)),
+			`Left (`RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup)),
+			`Left (`RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none)),
 /*
 			`VSpacing (0.5),
 			`Left (`RadioButton (`id (`dont), _("Do not configure"), false)),
@@ -375,16 +342,25 @@ global define symbol ConnectionTypeDialog () ``{
     Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), NextButtonLabel ());
 
     any ret = nil;
-    // The only input comes from the buttons.
-    // Loop only on a canceled abort.
     while (true)
     {
 	ret = UI::UserInput ();
-	if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
+	if (ret == `permanent || ret == `dialup)
+	{
+	    Wizard::RestoreNextButton ();
+	}
+	else if (ret == `none)
+	{
+	    Wizard::ReplaceNextButton (finish_button);
+	}
+	else if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
 	{
 	    continue;
 	}
-	break;
+	else
+	{
+	    break;
+	}
     }
 
     if (ret == `next)
@@ -415,7 +391,6 @@ global define string listToString (list(string) alist) ``{
  * @return		a list of strings
  */
 global define list(string) stringToList (string astring) ``{
-    //TODO: better cleanup
     list(string) alist = splitstring (astring, " ,;");
     return filter (`s, alist, ``(s != ""));
 }
@@ -645,10 +620,16 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
     return (ret == `ok)? $["comment": "", "user": user, "address": address] : $[];
 }
 
+/**
+ * @return `next if connection_type is `dialup, otherwise `skip
+ */
+global define symbol DialupOnly () ``{
+    return Mail::connection_type == `dialup ? `next: `skip;
+}
 
 /**
  * D3
- * TODO only for dialup, prevent writing otherwise.
+ * @return `back, `abort or `next
  */
 global define symbol DownloadingDialog () ``{
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
@@ -785,10 +766,10 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 
 /**
  * D4
+ * @return `back, `abort or `next
  */
 global define symbol AliasesDialog () ``{
     list(map) aliases = Mail::aliases;
-    //TODO don't forget merge_aliases, maybe comment?
 
     string caption = _("Aliases");
     term contents =
@@ -906,6 +887,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 
 /**
  * D5
+ * @return `back, `abort or `next
  */
 global define symbol VirtualDialog () ``{
     list(map) vu = Mail::virtual_users;
@@ -928,7 +910,7 @@ global define symbol VirtualDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), FinishButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
