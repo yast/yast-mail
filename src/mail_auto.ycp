@@ -29,9 +29,12 @@
     textdomain "mail";
 
     import "Mail";
+    import "Mode";
 
+    Mode::config = true;
     include "mail/ui.ycp";
 
+    map settings = $[];
     list args = Args ();
     if ( size (args) <= 0 )
     {
@@ -43,18 +46,64 @@
 	y2error ("Bad argument for mail_auto: %1", Args (0));
 	return false;
     }
-
-    // The settings are in the first argument
-    map settings = select (args, 0, $[]);
-    // y2milestone("Imported: (%1)", settings); // may contain passwords
+    
+    {
+	integer i = 0;
+	while (i < size (Args()))
+	{
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);	    
+	    i = i + 1;
+	}
+    }
 
     Mail::Import ( settings );
+    y2milestone("Imported: (%1)", settings); // may contain passwords
     Mail::autoyast_config = true;
+    
+    define set_contents() ``{	
+        term contents =
+	    `VBox(
+		  `VSpacing(1),
+		  `RichText( `id(`summary), Mail::Summary()),
+		  `VSpacing(),
+		  `HBox(
+			`PushButton(`id(`configure), _("&Configure Mail")),
+			`HStretch(),
+			`PushButton(`id(`reset), _("&Reset Configuration"))
+			),
+		  `VSpacing(1)
+		  );
 
-    symbol ret = MailAutoSequence ();
-    if (ret == `next)
-    {
-	return Mail::Export ();
+	Wizard::SetContents(_("Mail Configuration"),
+			    contents, "", true, true);
     }
-    return $[];
+
+  
+    set_contents();
+    any result = nil;
+    any ret = nil;
+    
+    repeat {
+	ret = UI::UserInput();
+	if (ret == `configure)
+	{	    	    	    
+	    symbol result = MailAutoSequence ();		    
+		
+	    if (result == `next || result == `finish)
+	    {		 
+		settings = Mail::Export ();		    
+	    }
+	    Mail::Set(settings);
+	    set_contents();
+	}
+	else if ( ret == `reset)
+	{
+	    settings = $[];
+	    Mail::Set(settings);
+	    set_contents();
+	}		
+    } until (ret == `back || ret == `next || ret ==`key);   
+  
+    return [ret, settings];    
+          
 }

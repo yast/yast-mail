@@ -24,4 +24,5 @@ menu_DATA =			\
 modules_DATA =			\
 	Mail.ycp
 
+
 EXTRA_DIST = $(clients_DATA) $(yinclude_DATA) $(menu_DATA) $(modules_DATA)

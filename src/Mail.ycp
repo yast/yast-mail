@@ -25,6 +25,7 @@
 
     import "Report";
     import "Runlevel";
+    import "Summary";
 
     /**
      * `sendmail, `postfix or `other
@@ -992,7 +993,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 
 	boolean missing = false;
-	foreach (`k, ["mta", "connection_type", "use_amavis", "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases", "merge_aliases", "virtual_users"], ``{
+	foreach (`k, ["mta", "connection_type",  "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases",  "virtual_users"], ``{
 	    if (! haskey (settings, k))
 	    {
 		y2error ("Missing at Import: '%1'.", k);
@@ -1002,7 +1003,42 @@ a fixed format to be readable by YaST2.  For details, see
 	if (missing)
 	{
 	    return false;
-	}
+	}	
+	Set(settings);
+	return true;
+    }
+
+    
+    /**
+     * Set module data without validity checking as in Import()
+     *
+     */
+    global define void Set(map settings) ``{
+	y2milestone("before %1", settings);
+	settings = mapmap(`k,`v, settings,``{
+	    if (k == "mta" && is(v,symbol)) {
+		return([k,v]);
+	    } else if (k == "connection_type" && is(v,symbol)) {
+		return([k,v]);
+	    }
+	    if (k == "mta" && v == "sendmail") {
+		return(["mta", `sendmail]);
+	    } else if (k == "mta" && v == "postfix") {
+		return(["mta", `postfix]);
+	    } else if (k == "mta") {
+		return(["mta", `other]);
+	    } else if (k == "connection_type" && v == "permanent") {
+		return(["connection_type", `permanent]);
+	    } else if (k == "connection_type" && v == "dialup") {
+		return(["connection_type", `dialup]);
+	    } else  if (k == "connection_type") {
+		return(["connection_type", `none]);
+	    } else {
+		return ([k,v]);
+	    }
+	    
+
+	});
 
 	mta = settings["mta"]: `other;
 	connection_type = settings["connection_type"]: `none;
@@ -1016,10 +1052,11 @@ a fixed format to be readable by YaST2.  For details, see
 	aliases = settings["aliases"]: [];
 	merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
-
-	return true;
+	y2milestone("after %1", settings);
+	return;
     }
 
+    
     /**
      * Dump the mail settings to a single map
      * (For use by autoinstallation.)
@@ -1040,5 +1077,75 @@ a fixed format to be readable by YaST2.  For details, see
 	    "merge_aliases": merge_aliases,
 	    "virtual_users": virtual_users,
 	    ];
+    }
+
+    /**
+     * Summary
+     * @return string with summary of configuration
+     */
+    global define string Summary ()
+	``{
+	
+	string agent = "";
+	if (mta == `sendmail)
+	     agent = "sendmail";
+	else if (mta == `postfix)
+	    agent = "postfix";
+	else
+	    agent = "other";
+
+	
+	string con_type = "";
+	if (connection_type == `permanent)
+	    con_type = "Permanent";
+	else if (connection_type == `dialup)
+	    con_type = "Dialup";
+	else
+	    con_type = "None";	
+	
+	string summary = "";
+	summary = Summary::AddHeader(summary, _("MTA"));
+	summary = Summary::AddLine(summary, agent);
+	summary = Summary::AddHeader(summary, _("Connection Type"));
+	summary = Summary::AddLine(summary,con_type );
+
+	summary = Summary::AddHeader(summary, _("Outgoing Mail Server"));
+	summary = Summary::AddLine(summary, (outgoing_mail_server != "") ? outgoing_mail_server : Summary::NotConfigured ());
+
+	summary = Summary::AddHeader(summary, _("From Header"));
+	summary = Summary::AddLine(summary, (from_header != "") ? from_header : Summary::NotConfigured ());
+
+	
+	summary = summary + ListItem( _("Local Domains"),local_domains);
+	summary = summary + ListItem( _("Masquerade other Domains"),masquerade_other_domains);
+	summary = summary + ListItem( _("Masquerade Users"),masquerade_users);
+	summary = summary + ListItem( _("Fetchmail"),fetchmail);
+	summary = summary + ListItem( _("Aliases"),aliases);
+	summary = summary + ListItem( _("Virtual Users"),virtual_users);
+	summary = Summary::AddHeader(summary, _("Use AMaViS"));
+	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : Summary::NotConfigured ());	
+	return summary;
+    }
+
+    
+    define string ListItem(string title, any value) ``{
+	string summary = "";
+	summary = Summary::AddHeader(summary, title);
+	if (is(value,list) && size(value)>0) {
+	    summary = Summary::OpenList(summary);
+	    foreach (`d, value, ``{
+		string entry = "";
+		if (is(d,map) || is (d,list))
+		    entry = sformat("%1 Entries configured", size(value));
+		else
+		    entry = d;
+		
+		summary = Summary::AddListItem(summary, entry);		
+	    });
+	    summary = Summary::CloseList(summary);
+	} else {
+	    summary = Summary::AddLine(summary,Summary::NotConfigured ());
+	}
+	return summary;
     }
 }
