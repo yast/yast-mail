@@ -35,7 +35,7 @@ include "mail/helps.ycp";
 /**
  * Whole configuration of mail
  */
-global define MailSequence () ``{
+global define symbol MailSequence () ``{
     map aliases =
 	$[
 	    "read"	: [ ``( ReadDialog () ), true ],
@@ -81,7 +81,7 @@ global define MailSequence () ``{
  * Whole configuration of mail but without reading and writing.
  * For use with autoinstallation.
  */
-global define MailAutoSequence () ``{
+global define symbol MailAutoSequence () ``{
     string caption = _("Mail configuration");
     term contents = `Label (_("Initializing ..."));
 
@@ -101,91 +101,68 @@ global define MailAutoSequence () ``{
 
 /**
  * Main workflow of the mail configuration
+ * @return `back, `abort or `next
  */
-global define MainSequence () ``{
-    // TODO FIXME: adapt the following to your needs!
-    map aliases =
+global define symbol MainSequence () ``{
+
+    map dialogs =
 	$[
-	    "detected"	:   ``( DetectedDialog () ),
-	    "overview"	:   ``( OverviewDialog () ),
-	    "configure"	: [ ``( AddSequence () ), true ],
-	    "add"	: [ ``( AddSequence () ), true ],
-	    "edit"	: [ ``( AddSequence () ), true ]
+	    "connection_type":	``( ConnectionTypeDialog () ),
+	    "outgoing":		``( OutgoingDialog () ),
+	    "masquerading":	``( MasqueradingDialog () ),
+	    "downloading":	``( DownloadingDialog () ),
+	    "aliases":		``( AliasesDialog () ),
+	    "virtual":		``( VirtualDialog () ),
 	];
 
-    // TODO FIXME: adapt the following to your needs!
     map sequence = $[
-	"ws_start" : "detected",
-	"detected" :
+	"ws_start" : "connection_type",
+	"connection_type" :
 	$[
 	    `abort	: `abort,
-	    `next	: `next,
-	    `configure_button: "configure",
-	    `edit_button: "overview"
+	    `next	: "outgoing",
+	    `none	: `next
 	],
-	"overview" :
+	"outgoing" :
 	$[
 	    `abort	: `abort,
-	    `next	: `next,
-	    `add_button	: "add",
-	    `edit_button: "edit"
+	    `next	: "downloading",
+	    `masqdetail : "masquerading",
 	],
 
-	"configure" :
+	"masquerading" :
 	$[
 	    `abort	: `abort,
-	    `next	: "detected",
+	    `ok		: "outgoing",
 	],
-	"add" :
+	"downloading" :
 	$[
 	    `abort	: `abort,
-	    `next	: "overview",
+	    `next	: "aliases",
 	],
-	"edit" :
+	"aliases" :
 	$[
 	    `abort	: `abort,
-	    `next	: "overview",
-	]
+	    `next	: "virtual",
+	],
+	"virtual" :
+	$[
+	    `abort	: `abort,
+	    `next	: `next,
+	],
     ];
 
-    any ret = WizardSequencer (aliases, sequence);
+    any ret = WizardSequencer (dialogs, sequence);
 
     return ret;
 }
 
-/**
- * Add a configuration of mail
- */
-global define AddSequence () ``{
-    // TODO FIXME: adapt the following to your needs!
-    map aliases =
-	$[
-	    "config1"	: ``( Configure1Dialog () ),
-	    "config2"	: ``( Configure2Dialog () )
-	];
 
-    // TODO FIXME: adapt the following to your needs!
-    map sequence = $[
-	"ws_start" : "config1",
-	"config1" :
-	$[
-	    `abort	: `abort,
-	    `next	: "config2"
-	],
-	"config2" :
-	$[
-	    `abort	: `abort,
-	    `next	: `next
-	]
-    ];
-
-    return WizardSequencer ( aliases, sequence );
-}
 
 /**
  * Read settings dialog
  */
-global define ReadDialog () ``{
+global define symbol ReadDialog () ``{
     // TODO FIXME Assign the true texts intead of these
     string caption = _("Initializing mail configuration");
     // TODO FIXME Set the right number of stages
@@ -219,7 +196,7 @@ global define ReadDialog () ``{
 /**
  * Write settings dialog
  */
-global define WriteDialog () ``{
+global define symbol WriteDialog () ``{
     // TODO FIXME Assign the true texts intead of these
     string caption = _("Saving mail configuration");
     // TODO FIXME And set the right number of stages
@@ -252,49 +229,9 @@ global define WriteDialog () ``{
 }
 
 /**
- * Main dialog
- */
-global define DetectedDialog () ``{
-    string caption = _("Mail setup");
-    // TODO FIXME modify the following according to your needs
-    term contents =
-	Wizard_hw::DetectedContent (_("Mail to configure"),
-				   [],
-				   false,
-				   Mail::Summary ());
-
-    Wizard::SetContentsButtons ( caption,
-				contents,
-				DetectedDialogHelp (),
-				BackButtonLabel (),
-				FinishButtonLabel () );
-
-    any ret = nil;
-    while (true)
-    {
-	ret = UI::UserInput ();
-	if (ret == `abort)
-	{
-	    // TODO FIXME: check for change of the configuration
-	    if ( UI::ReallyAbortPopup ( true ) )
-		break;
-	    else
-		continue;
-	}
-	else
-	{
-	    /* TODO FIXME: your code ... */
-	    break;
-	}
-    };
-
-    return ret;
-}
-
-/**
  * Overview dialog
  */
-global define OverviewDialog () ``{
+global define symbol OverviewDialog () ``{
     string caption = _("Mail overview");
     // TODO FIXME: real data for the table
     term contents =
@@ -307,7 +244,7 @@ global define OverviewDialog () ``{
     contents = Wizard_hw::SpacingAround ( contents, 1.5, 1.5, 1.0, 1.0 );
 
 
-    Wizard::SetContentsButtons ( caption,
+    Wizard::SetContentsButtons (caption,
 				contents,
 				OverviewDialogHelp (),
 				BackButtonLabel (),
@@ -330,83 +267,629 @@ global define OverviewDialog () ``{
 	    /* TODO FIXME: your code ... */
 	    break;
 	}
-    };
+    }
 
     return ret;
 }
 
+/* ---------------------------------------------------------------- */
+
 /**
- * Configure1 dialog
- * TODO FIXME: A more descriptive name for the dialog
+ * @param data	a list of structs
+ * @param keys	which members to put in the table
+ * @return	an item list
  */
-global define Configure1Dialog () ``{
-    // TODO FIXME: real configuration workflow
-    string caption = _("Mail configure1");
-    term contents = `Label (_("First part of configuration of mail"));
+global define list(term) makeItems (list(map) data, list(string) keys) ``{
+    integer i = 0;
+    return maplist (`d, data, ``{
+	term t = `item (`id (i));
+	i = i + 1;
+	foreach (`k, keys, ``{
+	    t = add (t, lookup (d, k, ""));
+	});
+	return t;
+    });
+}
 
-    Wizard::SetContentsButtons ( caption,
-				contents,
-				Configure1DialogHelp (),
-				BackButtonLabel (),
-				NextButtonLabel () );
+global boolean edit_touched = false;
 
-    any ret = nil;
-    while (true)
+/**
+ * A generic handler for editing tables.
+ * The current item of table_widget
+ * makeItems (new_data, keys) is used to fill table_widget
+ * @param action	`add, `edit or `delete
+ * @param data		the data edited using the table
+ * @param keys		keys of respective columns
+ * @param editEntry	a function to edit an entry:
+ *			gets the current entry and list of othe entries as parameters
+ * @param table_widget	id of the table (usually a symbol)
+ * @return		the edited data
+ */
+global define list(map) EditTable (symbol action, 
+				   list(map) data, 
+				   list(string) keys,
+				   term editEntry,
+				   any table_widget) ``{
+    list(map) new_data = nil;
+    integer entryno = UI::QueryWidget (`id (table_widget), `CurrentItem);
+    boolean touched = false;
+    if (action == `add)
     {
-	ret = UI::UserInput ();
-	if (ret == `abort)
+	editEntry = add (editEntry, $[]);
+	editEntry = add (editEntry, data);
+	map entry = eval (editEntry);
+	if (size (entry) > 0)
 	{
-	    // TODO FIXME: check for change of the configuration
-	    if ( UI::ReallyAbortPopup ( true ) )
-		break;
-	    else
-		continue;
+	    new_data = add (data, entry);
+	    touched = true;
 	}
 	else
 	{
-	    /* TODO FIXME: your code ... */
-	    break;
+	    new_data = data;
 	}
-    };
+    }
+    else if (action == `edit)
+    {
+	editEntry = add (editEntry, select (data, entryno));
+	editEntry = add (editEntry, remove (data, entryno));
+	map entry = eval (editEntry);
+	if (size (entry) > 0)
+	{
+	    integer i = 0;
+	    new_data = maplist (`e, data, ``{
+		i = i + 1;
+		return (i - 1 == entryno)? entry: e;
+	    });
+	    touched = true;
+	}
+	else
+	{
+	    new_data = data;
+	}
+    }
+    else if (action == `delete)
+    {
+	new_data = remove (data, entryno);
+	touched = true;
+    }
+    else
+    {
+	y2error ("Unknown EditTable action %1.", action);
+	new_data = data; // be nice
+    }
+    
+    if (touched)
+    {
+	UI::ChangeWidget (`id (table_widget), `Items, makeItems (new_data, keys));
+	edit_touched = true;
+    }
+    return new_data;
+}
 
+/* ---------------------------------------------------------------- */
+
+/**
+ * D1
+ * @return `back, `abort, `next or `none
+ */
+global define symbol ConnectionTypeDialog () ``{
+    symbol ct = Mail::connection_type;
+
+    string caption = _("Connection type");
+    term contents =
+	`Frame (
+	    _("Connection type"),
+	    `RadioButtonGroup (
+		`id (`ctg),
+		`HSquash (
+		    `VBox (
+			`VSpacing (0.2),
+			`Left (`RadioButton (`id (`permanent), _("Permanent"), ct == `permanent)),
+			`Left (`RadioButton (`id (`dialup), _("Dial-up"), ct == `dialup)),
+			`Left (`RadioButton (`id (`none), _("No connection"), ct == `none)),
+/*
+			`VSpacing (0.5),
+			`Left (`RadioButton (`id (`dont), _("Do not configure"), false)),
+*/
+			`VSpacing (0.2)
+			)
+		    )
+		)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    any ret = nil;
+    // The only input comes from the buttons.
+    // Loop only on a canceled abort.
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
+	{
+	    continue;
+	}
+	break;
+    }
+
+    if (ret == `next)
+    {
+	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
+	Mail::Touch (Mail::connection_type != ct);
+	Mail::connection_type = ct;
+
+	ret = (ct == `none)? `none: ret;
+    }
     return ret;
 }
 
 /**
- * Configure2 dialog
- * TODO FIXME: A more descriptive name for the dialog
+ * Formats a list for a TextEntry, separating the elements by ", "
+ * @param alist	a list
+ * @return	a string
  */
-global define Configure2Dialog () ``{
-    // TODO FIXME: real configuration workflow
-    string caption = _("Mail configure2");
-    term contents = `Label (_("Second part of configuration of mail"));
+global define string listToString (list(string) alist) ``{
+    return mergestring (alist, ", ");
+}
 
-    Wizard::SetContentsButtons ( caption,
-				contents,
-				Configure2DialogHelp (),
-				BackButtonLabel (),
-				NextButtonLabel () );
+/**
+ * Splits a TextEntry string into a list of strings
+ * separated by spaces, commas or semicolons.
+ * Empty strings are removed.
+ * @param astring	a string
+ * @return		list of strings
+ */
+global define list(string) stringToList (string astring) ``{
+    //TODO: better cleanup
+    list(string) alist = splitstring (astring, " ,;");
+    return filter (`s, alist, ``(s != ""));
+}
 
+/**
+ * D2
+ * @return `back, `abort, `next or `masqdetail
+ */
+global define symbol OutgoingDialog () ``{
+    string ld = listToString (Mail::local_domains);
+    string oms = Mail::outgoing_mail_server;
+    string fh = Mail::from_header;
+
+    string caption = _("Outgoing mail");
+    term contents =
+	`VBox (
+	    `VSpacing (0.2),
+	    `TextEntry (`id (`local), _("Domains for locally delivered mail"), ld),
+	    `VSpacing (0.5),
+	    `TextEntry (`id (`relay), _("Outgoing mail server"), oms),
+	    `VSpacing (0.5),
+	    `TextEntry (`id (`from), _("Domain for the 'From' header"), fh),
+	    `PushButton (`id (`masqdetail), _("Detailed address rewriting ...")),
+	    `VSpacing (0.2)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, OutgoingDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    any ret = nil;
+    // The only input comes from the buttons.
+    // Loop only on a canceled abort.
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
+	{
+	    continue;
+	}
+	break;
+    }
+
+    if (ret == `next || ret == `masqdetail)
+    {
+	ld = UI::QueryWidget (`id (`local), `Value);
+	list(string) lld = stringToList(ld);
+	Mail::Touch (Mail::local_domains != lld);
+	Mail::local_domains = lld;
+
+	oms = UI::QueryWidget (`id (`relay), `Value);
+	Mail::Touch (Mail::outgoing_mail_server != oms);
+	Mail::outgoing_mail_server = oms;
+
+	fh = UI::QueryWidget (`id (`from), `Value);
+	Mail::Touch (Mail::from_header != fh);
+	Mail::from_header = fh;
+    }
+    return ret;
+}
+
+/**
+ * D2.1
+ * @return `back, `abort or `ok
+ */
+global define symbol MasqueradingDialog () ``{
+
+    string ld = listToString (Mail::local_domains);
+    string mod = listToString (Mail::masquerade_other_domains);
+    list(map) mu = Mail::masquerade_users;
+
+    string caption = _("Detailed masquerading");
+    term contents =
+	`VBox (
+	    `VSpacing (0.2),
+	    `RadioButtonGroup (
+		`id (`mdg),
+		`VBox (
+		    `VSpacing (0.2),
+		    `Left (`RadioButton (
+			       `id (`masqlocal),
+			       sformat (_("Masquerade local domains (%1)"), ld),
+			       mod == "")),
+//		    `HBox (
+//			`HSpacing (2),
+//			`TextEntry (`id (`masqdomains), `opt (`disabled), _("That is"), ld)
+////			`Left (`Label (`opt (`outputField, `hstretch), ld))
+//			),
+		    `Left (`RadioButton (`id (`masqothers), _("Masquerade other domains"), mod != "")),
+		    `HBox (
+			`HSpacing (2),
+			`TextEntry (`id (`masqdomains), `opt (`notify), _("Domains to masquerade"), mod)
+			)
+		    )
+		),
+
+	    `VSpacing (1),
+
+	    `Table (
+		`id (`tab),
+		`opt (`notify, `immediate),
+		`header (_("Local user"), _("Present as")),
+		makeItems (mu, ["user", "address"])
+		),
+/*
+	    `HBox (
+		`HWeight (1, `ComboBox (`id (`user), `opt (`editable), _("Local user"),
+					["holly", "jane", "tarzan"])),
+		`HWeight (2, `TextEntry (`id (`address), _("Present as"), "holly@red.dwarf"))
+		),
+*/
+	    `HBox(
+		`PushButton(`id(`add), _("Add")),
+		`PushButton(`id(`edit), _("Edit")),
+		`PushButton(`id(`delete), _("Delete"))
+		),
+	    `VSpacing (1)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), OKButtonLabel ());
+
+    UI::ChangeWidget (`id (`edit), `Enabled, false);
+    UI::ChangeWidget (`id (`delete), `Enabled, false);
+
+    any ret = nil;
+    edit_touched = false;
+    while (true)
+    {
+	ret = UI::UserInput ();
+
+	if (ret == `masqdomains)
+	{
+	    UI::ChangeWidget (`id (`mdg), `CurrentButton, `masqothers);
+	}
+	else if (ret == `tab)
+	{
+	    UI::ChangeWidget (`id (`edit), `Enabled, true);
+	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	}
+	else if (contains ([`add, `edit, `delete], ret))
+	{
+	    mu = EditTable(ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
+	}
+	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
+	{
+	    continue;
+	}
+	else
+	{
+	    break;
+	}
+    }
+
+    if (ret == `next)
+    {
+	ret = `ok;
+
+	list(string) lmod = [];
+	symbol rb = UI::QueryWidget (`mdg, `CurrentButton);
+	if (rb == `masqothers)
+	{
+	    mod = UI::QueryWidget (`masqdomains, `Value);
+	    lmod = listToString (mod);
+	}
+	Mail::Touch (Mail::masquerade_other_domains != lmod);
+	Mail::masquerade_other_domains = lmod;
+
+	Mail::Touch (Mail::masquerade_users != mu);
+	Mail::masquerade_users = mu;
+    }
+    return ret;
+}
+
+/**
+ * D2.1.1
+ * Used for adding and exiting a user masquerading entry.
+ * @param default	$["user": "address":] or just $[]
+ * @param existing	current masqueading list
+ * @return		$["comment": "", "user": "address":] or $[] on cancel
+ */
+global define map MasqueradeUserPopup (map default, list(map) existing) ``{
+    string user = lookup (default, "user", "");
+    string address = lookup (default, "address", "");
+    list(string) forbidden = maplist (`e, existing, ``( lookup (e, "user", "") ));
+
+    term contents =
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(0.2),
+		// TODO: combo
+//		`Left (`ComboBox (`id (`user), /*`opt (`editable),*/ _("Local user"),
+//			   ["holly", "jane", "tarzan"])),
+		`Left (`TextEntry (`id (`user), _("Local user"), user)),
+		`Left (`TextEntry (`id (`address), _("Present as"), address)),
+		`VSpacing(0.2),
+		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`VSpacing(0.2)
+		),
+	    `HSpacing(1)
+	);
+
+    UI::OpenDialog(`opt(`decorated), contents);
+
+    map entry = $[];
     any ret = nil;
     while (true)
     {
 	ret = UI::UserInput ();
-	if (ret == `abort)
+	if (ret == `cancel)
 	{
-	    // TODO FIXME: check for change of the configuration
-	    if ( UI::ReallyAbortPopup ( true ) )
+	    break;
+	}
+	else if (ret == `ok)
+	{
+	    // TODO cleanup
+	    user = UI::QueryWidget (`id (`user), `Value);
+	    address = UI::QueryWidget (`id (`address), `Value);
+	    if (! contains (forbidden, user))
+	    {
 		break;
-	    else
-		continue;
+	    }
+	    UI::MessagePopup (_("The address for this user is already defined,"));
+	}
+    }
+
+    UI::CloseDialog ();
+
+    return (ret == `ok)? $["comment": "", "user": user, "address": address]: $[];
+}
+
+
+/**
+ * D3
+ * TODO only for dialup, prevent writing otherwise.
+ */
+global define symbol DownloadingDialog () ``{
+    //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
+    list(map) fm = Mail::fetchmail;
+
+    string caption = _("Mail downloading");
+    term contents =
+	`VBox (
+	    `VSpacing (0.2),
+	    `Table (
+		`id (`tab),
+		`opt (`notify, `immediate),
+		`header (_("Server"), _("Protocol"), _("User"), _("Local user")),
+		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
+		),
+/*
+	    `HBox (
+		`HWeight (1, `ComboBox (`id (`user), `opt (`editable), _("Local user"),
+					["holly", "jane", "tarzan"])),
+		`HWeight (2, `TextEntry (`id (`address), _("Present as"), "holly@red.dwarf"))
+		),
+*/
+	    `HBox(
+		`PushButton(`id(`add), _("Add")),
+		`PushButton(`id(`edit), _("Edit")),
+		`PushButton(`id(`delete), _("Delete"))
+		),
+	    `VSpacing (0.2)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    UI::ChangeWidget (`id (`edit), `Enabled, false);
+    UI::ChangeWidget (`id (`delete), `Enabled, false);
+
+    any ret = nil;
+    edit_touched = false;
+    while (true)
+    {
+	ret = UI::UserInput ();
+
+	if (ret == `tab)
+	{
+	    UI::ChangeWidget (`id (`edit), `Enabled, true);
+	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	}
+	else if (contains ([`add, `edit, `delete], ret))
+	{
+	    fm = EditTable(ret, fm, ["server", "protocol", "remote_user", "local_user"], ``(FetchmailPopup ()), `tab);
+	}
+	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
+	{
+	    continue;
 	}
 	else
 	{
-	    /* TODO FIXME: your code ... */
 	    break;
 	}
-    };
+    }
 
+    if (ret == `next)
+    {
+	Mail::Touch (Mail::fetchmail != fm);
+	Mail::fetchmail = fm;
+    }
     return ret;
+}
+
+/**
+ * D3.1
+ */
+global define map FetchmailPopup (map default, list(map) existing) ``{
+    return $[];
+}
+
+/**
+ * D4
+ */
+global define symbol AliasesDialog () ``{
+    list(map) aliases = Mail::aliases;
+    //TODO don't forget merge_aliases, maybe comment?
+
+    string caption = _("Aliases");
+    term contents =
+	`VBox (
+	    `VSpacing (0.2),
+	    `Table (
+		`id (`tab),
+		`opt (`notify, `immediate),
+		`header (_("Alias"), _("Destinations")),
+		makeItems (aliases, ["alias", "destinations"])
+		),
+	    `HBox(
+		`PushButton(`id(`add), _("Add")),
+		`PushButton(`id(`edit), _("Edit")),
+		`PushButton(`id(`delete), _("Delete"))
+		),
+	    `VSpacing (0.2)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    UI::ChangeWidget (`id (`edit), `Enabled, false);
+    UI::ChangeWidget (`id (`delete), `Enabled, false);
+
+    any ret = nil;
+    edit_touched = false;
+    while (true)
+    {
+	ret = UI::UserInput ();
+
+	if (ret == `tab)
+	{
+	    UI::ChangeWidget (`id (`edit), `Enabled, true);
+	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	}
+	else if (contains ([`add, `edit, `delete], ret))
+	{
+	    aliases = EditTable(ret, aliases, ["alias", "destinations"], ``(AliasPopup ()), `tab);
+	}
+	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
+	{
+	    continue;
+	}
+	else
+	{
+	    break;
+	}
+    }
+
+    if (ret == `next)
+    {
+	Mail::Touch (Mail::aliases != aliases);
+	Mail::aliases = aliases;
+    }
+    return ret;
+
+}
+
+/**
+ * D4.1
+ */
+global define map AliasPopup (map default, list(map) existing) ``{
+    return $[];
+}
+
+
+/**
+ * D5
+ */
+global define symbol VirtualDialog () ``{
+    list(map) vu = Mail::virtual_users;
+
+    string caption = _("Virtual domains");
+    term contents =
+	`VBox (
+	    `VSpacing (0.2),
+	    `Table (
+		`id (`tab),
+		`opt (`notify, `immediate),
+		`header (_("Alias"), _("Destinations")),
+		makeItems (vu, ["alias", "destinations"])
+		),
+	    `HBox(
+		`PushButton(`id(`add), _("Add")),
+		`PushButton(`id(`edit), _("Edit")),
+		`PushButton(`id(`delete), _("Delete"))
+		),
+	    `VSpacing (0.2)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    UI::ChangeWidget (`id (`edit), `Enabled, false);
+    UI::ChangeWidget (`id (`delete), `Enabled, false);
+
+    any ret = nil;
+    edit_touched = false;
+    while (true)
+    {
+	ret = UI::UserInput ();
+
+	if (ret == `tab)
+	{
+	    UI::ChangeWidget (`id (`edit), `Enabled, true);
+	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	}
+	else if (contains ([`add, `edit, `delete], ret))
+	{
+	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(VirtualPopup ()), `tab);
+	}
+	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
+	{
+	    continue;
+	}
+	else
+	{
+	    break;
+	}
+    }
+
+    if (ret == `next)
+    {
+	Mail::Touch (Mail::virtual_users != vu);
+	Mail::virtual_users = vu;;
+    }
+    return ret;
+
+}
+
+/**
+ * D5.1
+ */
+global define map VirtualPopup (map default, list(map) existing) ``{
+    return $[];
 }
 
 }
