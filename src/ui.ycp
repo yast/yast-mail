@@ -34,6 +34,7 @@ include "mail/helps.ycp";
 
 /**
  * Whole configuration of mail
+ * @return `back, `abort or `next
  */
 global define symbol MailSequence () ``{
     map aliases =
@@ -80,6 +81,7 @@ global define symbol MailSequence () ``{
 /**
  * Whole configuration of mail but without reading and writing.
  * For use with autoinstallation.
+ * @return `back, `abort or `next
  */
 global define symbol MailAutoSequence () ``{
     string caption = _("Mail configuration");
@@ -161,28 +163,15 @@ global define symbol MainSequence () ``{
 
 /**
  * Read settings dialog
+ * @return `abort or `next
  */
 global define symbol ReadDialog () ``{
-    // TODO FIXME Assign the true texts intead of these
-    string caption = _("Initializing mail configuration");
-    // TODO FIXME Set the right number of stages
-    integer no_of_stages = 3;
+    // Set help text
+    Wizard::RestoreHelp (ReadDialogHelp ());
 
-    // TODO FIXME Names of real stages
-    Progress::New ( caption, " ", no_of_stages,
-		   [ _("Read the database"),
-		     _("Read the previous settings"),
-		     _("Detect the devices") ],
-		   [ _("Reading the database..."),
-		     _("Reading the previous settings..."),
-		     _("Detecting the devices..."),
-		     _("Finished") ],
-		   ReadDialogHelp () );
-
-    // A callback function for increasing the progress during read.
+    // A callback function for abort
     block callback = ``{
-	Progress::NextStage ();
-	return UI::PollInput () != `abort;
+	return UI::PollInput () == `abort;
     };
 
     // Read the configuration
@@ -195,33 +184,19 @@ global define symbol ReadDialog () ``{
 
 /**
  * Write settings dialog
+ * @return `abort or `next
  */
 global define symbol WriteDialog () ``{
-    // TODO FIXME Assign the true texts intead of these
-    string caption = _("Saving mail configuration");
-    // TODO FIXME And set the right number of stages
-    integer no_of_stages = 2;
+    // Set help text
+    Wizard::RestoreHelp (WriteDialogHelp ());
 
-    // TODO FIXME Names of real stages
-    Progress::New ( caption, " ", no_of_stages,
-		   [ _("Write the settings"),
-		     _("Run SuSEconfig") ],
-		   [ _("Writing the settings..."),
-		     _("Running SuSEconfig..."),
-		     _("Finished") ],
-		   WriteDialogHelp () );
-
-    // Callback functions for increasing the progress and for [Abort] question
+    // A callback function for abort
     block callback = ``{
-	Progress::NextStage ();
-	return UI::PollInput () != `abort;
-    };
-    block callback_abort = ``{
-	return UI::ReallyAbortPopup ( true );
+	return UI::PollInput () == `abort;
     };
 
     // Read the configuration
-    boolean was_ok = Mail::Write ( callback, callback_abort );
+    boolean was_ok = Mail::Write ( callback );
 
     // TODO FIXME possibly handle the abort
 
@@ -330,7 +305,7 @@ global define list(map) EditTable (symbol action,
     }
     else if (action == `edit)
     {
-	editEntry = add (editEntry, select (data, entryno));
+	editEntry = add (editEntry, select (data, entryno, $[]));
 	editEntry = add (editEntry, remove (data, entryno));
 	map entry = eval (editEntry);
 	if (size (entry) > 0)
@@ -597,10 +572,10 @@ global define symbol MasqueradingDialog () ``{
 	ret = `ok;
 
 	list(string) lmod = [];
-	symbol rb = UI::QueryWidget (`mdg, `CurrentButton);
+	symbol rb = UI::QueryWidget (`id (`mdg), `CurrentButton);
 	if (rb == `masqothers)
 	{
-	    mod = UI::QueryWidget (`masqdomains, `Value);
+	    mod = UI::QueryWidget (`id (`masqdomains), `Value);
 	    lmod = listToString (mod);
 	}
 	Mail::Touch (Mail::masquerade_other_domains != lmod);
@@ -667,7 +642,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 
     UI::CloseDialog ();
 
-    return (ret == `ok)? $["comment": "", "user": user, "address": address]: $[];
+    return (ret == `ok)? $["comment": "", "user": user, "address": address] : $[];
 }
 
 
@@ -805,7 +780,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 
     UI::CloseDialog ();
 
-    return (ret == `ok)? $["server": server, "protocol": protocol, "remote_user": ruser, "password": password, "local_user": luser]: $[];
+    return (ret == `ok)? $["server": server, "protocol": protocol, "remote_user": ruser, "password": password, "local_user": luser] : $[];
 }
 
 /**
@@ -924,7 +899,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 
     UI::CloseDialog ();
 
-    return (ret == `ok)? $["comment": "", "alias": alias, "destinations": destinations]: $[];
+    return (ret == `ok)? $["comment": "", "alias": alias, "destinations": destinations] : $[];
 }
 
 

@@ -20,9 +20,12 @@
     textdomain "mail";
 
     import "Mail";
+    import "Progress";
 
     // Do not show any progress during Read()
-    Mail::Read ( ``{ return true; } );
+    Progress::off ();
+    boolean ret = Mail::Read ( ``{ return false; } );
+    Progress::on ();
 
     return Mail::Summary ();
 }

@@ -21,6 +21,7 @@
 {
     // Set the name of the module
     module "Mail";
+    textdomain "mail";
 
     /**
      * `sendmail, `postfix or `other
@@ -107,6 +108,9 @@
 
     /* ---------------------------------------------------------------- */
 
+    /**
+     * Fake data to test dialogs on until Reading works
+     */
     global define void DemoData () ``{
 	connection_type = `dialup;
 	local_domains = [];
@@ -166,63 +170,264 @@
 
     /**
      * Read all mail settings from the SCR
-     * @param increase_progress A block that will be evaluated after each milestone.
-     *        It must return boolean to get known when we should stop after [Abort]
+     * @param abort A block that can be called by Read to find
+     *	      out whether abort is requested. Returns true if abort
+     *	      was pressed.
      * @return True on success
      */
-    global define boolean Read (block increase_progress) ``{
-	boolean read_aborted = false;
+    global define boolean Read (block abort) ``{
 
-	// TODO FIXME: your code here (fill the above mentioned variables)...
 	DemoData ();
 
-	integer step = 0;
-	while (step < 3)
+	// TODO FIXME Assign the true texts intead of these
+	string caption = _("Initializing XXpkgXX configuration");
+
+	// TODO FIXME Names of real stages
+	// We do not set help text here, because it was set outside
+	Progress::New (caption, " ", 0, [
+			   // do not translate MTA
+			   _("Determine Mail Transport Agent (MTA)"),
+			   _("Read general settings"),
+			   _("Read masquerading settings"),
+			   _("Read downloading settings"),
+			   _("Read alias tables"),
+			   ],
+		       [], "");
+
+	// announce 1
+	Progress::NextStage ();
+	if (eval (abort))
 	{
-	    read_aborted = !eval (increase_progress);
-	    if (read_aborted)
-	    {
-		break;
-	    }
+	    return false;
+	}
+	// read 1
+	//TODO: detect properly
+	mta = `sendmail;
+	if (mta == `other)
+	{
+	    // TODO: adapt workflow to say sorry and bye.
+	    return true;
+	}
 
-	    sleep (500);
-	    step = step + 1;
-	};
+	// announce 2
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// read 2
+	// connection_type:
+	boolean nc = false;
+	boolean ex = false;
+	if (mta == `sendmail)
+	{
+	    nc = SCR::Read (.rc.sendmail.SENDMAIL_NOCANONIFY) == "yes";
+	    ex = SCR::Read (.rc.sendmail.SENDMAIL_EXPENSIVE) == "yes";
+	}
+	else if (mta == `postfix)
+	{
+	    nc = SCR::Read (.rc.postfix.POSTFIX_NODNS) == "yes";
+	    ex = SCR::Read (.rc.postfix.DIALUP) == "yes";
+	}
+	else
+	{
+	    return false;
+	}
 
-	// increase the progress to "finish"
-	eval (increase_progress);
-	return !read_aborted;
+	if (nc)
+	{
+	    connection_type = (ex)? `dialup : `none;
+	}
+	else
+	{
+	    connection_type = `permanent;
+	}
+
+	// local_domains
+	string ld_s = "";
+	if (mta == `sendmail)
+	{
+	    ld_s = SCR::Read (.rc.sendmail.SENDMAIL_LOCALHOST);
+	}
+	else if (mta == `postfix)
+	{
+	    ld_s = SCR::Read (.rc.postfix.POSTFIX_LOCALDOMAINS);
+	}
+	else
+	{
+	    return false;
+	}
+	local_domains = filter (`s, splitstring (ld_s, " ,;"), ``(s != ""));
+
+	// outgoing_mail_server
+	if (mta == `sendmail)
+	{
+	    outgoing_mail_server = SCR::Read (.rc.sendmail.SENDMAIL_SMARTHOST);
+	}
+	else if (mta == `postfix)
+	{
+	    outgoing_mail_server = SCR::Read (.rc.postfix.POSTFIX_RELAYHOST);
+	    // TODO strip [brackets]
+	}
+	else
+	{
+	    return false;
+	}
+
+	// announce 3
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// read 3
+	// from_header
+	from_header = SCR::Read (.rc.system.FROM_HEADER);
+
+	// masquerade_other_domains
+	string mod_s = "";
+	if (mta == `sendmail)
+	{
+	    mod_s = SCR::Read (.rc.sendmail.MASQUERADE_DOMAINS);
+	}
+	else if (mta == `postfix)
+	{
+	    mod_s = SCR::Read (.rc.postfix.POSTFIX_MASQUERADE_DOMAIN);
+	}
+	else
+	{
+	    return false;
+	}
+	masquerade_other_domains = filter (`s, splitstring (mod_s, " ,;"), ``(s != ""));
+
+	// masquerade_users
+	list(map) mu_raw = [];
+	if (mta == `sendmail)
+	{
+	    mu_raw = SCR::Read (.mail.sendmail.generics.table);
+	}
+	else if (mta == `postfix)
+	{
+	    mu_raw = SCR::Read (.mail.postfix.sendercanonical.table);
+	}
+	else
+	{
+	    return false;
+	}
+	masquerade_users = maplist (map e, mu_raw,
+				    ``($[
+					   "comment"	: e["comment"]: "",
+					   "user"	: e["key"]: "",
+					   "address"	: e["value"]: "",
+					   ]));
+
+	// announce 4
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// read 4
+	fetchmail = SCR::Read (.mail.fetchmail.accounts);
+	//TODO what to do with a difficult syntax etc?
+
+	// announce 5
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// read 5
+	merge_aliases = false;
+
+	// aliases
+	list(map) a_raw = [];
+	if (mta == `sendmail)
+	{
+	    a_raw = SCR::Read (.mail.sendmail.aliases.table);
+	}
+	else if (mta == `postfix)
+	{
+	    a_raw = SCR::Read (.mail.postfix.aliases.table);
+	}
+	else
+	{
+	    return false;
+	}
+	aliases =  maplist (map e, a_raw,
+			    ``($[
+				   "comment"		: e["comment"]: "",
+				   "alias"		: e["key"]: "",
+				   "destinations"	: e["value"]: "",
+				   ]));
+
+	// virtual_users
+	list(map) v_raw = [];
+	if (mta == `sendmail)
+	{
+	    v_raw = SCR::Read (.mail.sendmail.virtuser.table);
+	}
+	else if (mta == `postfix)
+	{
+	    v_raw = SCR::Read (.mail.postfix.virtual.table);
+	}
+	else
+	{
+	    return false;
+	}
+	virtual_users =  maplist (map e, v_raw,
+				  ``($[
+					 "comment"	: e["comment"]: "",
+					 "alias"	: e["key"]: "",
+					 "destinations"	: e["value"]: "",
+					 ]));
+
+
+	// TODO what about SCR::Read(.rc.system.SMTP)
+
+	// complete
+	Progress::NextStage ();
+	return true;
     }
 
     /**
      * Update the SCR according to mail settings
-     * @param increase_progress A block that will be evaluated after each milestone.
-     *        It must return boolean to get known when we should stop after [Abort]
-     * @param really_abort A block that will be evaluated after [Abort],
-     *        because [Abort] in the time of writing could be critical...
-     *        It must return boolean to get known if we should really stop.
+     * @param abort A block that can be called by Write to find
+     *	      out whether abort is requested. Returns true if abort
+     *	      was pressed.
      * @return True on success
      */
-    global define boolean Write (block increase_progress, block really_abort) ``{
+    global define boolean Write (block abort) ``{
 	boolean write_aborted = false;
+	// TODO FIXME Assign the true texts intead of these
+	string caption = _("Saving XXpkgXX configuration");
+
+	// TODO FIXME Names of real stages
+	// We do not set help text here, because it was set outside
+	Progress::New (caption, " ", 0, [
+			   _("Write the settings"),
+			   _("Run SuSEconfig"),
+			   ],
+		       [], "");
 
 	// TODO FIXME: your code here (store the above mentioned variables)...
-	integer step = 0;
-	while (step < 2)
+	integer stage = 0;
+	while (stage < 2)
 	{
-	    write_aborted = !eval (increase_progress);
-	    if (write_aborted && eval (really_abort))
+	    Progress::NextStage ();
+	    write_aborted = eval (abort);
+	    if (write_aborted)
 	    {
 		break;
 	    }
 	    write_aborted = false;
 
 	    sleep (500);
-	    step = step + 1;
+	    stage = stage + 1;
 	};
 
 	// increase the progress to "finish"
-	eval (increase_progress);
+	Progress::NextStage ();
 	return !write_aborted;
     }
 
