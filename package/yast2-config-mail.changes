@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Jan 11 16:55:26 CET 2002 - mvidner@suse.cz
+
+- Using /etc/sysconfig/* instead of  /etc/rc.config* .
+- Autoinstallation: properly signal a cancel.
+- Updated help texts.
+- 2.5.2
+
+-------------------------------------------------------------------
 Thu Dec 13 16:52:17 CET 2001 - mvidner@suse.cz
 
 - alpha version
