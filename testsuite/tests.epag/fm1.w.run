@@ -1,0 +1,5 @@
+cat << END
+Fetchmail (\$["filename": "$OUT_TMP"])
+Write (.accounts, `cat $IN`)
+Write (., nil)
+END
