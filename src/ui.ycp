@@ -803,7 +803,10 @@ global define symbol OutgoingDetailsDialog () ``{
 	    `VSpacing (1)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, MasqueradingDialogHelp (), Label::BackButton (), Label::OKButton ());
+    string help = WJ_MakeHelp ( [`from_header, `local_domains ]) +
+	MasqueradingDialogHelp ();
+
+    Wizard::SetContentsButtons (caption, contents, help , Label::BackButton (), Label::OKButton ());
 
     any ret = nil;
     edit_touched = false;

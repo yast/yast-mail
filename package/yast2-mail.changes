@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep  3 17:17:16 CEST 2003 - jsuchome@suse.cz
+
+- part of helptext was not shown
+- 2.8.7
+
+-------------------------------------------------------------------
 Wed Aug 20 14:57:18 CEST 2003 - jsuchome@suse.de
 
 - removed redundant "initialization dialog" (#28779)
