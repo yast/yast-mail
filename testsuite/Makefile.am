@@ -18,6 +18,7 @@ all-local: $(testsuite_prepare)
 	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) \
 		config/default.exp config/unix.exp config/unknown.exp \
 		run/runtest.sh $(RPMNAME).test/testsuite.exp
+	mkdir -p tmp
 
 clean-local: $(testsuite_prepare)
 	make -f $(testsuite_prepare) RPMNAME=$(RPMNAME) srcdir=$(srcdir) clean
