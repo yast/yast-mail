@@ -6,7 +6,6 @@
 # An agent for parsing and writing fetchmailrc files.
 # See fetchmailrc.txt for the format restrictions.
 
-use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
 use Fcntl; # O_* for sysopen
