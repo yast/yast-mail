@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jul 29 14:44:26 CEST 2002 - mvidner@suse.cz
+
+- yast2-runlevel is no longer required.
+- Tests fixed for perl 5.8.0.
+- 2.6.9
+
+-------------------------------------------------------------------
 Fri Jul 19 17:33:38 CEST 2002 - mvidner@suse.cz
 
 - Separated aliases handling into yast2.rpm/MailAliases.ycp (~#11730).
