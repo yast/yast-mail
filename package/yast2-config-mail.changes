@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 21 16:47:05 CET 2002 - mvidner@suse.cz
+
+- Added an option to use a virus scanner (AMaViS).
+- 2.5.5
+
+-------------------------------------------------------------------
 Tue Jan 15 19:15:29 CET 2002 - mvidner@suse.cz
 
 - Include forgotten agent configurations.
