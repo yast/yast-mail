@@ -118,49 +118,6 @@
     /* ---------------------------------------------------------------- */
 
     /**
-     * Fake data to test dialogs on until Reading works
-     */
-    global define void DemoData () ``{
-	connection_type = `dialup;
-	local_domains = [];
-	outgoing_mail_server = "smtp.provider.com";
-	from_header = "mycompany.com";
-	masquerade_other_domains = [];
-	masquerade_users = [
-	    $[ "comment": "", "user": "tarzan", "address": "tarzan@jungle.net" ],
-	    $[ "comment": "", "user": "jane",   "address": "matrix@vector.int" ],
-	    $[ "comment": "", "user": "holly",   "address": "holly@red.dwarf" ],
-	    ];
-	fetchmail = [
-	    $[ "server": "pop3.provider.com", "protocol": "auto", "remote_user": "taz", "local_user": "tarzan", "password": "foo"],
-	    $[ "server": "mail.hosting.net", "protocol": "imap4", "remote_user": "janedoe", "local_user": "jane", "password": "bar"],
-	    ];
-	aliases = [
-	    $[ "comment": "", "alias": "root", "destinations": "mvidner@suse.cz"],
-	    $[ "comment": "", "alias": "postmaster", "destinations": "root"],
-	    $[ "comment": "", "alias": "mailer-daemon", "destinations": "root"],
-	    $[ "comment": "", "alias": "virusalert", "destinations": "root"],
-	    $[ "comment": "", "alias": "administrator", "destinations": "root"],
-	    $[ "comment": "", "alias": "daemon", "destinations": "root"],
-	    $[ "comment": "", "alias": "majordomo", "destinations": "\"|/usr/lib/majordomo/wrapper majordomo\""],
-	    $[ "comment": "", "alias": "test", "destinations": "\"|/usr/lib/majordomo/wrapper resend -l test test-outgoing\""],
-	    $[ "comment": "", "alias": "test-outgoing", "destinations": ":include:/var/lib/majordomo/lists/test"],
-	    $[ "comment": "", "alias": "test-request", "destinations": "\"|/usr/lib/majordomo/wrapper majordomo -l test\""],
-	    $[ "comment": "", "alias": "test-approval", "destinations": "owner-test"],
-	    $[ "comment": "", "alias": "owner-test-outgoing", "destinations": "owner-test"],
-	    $[ "comment": "", "alias": "owner-test-request", "destinations": "owner-test"],
-	    $[ "comment": "", "alias": "owner-test", "destinations": "root"],
-	    ];
-	virtual_users = [
-	    $[ "comment": "", "alias": "info@foo.com", "destinations": "foo-info"],
-	    $[ "comment": "", "alias": "info@bar.com", "destinations": "bar-info"],
-	    $[ "comment": "", "alias": "@baz.org", "destinations": "jane@example.net"],
-	    ];
-    }
-
-    /* ---------------------------------------------------------------- */
-
-    /**
      * Has the configuration been changed?
      * Can be used as an argument to UI::ReallyAbortPopup
      */
@@ -185,17 +142,20 @@
      * @return True on success
      */
     global define boolean Read (block abort) ``{
-
-	DemoData ();
-
+	// Translators: dialog caption
 	string caption = _("Initializing mail configuration");
 
 	Progress::New (caption, " ", 0, [
+			   // Translators: progress label
 			   // do not translate MTA
 			   _("Determine Mail Transport Agent (MTA)"),
+			   // Translators: progress label
 			   _("Read general settings"),
+			   // Translators: progress label
 			   _("Read masquerading settings"),
+			   // Translators: progress label
 			   _("Read downloading settings"),
+			   // Translators: progress label
 			   _("Read alias tables"),
 			   ],
 		       [], "");
@@ -462,19 +422,25 @@
      */
     global define boolean Write (block abort) ``{
 	list stages = [
+	    // Translators: progress label
 	    [ _("Write general settings"), ``(WriteGeneral ())],
 	    ];
 	if (connection_type != `none)
 	{
+	    // Translators: progress label
 	    stages = add (stages, [ _("Write masquerading settings"), ``(WriteMasquerading ()) ]);
 	    if (connection_type == `dialup)
 	    {
+		// Translators: progress label
 		stages = add (stages, [ _("Write downloading settings"), ``(WriteDownloading ()) ]);
 	    }
+	    // Translators: progress label
 	    stages = add (stages, [ _("Write alias tables"), ``(WriteAliases ()) ]);
 	}
+	// Translators: progress label
 	stages = add (stages, [ _("Run SuSEconfig"), ``(WriteFinish ()) ]);
 
+	// Translators: dialog caption
 	string caption = _("Saving mail configuration");
 	// We do not set help text here, because it was set outside
 	Progress::New (caption, " ", 0, maplist (list e, stages, ``(e[0]:"")), [], "");
@@ -651,6 +617,7 @@
 	SCR::Write (.mail.fetchmail.accounts, fetchmail);
 	if (! SCR::Write (.mail.fetchmail, nil))
 	{
+	    // Translators: error message
 	    Report::Error (_("Error writing Fetchmail configuration."));
 	    return false;
 	}
@@ -719,11 +686,13 @@
 	//flush the agents
 	if (!SCR::Write (.sysconfig.mail, nil))
 	{
+	    // Translators: error message
 	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/mail"));
 	    return false;
 	}
 	if (!SCR::Write (.sysconfig.amavis, nil))
 	{
+	    // Translators: error message
 	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/amavis"));
 	    return false;
 	}
@@ -732,6 +701,7 @@
 	{
 	    if (!SCR::Write (.sysconfig.sendmail, nil))
 	    {
+		// Translators: error message
 		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/sendmail"));
 		return false;
 	    }
@@ -745,6 +715,7 @@
 	{
 	    if (!SCR::Write (.sysconfig.postfix, nil))
 	    {
+		// Translators: error message
 		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/postfix"));
 		return false;
 	    }
@@ -763,6 +734,7 @@
 	    if (!SCR::Write (p, nil))
 	    {
 		string filename = SCR::Read (p + topath (".meta.filename"));
+		// Translators: error message
 		Report::Error (sformat (_("Error writing file %1"), filename));
 		return false;
 	    }
@@ -801,6 +773,7 @@
 
 	if (ret != 0)
 	{
+	    // Translators: error message
 	    Report::Error (_("Error running SuSEconfig."));
 	    return false;
 	}
@@ -870,15 +843,5 @@
 	    "merge_aliases": merge_aliases,
 	    "virtual_users": virtual_users,
 	    ];
-    }
-
-    /**
-     * Build a textual summary that can be used e.g. in inst_hw_config () or
-     * something similar.
-     * @return Summary of the configuration.
-     */
-    global define string Summary () ``{
-	// TODO FIXME: your code here...
-	return _("Summary of the configuration...");
     }
 }
