@@ -11,16 +11,16 @@ S1='s/\$\[/\
 S2='s/,\] $/,\
 \] /g'
 
-echo "$AGPROG" | ./ag_fetchmailrc | sed -e 1d >$CASE.ycp.tmp
+NORMALIZE="parseycp -n"
+
+echo "$AGPROG" | ./ag_fetchmailrc | sed -e 1d | $NORMALIZE >$CASE.ycp.tmp
 sed -e "$S1" -e "$S2" $CASE.ycp.tmp > $CASE-i.out.tmp
 diff -u $CASE-i.out $CASE-i.out.tmp
-
-NORMALIZE="parseycp -n"
 
 rm -f $CASE-o.out.tmp
 for i in 1 2; do
 echo 'Fetchmail ($["filename": "'$CASE'-o.out.tmp"])
-Write (.accounts, ' `$NORMALIZE $CASE.ycp.tmp` ')
+Write (.accounts, ' `cat $CASE.ycp.tmp` ')
 Write (., nil)' \
     | ./ag_fetchmailrc >/dev/null
 diff -u $CASE-o.out $CASE-o.out.tmp
