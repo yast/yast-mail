@@ -305,8 +305,8 @@ global boolean edit_touched = false;
  * @param table_widget	id of the table (usually a symbol)
  * @return		the edited data
  */
-global define list(map) EditTable (symbol action, 
-				   list(map) data, 
+global define list(map) EditTable (symbol action,
+				   list(map) data,
 				   list(string) keys,
 				   term editEntry,
 				   any table_widget) ``{
@@ -357,7 +357,7 @@ global define list(map) EditTable (symbol action,
 	y2error ("Unknown EditTable action %1.", action);
 	new_data = data; // be nice
     }
-    
+
     if (touched)
     {
 	UI::ChangeWidget (`id (table_widget), `Items, makeItems (new_data, keys));
@@ -437,7 +437,7 @@ global define string listToString (list(string) alist) ``{
  * separated by spaces, commas or semicolons.
  * Empty strings are removed.
  * @param astring	a string
- * @return		list of strings
+ * @return		a list of strings
  */
 global define list(string) stringToList (string astring) ``{
     //TODO: better cleanup
@@ -614,7 +614,7 @@ global define symbol MasqueradingDialog () ``{
 
 /**
  * D2.1.1
- * Used for adding and exiting a user masquerading entry.
+ * Used for adding and editing a user masquerading entry.
  * @param default	$["user": "address":] or just $[]
  * @param existing	current masqueading list
  * @return		$["comment": "", "user": "address":] or $[] on cancel
@@ -642,9 +642,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	    `HSpacing(1)
 	);
 
-    UI::OpenDialog(`opt(`decorated), contents);
+    UI::OpenDialog (`opt(`decorated), contents);
 
-    map entry = $[];
     any ret = nil;
     while (true)
     {
@@ -662,7 +661,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	    {
 		break;
 	    }
-	    UI::MessagePopup (_("The address for this user is already defined,"));
+	    UI::MessagePopup (_("The address for this user is already defined."));
 	}
     }
 
@@ -745,9 +744,68 @@ global define symbol DownloadingDialog () ``{
 
 /**
  * D3.1
+ * @param existing	unused
  */
 global define map FetchmailPopup (map default, list(map) existing) ``{
-    return $[];
+    string server = lookup (default, "server", "");
+    string protocol = lookup (default, "protocol", "AUTO");
+    string ruser = lookup (default, "remote_user", "");
+    string password = lookup (default, "password", "");
+    string luser = lookup (default, "local_user", "");
+
+    term contents =
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(0.2),
+		`Left (`TextEntry (`id (`server), _("Server"), server)),
+		`Left (`ComboBox (`id (`protocol), _("Protocol"), Mail::protocol_choices)),
+		`Left (`TextEntry (`id (`ruser), _("Remote user name"), ruser)),
+		`Left (`Password (`id (`password1), _("Password"), password)),
+		`Left (`Password (`id (`password2), _("Password once more"), password)),
+		`Left (`TextEntry (`id (`luser), _("Local user"), luser)),
+//TODO combo
+//		`Left (`ComboBox (`id (`luser), _("Local user"), ["jane", "holly", "tarzan"])),
+		`VSpacing(0.2),
+		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`VSpacing(0.2)
+		),
+	    `HSpacing(1)
+	);
+
+    UI::OpenDialog (`opt(`decorated), contents);
+    UI::ChangeWidget (`id (`protocol), `Value, protocol);
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    break;
+	}
+	else if (ret == `ok)
+	{
+	    // TODO cleanup
+	    server = UI::QueryWidget (`id (`server), `Value);
+	    protocol = UI::QueryWidget (`id (`protocol), `Value);
+	    ruser = UI::QueryWidget (`id (`ruser), `Value);
+	    password = UI::QueryWidget (`id (`password1), `Value);
+	    luser = UI::QueryWidget (`id (`luser), `Value);
+
+	    string password2 = UI::QueryWidget (`id (`password2), `Value);
+	    if (password == password2)
+	    {
+		break;
+	    }
+	    UI::MessagePopup (_("The passwords do not match."));
+	}
+    }
+
+    UI::CloseDialog ();
+
+    return (ret == `ok)? $["server": server, "protocol": protocol, "remote_user": ruser, "password": password, "local_user": luser]: $[];
 }
 
 /**
@@ -815,11 +873,60 @@ global define symbol AliasesDialog () ``{
 }
 
 /**
- * D4.1
+ * D4.1, 5.1
+ * Used for adding and editing an alias/virtual domain entry.
+ * @param default	$["alias": "destinations": ?comment] or just $[]
+ * @param existing	current entry list
+ * @return		$["comment": ""?, "alias": "destinations":] or $[] on cancel
  */
 global define map AliasPopup (map default, list(map) existing) ``{
-    return $[];
+    string alias = lookup (default, "alias", "");
+    string destinations = lookup (default, "destinations", "");
+    list(string) forbidden = maplist (`e, existing, ``( lookup (e, "alias", "") ));
+
+    term contents =
+	`HBox(
+	    `HSpacing(1),
+	    `VBox(
+		`VSpacing(0.2),
+		`Left (`TextEntry (`id (`alias), _("Alias"), alias)),
+		`Left (`TextEntry (`id (`destinations), _("Destinations"), destinations)),
+		`VSpacing(0.2),
+		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
+		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`VSpacing(0.2)
+		),
+	    `HSpacing(1)
+	);
+
+    UI::OpenDialog (`opt(`decorated), contents);
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    break;
+	}
+	else if (ret == `ok)
+	{
+	    // TODO cleanup
+	    alias = UI::QueryWidget (`id (`alias), `Value);
+	    destinations = UI::QueryWidget (`id (`destinations), `Value);
+	    if (! contains (forbidden, alias))
+	    {
+		break;
+	    }
+	    UI::MessagePopup (_("The destinations for this alias are already defined."));
+	}
+    }
+
+    UI::CloseDialog ();
+
+    return (ret == `ok)? $["comment": "", "alias": alias, "destinations": destinations]: $[];
 }
+
 
 
 /**
@@ -864,7 +971,7 @@ global define symbol VirtualDialog () ``{
 	}
 	else if (contains ([`add, `edit, `delete], ret))
 	{
-	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(VirtualPopup ()), `tab);
+	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
 	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
 	{
@@ -883,13 +990,6 @@ global define symbol VirtualDialog () ``{
     }
     return ret;
 
-}
-
-/**
- * D5.1
- */
-global define map VirtualPopup (map default, list(map) existing) ``{
-    return $[];
 }
 
 }

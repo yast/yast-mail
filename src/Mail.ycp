@@ -86,6 +86,27 @@
 
     /* ---------------------------------------------------------------- */
 
+    /**
+     * Fetchmail protocols, as defined in rcfile_l.l
+     * Probably not all of them are compatible with our simplified scheme
+     * but it does not hurt to include them.
+     * Must check for validity: the agent matches [[:alnum:]]+,
+     * lowercase names are valid too.
+     */
+    global list(string) protocol_choices = [
+	"AUTO",
+	"POP2",
+	"POP3",
+	"IMAP",
+	"APOP",
+	"KPOP",
+	"SDPS",
+	"ETRN",
+	"ODMR",
+	];
+
+    /* ---------------------------------------------------------------- */
+
     global define void DemoData () ``{
 	connection_type = `dialup;
 	local_domains = [];
@@ -98,8 +119,8 @@
 	    $[ "comment": "", "user": "holly",   "address": "holly@red.dwarf" ],
 	    ];
 	fetchmail = [
-	    $[ "server": "pop3.provider.com", "protocol": "auto", "remote_user": "taz", "local_user": "tarzan"],
-	    $[ "server": "mail.hosting.net", "protocol": "imap4", "remote_user": "janedoe", "local_user": "jane"],
+	    $[ "server": "pop3.provider.com", "protocol": "auto", "remote_user": "taz", "local_user": "tarzan", "password": "foo"],
+	    $[ "server": "mail.hosting.net", "protocol": "imap4", "remote_user": "janedoe", "local_user": "jane", "password": "bar"],
 	    ];
 	aliases = [
 	    $[ "comment": "", "alias": "root", "destinations": "mvidner@suse.cz"],
