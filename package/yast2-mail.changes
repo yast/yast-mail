@@ -1,12 +1,14 @@
 -------------------------------------------------------------------
-Fri Jun 20 10:13:23 CEST 2003 - mvidner@suse.cz
+Fri Jun 20 13:12:49 CEST 2003 - mvidner@suse.cz
 
-TODO bug #s
-- Split the general dialog into outgoing and incoming again.
-- Added postfix delivery mode and fetchmail run mode,
-  TODO only dummy widgets for now.
+- Split the general dialog into outgoing and incoming again (~#17731).
 - Default MTA for autoinstallation is postfix.
-- ag_fetchmail: preserve unparsed items (TODO tell the user)
+- ag_fetchmail: preserve unparsed items.
+- Moved MailAliases stuff back from yast2.rpm,
+  creating a yast2-mail-aliases subpackage (#18212).
+- Added widgets for postfix delivery mode (#26052)
+  and fetchmail run mode (#22903), dummy so far.
+- 2.8.1
 
 -------------------------------------------------------------------
 Mon Apr  7 13:34:11 CEST 2003 - mvidner@suse.cz
