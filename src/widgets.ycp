@@ -223,7 +223,7 @@ global define boolean Validate_outgoing_mail_server(symbol id) ``{
 	oms_no_brackets == "" &&
 	Mail::connection_type == `dialup)
     {
-	UI::SetFocus (`id (`relay));
+	UI::SetFocus (`id (id));
 	UI::ErrorPopup (valid_address ());
 	return false;
     }
