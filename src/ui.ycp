@@ -1530,7 +1530,8 @@ define symbol MailSequence () ``{
 	];
 
     Wizard::CreateDialog ();
-
+    Wizard::SetDesktopIcon("mail");
+    
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
     any ret = WizardSequencer (dialogs, sequence);
@@ -1563,6 +1564,7 @@ define symbol MailAutoSequence () ``{
     term contents = `Label (_("Initializing..."));
 
     Wizard::CreateDialog ();
+    Wizard::SetDesktopIcon("mail");
     Wizard::SetContentsButtons ( caption,
 				contents,
 				"",
