@@ -359,9 +359,9 @@ global define symbol ConnectionTypeDialog () ``{
 		`HSquash (
 		    `VBox (
 			`VSpacing (0.2),
-			`Left (`RadioButton (`id (`permanent), _("Permanent"), ct == `permanent)),
-			`Left (`RadioButton (`id (`dialup), _("Dial-up"), ct == `dialup)),
-			`Left (`RadioButton (`id (`none), _("No connection"), ct == `none)),
+			`Left (`RadioButton (`id (`permanent), _("&Permanent"), ct == `permanent)),
+			`Left (`RadioButton (`id (`dialup), _("&Dial-up"), ct == `dialup)),
+			`Left (`RadioButton (`id (`none), _("No &connection"), ct == `none)),
 /*
 			`VSpacing (0.5),
 			`Left (`RadioButton (`id (`dont), _("Do not configure"), false)),
@@ -433,12 +433,12 @@ global define symbol OutgoingDialog () ``{
     term contents =
 	`VBox (
 	    `VSpacing (0.2),
-	    `TextEntry (`id (`local), _("Domains for locally delivered mail"), ld),
+	    `TextEntry (`id (`local), _("&Domains for locally delivered mail"), ld),
 	    `VSpacing (0.5),
-	    `TextEntry (`id (`relay), _("Outgoing mail server"), oms),
+	    `TextEntry (`id (`relay), _("&Outgoing mail server"), oms),
 	    `VSpacing (0.5),
-	    `TextEntry (`id (`from), _("Domain for the 'From' header"), fh),
-	    `PushButton (`id (`masqdetail), _("Detailed address rewriting ...")),
+	    `TextEntry (`id (`from), _("Domain for the '&From' header"), fh),
+	    `PushButton (`id (`masqdetail), _("Detailed address &rewriting ...")),
 	    `VSpacing (0.2)
 	    );
 
@@ -495,17 +495,17 @@ global define symbol MasqueradingDialog () ``{
 		    `VSpacing (0.2),
 		    `Left (`RadioButton (
 			       `id (`masqlocal),
-			       sformat (_("Masquerade local domains (%1)"), ld),
+			       sformat (_("Masquerade &local domains (%1)"), ld),
 			       mod == "")),
 //		    `HBox (
 //			`HSpacing (2),
 //			`TextEntry (`id (`masqdomains), `opt (`disabled), _("That is"), ld)
 ////			`Left (`Label (`opt (`outputField, `hstretch), ld))
 //			),
-		    `Left (`RadioButton (`id (`masqothers), _("Masquerade other domains"), mod != "")),
+		    `Left (`RadioButton (`id (`masqothers), _("Ma&squerade other domains"), mod != "")),
 		    `HBox (
 			`HSpacing (2),
-			`TextEntry (`id (`masqdomains), `opt (`notify), _("Domains to masquerade"), mod)
+			`TextEntry (`id (`masqdomains), `opt (`notify), _("Do&mains to masquerade"), mod)
 			)
 		    )
 		),
@@ -526,9 +526,9 @@ global define symbol MasqueradingDialog () ``{
 		),
 */
 	    `HBox(
-		`PushButton(`id(`add), _("Add")),
-		`PushButton(`id(`edit), _("Edit")),
-		`PushButton(`id(`delete), _("Delete"))
+		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`delete), _("Dele&te"))
 		),
 	    `VSpacing (1)
 	    );
@@ -607,8 +607,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// TODO: combo
 //		`Left (`ComboBox (`id (`user), /*`opt (`editable),*/ _("Local user"),
 //			   ["holly", "jane", "tarzan"])),
-		`Left (`TextEntry (`id (`user), _("Local user"), user)),
-		`Left (`TextEntry (`id (`address), _("Present as"), address)),
+		`Left (`TextEntry (`id (`user), _("&Local user"), user)),
+		`Left (`TextEntry (`id (`address), _("&Present as"), address)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 		      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -672,9 +672,9 @@ global define symbol DownloadingDialog () ``{
 		),
 */
 	    `HBox(
-		`PushButton(`id(`add), _("Add")),
-		`PushButton(`id(`edit), _("Edit")),
-		`PushButton(`id(`delete), _("Delete"))
+		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );
@@ -733,12 +733,12 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
-		`Left (`TextEntry (`id (`server), _("Server"), server)),
-		`Left (`ComboBox (`id (`protocol), _("Protocol"), Mail::protocol_choices)),
-		`Left (`TextEntry (`id (`ruser), _("Remote user name"), ruser)),
-		`Left (`Password (`id (`password1), _("Password"), password)),
-		`Left (`Password (`id (`password2), _("Password once more"), password)),
-		`Left (`TextEntry (`id (`luser), _("Local user"), luser)),
+		`Left (`TextEntry (`id (`server), _("&Server"), server)),
+		`Left (`ComboBox (`id (`protocol), _("&Protocol"), Mail::protocol_choices)),
+		`Left (`TextEntry (`id (`ruser), _("&Remote user name"), ruser)),
+		`Left (`Password (`id (`password1), _("P&assword"), password)),
+		`Left (`Password (`id (`password2), _("Pass&word once more"), password)),
+		`Left (`TextEntry (`id (`luser), _("&Local user"), luser)),
 //TODO combo
 //		`Left (`ComboBox (`id (`luser), _("Local user"), ["jane", "holly", "tarzan"])),
 		`VSpacing(0.2),
@@ -801,9 +801,9 @@ global define symbol AliasesDialog () ``{
 		makeItems (aliases, ["alias", "destinations"])
 		),
 	    `HBox(
-		`PushButton(`id(`add), _("Add")),
-		`PushButton(`id(`edit), _("Edit")),
-		`PushButton(`id(`delete), _("Delete"))
+		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );
@@ -864,8 +864,8 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
-		`Left (`TextEntry (`id (`alias), _("Alias"), alias)),
-		`Left (`TextEntry (`id (`destinations), _("Destinations"), destinations)),
+		`Left (`TextEntry (`id (`alias), _("&Alias"), alias)),
+		`Left (`TextEntry (`id (`destinations), _("&Destinations"), destinations)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 		      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -921,9 +921,9 @@ global define symbol VirtualDialog () ``{
 		makeItems (vu, ["alias", "destinations"])
 		),
 	    `HBox(
-		`PushButton(`id(`add), _("Add")),
-		`PushButton(`id(`edit), _("Edit")),
-		`PushButton(`id(`delete), _("Delete"))
+		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );
