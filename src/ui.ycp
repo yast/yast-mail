@@ -28,6 +28,8 @@ import "Mail";
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 include "wizard/sequencer.ycp";
+include "network/dns.ycp";
+include "network/ip.ycp";
 include "require.ycp";
 
 include "mail/helps.ycp";
@@ -50,6 +52,8 @@ global map dialogs = $[
     "confirm"	: [ ``( ConfirmDialog () ), true],
     "write"	: [ ``( WriteDialog () ), true ],
 
+    "mta":		``( MtaSelectionDialog () ),
+
     "connection_type":	``( ConnectionTypeDialog () ),
     "outgoing":		``( OutgoingDialog () ),
     "masquerading":	``( MasqueradingDialog () ),
@@ -61,7 +65,7 @@ global map dialogs = $[
     ];
 
 global map common_sequence = $[
-    "ws_start" : "connection_type",
+    //"ws_start" : must be defined in an overriding sequence
     "connection_type" :
     $[
 	`abort	: `abort,
@@ -113,7 +117,6 @@ global map common_sequence = $[
  */
 global define symbol MailSequence () ``{
     map sequence = $[
-	// override
 	"ws_start" : "read",
 	"read" :
 	$[
@@ -159,10 +162,22 @@ global define symbol MailSequence () ``{
 
 /**
  * Whole configuration of mail but without reading and writing.
+ * MTA is selected first.
  * For use with autoinstallation.
  * @return `back, `abort or `next
  */
 global define symbol MailAutoSequence () ``{
+    map sequence = $[
+	"ws_start":	"mta",
+	"mta":
+	$[
+	    `abort	: `abort,
+	    `next	: "connection_type",
+	    ],
+
+	// common_sequence here
+	];
+
     // Translators: dialog caption
     string caption = _("Mail configuration");
     term contents = `Label (_("Initializing ..."));
@@ -174,8 +189,9 @@ global define symbol MailAutoSequence () ``{
 				BackButtonLabel (),
 				NextButtonLabel ());
 
-    // Run the main configuration workflow
-    any ret = WizardSequencer (dialogs, common_sequence);
+    // the second map must override the first!
+    sequence = union (common_sequence, sequence);
+    any ret = WizardSequencer (dialogs, sequence);
 
     UI::CloseDialog ();
     return ret;
@@ -206,10 +222,11 @@ global define symbol ReadDialog () ``{
 	    string setting = "MAIL_CREATE_CONFIG";
 	    // Translators: continue/cancel dialog
 	    // %1 is a sysconfig variable name
-	    was_ok = UI::ContinueCancelPopup (sformat (_("The setting %1 is turned off so you have
+	    was_ok = UI::ContinueCancelPopup (sformat (_("The setting %1 is turned off. You have
 probably modified the configuration files directly.
 If you continue, it will be turned on and
-SuSEconfig will overwrite your changes."), setting));
+SuSEconfig will overwrite manual changes.
+"), setting));
 	}
     }
 
@@ -253,6 +270,69 @@ global define symbol WriteDialog () ``{
     // TODO FIXME possibly handle the abort
 
     return ( was_ok? `next : `abort );
+}
+
+/**
+ * MTA selection dialog
+ * (only for autoinstallation, otherwise probed in Mail::Read)
+ * @return `abort or `next
+ */
+global define symbol MtaSelectionDialog () ``{
+    symbol mta = Mail::mta;
+    // for now. TODO: disable Next if none selected
+    if (mta != `sendmail && mta != `postfix)
+    {
+	mta = `sendmail;
+    }
+
+    // Translators: dialog caption
+    // Mailer: Sendmail or Postfix
+    string caption = _("Mail transfer agent");
+    term contents =
+	`Frame (
+	    // Translators: frame label
+	    // Mailer: Sendmail or Postfix
+	    _("Mail transfer agent"),
+	    `RadioButtonGroup (
+		`id (`mtag),
+		`HSquash (
+		    `VBox (
+			`VSpacing (0.2),
+			// MTA name does not need translation
+			`Left (`RadioButton (`id (`sendmail), `opt(`autoShortcut), "Sendmail", mta == `sendmail)),
+			// MTA name does not need translation
+			`Left (`RadioButton (`id (`postfix), `opt(`autoShortcut), "Postfix", mta == `postfix)),
+			`VSpacing (0.2)
+			)
+		    )
+		)
+	    );
+
+    Wizard::SetContentsButtons (caption, contents, MtaSelectionDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    ret = `abort;
+	}
+
+	if (ret == `back || ret == `next ||
+	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	{
+	    break;
+	}
+    }
+
+    if (ret == `next)
+    {
+	mta = UI::QueryWidget (`id (`mtag), `CurrentButton);
+	Mail::Touch (Mail::mta != mta);
+	Mail::mta = mta;
+    }
+    return ret;
 }
 
 /* ---------------------------------------------------------------- */
@@ -313,7 +393,9 @@ global define list(map) EditTable (symbol action,
     }
     else if (action == `edit)
     {
-	editEntry = add (editEntry, select (data, entryno, $[]));
+	// edit known fields, preserve unknown fields
+	map old_entry = select (data, entryno, $[]);
+	editEntry = add (editEntry, old_entry);
 	editEntry = add (editEntry, remove (data, entryno));
 	map entry = eval (editEntry);
 	if (size (entry) > 0)
@@ -321,7 +403,7 @@ global define list(map) EditTable (symbol action,
 	    integer i = 0;
 	    new_data = maplist (`e, data, ``{
 		i = i + 1;
-		return (i - 1 == entryno)? entry: e;
+		return (i - 1 == entryno)? union (old_entry, entry): e;
 	    });
 	    touched = true;
 	}
@@ -357,6 +439,7 @@ global define list(map) EditTable (symbol action,
  */
 global define symbol ConnectionTypeDialog () ``{
     symbol ct = Mail::connection_type;
+    boolean amavis_allowed = Mail::amavis_allowed;
     boolean amavis = Mail::use_amavis;
 
     // Translators: dialog caption
@@ -389,16 +472,24 @@ global define symbol ConnectionTypeDialog () ``{
     contents = `VBox (
 	contents,
 	`VSpacing (1),
-	// Translators: check box label
-	`CheckBox (`id (`amavis), _("&Enable virus scanning (AMaViS)"), amavis),
-	`VSpacing (1),
 	// Translators: button
 	`PushButton (`id (`aliases), _("&Aliases ...")),
 	// Translators: button
 	`PushButton (`id (`virtual), _("&Virtual domains ..."))
 	);
 
-    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    if (amavis_allowed)
+    {
+	contents = add (contents, `VSpacing (1));
+	// Translators: check box label
+	contents = add (contents, `CheckBox (`id (`amavis), _("&Enable virus scanning (AMaViS)"), amavis));
+    }
+    else
+    {
+	contents = add (contents, `Empty (`id (`amavis)));
+    }
+
+    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (amavis_allowed), BackButtonLabel (), NextButtonLabel ());
 
     any ret = nil;
     while (true)
@@ -410,6 +501,8 @@ global define symbol ConnectionTypeDialog () ``{
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
 	    UI::ChangeWidget (`id (`amavis), `Enabled, true);
+	    UI::ChangeWidget (`id (`aliases), `Enabled, true);
+	    UI::ChangeWidget (`id (`virtual), `Enabled, true);
 	}
 	else if (ct == `none)
 	{
@@ -418,9 +511,16 @@ global define symbol ConnectionTypeDialog () ``{
 	    //Wizard::ReplaceNextButton (finish_button);
 	    UI::ChangeWidget (`id (`amavis), `Value, false);
 	    UI::ChangeWidget (`id (`amavis), `Enabled, false);
+	    UI::ChangeWidget (`id (`aliases), `Enabled, false);
+	    UI::ChangeWidget (`id (`virtual), `Enabled, false);
 	}
 
 	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    ret = `abort;
+	}
+
 	if (ret == `back || ret == `next || ret == `aliases || ret == `virtual ||
 	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
 	{
@@ -434,7 +534,7 @@ global define symbol ConnectionTypeDialog () ``{
 	Mail::Touch (Mail::connection_type != ct);
 	Mail::connection_type = ct;
 
-	amavis = UI::QueryWidget (`id (`amavis), `Value);
+	amavis = amavis_allowed && UI::QueryWidget (`id (`amavis), `Value);
 	Mail::Touch (Mail::use_amavis != amavis);
 	Mail::use_amavis = amavis;
 
@@ -470,6 +570,7 @@ global define list(string) stringToList (string astring) ``{
  */
 global define symbol OutgoingDialog () ``{
     string ld = listToString (Mail::local_domains);
+    list(string) lld = [];
     // when validating: may be enclosed in brackets (prevents mx lookups)
     string oms = Mail::outgoing_mail_server;
     string fh = Mail::from_header;
@@ -498,30 +599,79 @@ global define symbol OutgoingDialog () ``{
 	NextButtonLabel () : FinishButtonLabel ());
 
     any ret = nil;
-    // The only input comes from the buttons.
-    // Loop only on a canceled abort.
     while (true)
     {
 	ret = UI::UserInput ();
-	if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
+	if (ret == `cancel)
 	{
-	    continue;
+	    ret = `abort;
 	}
-	break;
+
+	if (ret == `back ||
+	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	{
+	    break;
+	}
+	else if (ret == `next || ret == `masqdetail)
+	{
+	    // input validation
+	    // For consistency, all querywidgets are done here
+
+	    ld = UI::QueryWidget (`id (`local), `Value);
+	    lld = stringToList(ld);
+	    oms = UI::QueryWidget (`id (`relay), `Value);
+	    // watch this: "[", no brackets, "]"
+	    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
+		regexpsub (oms, ".(.*).", "\\1") : oms;
+	    fh = UI::QueryWidget (`id (`from), `Value);
+
+	    if (find (string s, lld, ``(! check_domainname (s))) != nil)
+	    {
+		UI::SetFocus (`id (`local));
+		// Translators: error popup
+		// Already in Translation Memory
+		string msg = _("The domain name is incorrect");
+		// TODO: describe a valid domain name
+		UI::ErrorPopup (msg);
+	    }
+	    else if (oms_no_brackets != "" &&
+		     ! check_domainname (oms_no_brackets) &&
+		     ! check_ip4 (oms_no_brackets))
+	    {
+		UI::SetFocus (`id (`relay));
+		// Translators: error popup
+		// Already in Translation Memory
+		string msg = _("The host name is incorrect");
+		// TODO: describe a valid host specification
+		// (a host name or IP)
+		UI::ErrorPopup (msg);
+	    }
+	    else if (fh != "" && ! check_domainname (fh))
+	    {
+		UI::SetFocus (`id (`from));
+		// Translators: error popup
+		// Already in Translation Memory
+		string msg = _("The domain name is incorrect");
+		// TODO: describe a valid domain name
+		UI::ErrorPopup (msg);
+	    }
+	    else
+	    {
+		// all checks OK, break the input loop
+		break;
+	    }
+	}
     }
 
     if (ret == `next || ret == `masqdetail)
     {
-	ld = UI::QueryWidget (`id (`local), `Value);
-	list(string) lld = stringToList(ld);
+	// all querywidgets are already done by the validation part
 	Mail::Touch (Mail::local_domains != lld);
 	Mail::local_domains = lld;
 
-	oms = UI::QueryWidget (`id (`relay), `Value);
 	Mail::Touch (Mail::outgoing_mail_server != oms);
 	Mail::outgoing_mail_server = oms;
 
-	fh = UI::QueryWidget (`id (`from), `Value);
 	Mail::Touch (Mail::from_header != fh);
 	Mail::from_header = fh;
     }
@@ -536,6 +686,7 @@ global define symbol MasqueradingDialog () ``{
 
     string ld = listToString (Mail::local_domains);
     string mod = listToString (Mail::masquerade_other_domains);
+    list(string) lmod = [];
     list(map) mu = Mail::masquerade_users;
 
     // Translators: dialog caption
@@ -596,47 +747,72 @@ global define symbol MasqueradingDialog () ``{
 
     Wizard::SetContentsButtons (caption, contents, MasqueradingDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
-    UI::ChangeWidget (`id (`edit), `Enabled, false);
-    UI::ChangeWidget (`id (`delete), `Enabled, false);
-
     any ret = nil;
     edit_touched = false;
     while (true)
     {
+	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
+	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
+	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
+
 	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    ret = `abort;
+	}
 
 	if (ret == `masqdomains)
 	{
 	    UI::ChangeWidget (`id (`mdg), `CurrentButton, `masqothers);
 	}
-	else if (ret == `tab)
-	{
-	    UI::ChangeWidget (`id (`edit), `Enabled, true);
-	    UI::ChangeWidget (`id (`delete), `Enabled, true);
-	}
 	else if (contains ([`add, `edit, `delete], ret))
 	{
 	    mu = EditTable(ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
 	}
-	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
-	{
-	    continue;
-	}
-	else
+	else if ((ret == `abort
+		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		 || ret == `back)
 	{
 	    break;
+	}
+	else if (ret == `next)
+	{
+	    // Input validation
+	    // For consistency, all querywidgets are done here.
+	    // The table contents is maintained and validated
+	    // at the EditTable call.
+
+	    symbol rb = UI::QueryWidget (`id (`mdg), `CurrentButton);
+	    if (rb == `masqothers)
+	    {
+		mod = UI::QueryWidget (`id (`masqdomains), `Value);
+		lmod = stringToList (mod);
+	    }
+	    else
+	    {
+		lmod = [];
+	    }
+
+	    if (find (string s, lmod, ``(! check_domainname (s))) != nil)
+	    {
+		UI::SetFocus (`id (`masqdomains));
+		// Translators: error popup
+		// Already in Translation Memory
+		string msg = _("The domain name is incorrect");
+		// TODO: describe a valid domain name
+		UI::ErrorPopup (msg);
+	    }
+	    else
+	    {
+		// all checks OK, break the input loop
+		break;
+	    }
 	}
     }
 
     if (ret == `next)
     {
-	list(string) lmod = [];
-	symbol rb = UI::QueryWidget (`id (`mdg), `CurrentButton);
-	if (rb == `masqothers)
-	{
-	    mod = UI::QueryWidget (`id (`masqdomains), `Value);
-	    lmod = stringToList (mod);
-	}
+	// all querywidgets are already done by the validation part
 	Mail::Touch (Mail::masquerade_other_domains != lmod);
 	Mail::masquerade_other_domains = lmod;
 
@@ -644,6 +820,82 @@ global define symbol MasqueradingDialog () ``{
 	Mail::masquerade_users = mu;
     }
     return ret;
+}
+
+/**
+ * (taken from y2c_users ui.ycp)
+ * @param username a string
+ * @return Whether a string contains only valid user name characters
+ */
+global define boolean check_username (string username) ``{
+//DUH, auth_dialogs.ycp, users.ycp and Users.ycp have conflicing definitions!
+    string valid_logname_chars  = "0123456789abcdefghijklmnopqrstuvwxyz-_";
+
+    string firstchar = substring (username, 0, 1);
+    return username != "" &&
+	( (firstchar >= "a" && firstchar <= "z" ) || firstchar == "_"  ) &&
+	findfirstnotof (username, valid_logname_chars) == nil;
+}
+
+/**
+ * (taken from y2c_users ui.ycp)
+ * @return Describe a valid username
+ */
+global define string valid_username () ``{
+    // There is a check whether the information from the UI is
+    // correct and complete.  The login name may contain only
+    // certain characters and must begin with a letter.
+    // Already in Translation Memory
+    return _("The user login may contain only
+lower case letters, digits, \"-\" and \"_\"
+and must begin with a letter or \"_\".
+Please try again.
+");
+}
+
+/**
+ * See RFC 2822, 3.4
+ * But for now, nonempty, no-spaces.
+ * @param address an address to check
+ * @return valid?
+ */
+global define boolean check_mail_local_part (string address) ``{
+    return address != "" && findfirstof (address, " ") == nil;
+}
+
+/**
+ * See RFC 2822, 3.4
+ * But for now, no-spaces@valid_domainname
+ * @param address an address to check
+ * @return valid?
+ */
+global define boolean check_mail_address (string address) ``{
+    list(string) parts = splitstring (address, "@");
+    if (size (parts) != 2)
+    {
+	return false;
+    }
+
+    return check_mail_local_part (parts[0]:"")
+	&& check_domainname (parts[1]:"");
+}
+
+/**
+ * A list to check entered user names against.
+ * It is initialized on first use.
+ */
+global list(string) local_users = nil;
+
+/**
+ * Read user names from passwd.
+ * It does not get the NIS entries, that's why one combo is editable.
+ */
+global define void InitializeLocalUsers () ``{
+    // initialize the list
+    // CHECK .etc.passwd is in yast2
+    list(map) passwd = SCR::Read (.etc.passwd);
+    local_users = maplist (map entry, passwd, ``(entry["username"]:"") );
+    local_users = sort (filter (string u, local_users, ``(u != "+")));
 }
 
 /**
@@ -658,6 +910,11 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
     string address = lookup (default, "address", "");
     list(string) forbidden = maplist (`e, existing, ``( lookup (e, "user", "") ));
 
+    if (!Mail::autoyast_config && local_users == nil)
+    {
+	InitializeLocalUsers ();
+    }
+
     term contents =
 	`HBox(
 	    `HSpacing(1),
@@ -665,11 +922,10 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		`VSpacing(0.2),
 		// Translators: popup dialog heading
 		`Heading (_("Sender address rewriting")),
-		// TODO: combo
-//		`Left (`ComboBox (`id (`user), /*`opt (`editable),*/ _("Local user"),
-//			   ["holly", "jane", "tarzan"])),
+		Mail::autoyast_config ?
 		// Translators: text entry label
-		`Left (`TextEntry (`id (`user), _("&Local user"), user)),
+		`Left (`TextEntry (`id (`user), _("&Local user"), user)) :
+		`Left (`ComboBox (`id (`user), `opt (`editable), _("&Local user"), local_users)),
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
@@ -681,6 +937,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
+    UI::ChangeWidget (`id (`user), `Value, user);
     UI::SetFocus (`id (`user));
 
     any ret = nil;
@@ -693,15 +950,34 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	}
 	else if (ret == `ok)
 	{
-	    // TODO cleanup
+	    // Input validation
 	    user = UI::QueryWidget (`id (`user), `Value);
 	    address = UI::QueryWidget (`id (`address), `Value);
-	    if (! contains (forbidden, user))
+
+
+	    if (!check_username (user))
 	    {
+		UI::SetFocus (`id (`user));
+		UI::ErrorPopup (valid_username ());
+	    }
+	    else if (contains (forbidden, user))
+	    {
+		UI::SetFocus (`id (`user));
+		// Translators: error message
+		UI::ErrorPopup (_("The address for this user is already defined."));
+	    }
+	    else if (!check_mail_address (address))
+	    {
+		// string valid_mail_address
+		// no-spaces@valid_domainname
+		UI::SetFocus (`id (`address));
+		UI::ErrorPopup (_("The mail address format is incorrect."));
+	    }
+	    else
+	    {
+		// all checks OK, break the input loop
 		break;
 	    }
-	    // Translators: error message
-	    UI::MessagePopup (_("The address for this user is already defined."));
 	}
     }
 
@@ -764,22 +1040,24 @@ global define symbol DownloadingDialog () ``{
     edit_touched = false;
     while (true)
     {
-	ret = UI::UserInput ();
+	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
+	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
+	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
 
-	if (ret == `tab)
+	ret = UI::UserInput ();
+	if (ret == `cancel)
 	{
-	    UI::ChangeWidget (`id (`edit), `Enabled, true);
-	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	    ret = `abort;
 	}
-	else if (contains ([`add, `edit, `delete], ret))
+
+
+	if (contains ([`add, `edit, `delete], ret))
 	{
 	    fm = EditTable(ret, fm, ["server", "protocol", "remote_user", "local_user"], ``(FetchmailPopup ()), `tab);
 	}
-	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
-	{
-	    continue;
-	}
-	else
+	else if ((ret == `abort
+		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		 || ret == `next || ret == `back)
 	{
 	    break;
 	}
@@ -795,7 +1073,10 @@ global define symbol DownloadingDialog () ``{
 
 /**
  * D3.1
+ * @param default
+ *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
  * @param existing	unused
+ * @return edited data (with no other fields) or $[] on cancel
  */
 global define map FetchmailPopup (map default, list(map) existing) ``{
     string server = lookup (default, "server", "");
@@ -803,6 +1084,11 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
     string ruser = lookup (default, "remote_user", "");
     string password = lookup (default, "password", "");
     string luser = lookup (default, "local_user", "");
+
+    if (local_users == nil)
+    {
+	InitializeLocalUsers ();
+    }
 
     term contents =
 	`HBox(
@@ -822,9 +1108,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`Password (`id (`password2), _("Reenter pass&word"), password)),
 		// Translators: text entry label
-		`Left (`TextEntry (`id (`luser), _("&Local user"), luser)),
-//TODO combo
-//		`Left (`ComboBox (`id (`luser), _("Local user"), ["jane", "holly", "tarzan"])),
+		`Left (`ComboBox (`id (`luser), `opt (`editable), _("&Local user"), local_users)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 		      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -835,6 +1119,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 
     UI::OpenDialog (`opt(`decorated), contents);
     UI::ChangeWidget (`id (`protocol), `Value, protocol);
+    UI::ChangeWidget (`id (`luser), `Value, luser);
     UI::SetFocus (`id (`server));
 
     any ret = nil;
@@ -847,7 +1132,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	}
 	else if (ret == `ok)
 	{
-	    // TODO cleanup
+	    // Input validation
 	    server = UI::QueryWidget (`id (`server), `Value);
 	    protocol = UI::QueryWidget (`id (`protocol), `Value);
 	    ruser = UI::QueryWidget (`id (`ruser), `Value);
@@ -855,12 +1140,37 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	    luser = UI::QueryWidget (`id (`luser), `Value);
 
 	    string password2 = UI::QueryWidget (`id (`password2), `Value);
-	    if (password == password2)
+
+	    if (!check_domainname (server))
 	    {
+		UI::SetFocus (`id (`server));
+		// Translators: error popup
+		// Already in Translation Memory
+		string msg = _("The host name is incorrect");
+		UI::ErrorPopup (msg);
+	    }
+	    else if (ruser == "")
+	    {
+		UI::SetFocus (`id (`ruser));
+		UI::ErrorPopup (_("The user name format is incorrect."));
+	    }
+	    else if (password != password2)
+	    {
+		UI::SetFocus (`id (`password1));
+		// Translators: error message
+		UI::ErrorPopup (_("The passwords do not match."));
+	    }
+	    else if (!check_mail_local_part (luser))
+		// it may be ok if it is directed to an alias
+	    {
+		UI::SetFocus (`id (`luser));
+		UI::ErrorPopup (_("The user name format is incorrect."));
+	    }
+	    else
+	    {
+		// all checks OK, break the input loop
 		break;
 	    }
-	    // Translators: error message
-	    UI::MessagePopup (_("The passwords do not match."));
 	}
     }
 
@@ -901,21 +1211,21 @@ global define symbol AliasesDialog () ``{
 
     Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
-    UI::ChangeWidget (`id (`edit), `Enabled, false);
-    UI::ChangeWidget (`id (`delete), `Enabled, false);
-
     any ret = nil;
     edit_touched = false;
     while (true)
     {
-	ret = UI::UserInput ();
+	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
+	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
+	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
 
-	if (ret == `tab)
+	ret = UI::UserInput ();
+	if (ret == `cancel)
 	{
-	    UI::ChangeWidget (`id (`edit), `Enabled, true);
-	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	    ret = `abort;
 	}
-	else if (contains ([`add, `edit, `delete], ret))
+
+	if (contains ([`add, `edit, `delete], ret))
 	{
 	    aliases = EditTable(ret, aliases, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
@@ -923,11 +1233,9 @@ global define symbol AliasesDialog () ``{
 	{
 	    y2milestone ("TODO: man aliases");
 	}
-	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
-	{
-	    continue;
-	}
-	else
+	else if ((ret == `abort
+		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		 || ret == `next || ret == `back)
 	{
 	    break;
 	}
@@ -986,15 +1294,31 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	}
 	else if (ret == `ok)
 	{
-	    // TODO cleanup
+	    // Input validation
 	    alias = UI::QueryWidget (`id (`alias), `Value);
 	    destinations = UI::QueryWidget (`id (`destinations), `Value);
-	    if (! contains (forbidden, alias))
+
+	    // TODO: this only works because check_mail_local part is too
+	    // permissive. Virtusertable aliases may contain @ so it is not
+	    // a local part and the check will need to be improved.
+	    // (But a postfix-style virtual domain will have an @-less entry.)
+	    if (!check_mail_local_part (alias))
 	    {
+		UI::SetFocus (`id (`alias));
+		// Translators: error message
+		UI::MessagePopup (_("The alias format is incorrect."));
+	    }
+	    else if (contains (forbidden, alias))
+	    {
+		UI::SetFocus (`id (`alias));
+		// Translators: error message
+		UI::MessagePopup (_("The destinations for this alias are already defined."));
+	    }
+	    else
+	    {
+		// all checks OK, break the input loop
 		break;
 	    }
-	    // Translators: error message
-	    UI::MessagePopup (_("The destinations for this alias are already defined."));
 	}
     }
 
@@ -1044,22 +1368,24 @@ global define symbol VirtualDialog () ``{
     edit_touched = false;
     while (true)
     {
-	ret = UI::UserInput ();
+	boolean any_items = UI::QueryWidget (`id (`tab), `CurrentItem) != nil;
+	UI::ChangeWidget (`id (`edit), `Enabled, any_items);
+	UI::ChangeWidget (`id (`delete), `Enabled, any_items);
 
-	if (ret == `tab)
+	ret = UI::UserInput ();
+	if (ret == `cancel)
 	{
-	    UI::ChangeWidget (`id (`edit), `Enabled, true);
-	    UI::ChangeWidget (`id (`delete), `Enabled, true);
+	    ret = `abort;
 	}
-	else if (contains ([`add, `edit, `delete], ret))
+
+
+	if (contains ([`add, `edit, `delete], ret))
 	{
 	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
-	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
-	{
-	    continue;
-	}
-	else
+	else if ((ret == `abort
+		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		 || ret == `next || ret == `back)
 	{
 	    break;
 	}

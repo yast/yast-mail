@@ -50,8 +50,14 @@
     /**
      * Use a virus scanner (AMaViS).
      * amavis-sendmail or amavis-postfix must be installed.
+     * It will be installed if amavis_allowed and it is not installed.
      */
     global boolean use_amavis = false;
+
+    /**
+     * Is amavis available on the installation media?
+     */
+    global boolean amavis_allowed = true;
 
     /**
      * Domains for locally delivered mail.
@@ -61,6 +67,7 @@
 
     /**
      * A relay server for outgoing mail.
+     * May be enclosed in [brackets] to prevent MX lookups.
      */
     global string outgoing_mail_server = "";
 
@@ -84,9 +91,13 @@
     global list(map) masquerade_users = [];
 
     /**
-     *List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
+     *List of maps:
+     * $[server:, protocol:, remote_user:, local_user:, password:,
+     * enabled:(bool), other_(server|client)_options: ]
      */
-    global list(map) fetchmail = [];
+    global list fetchmail = [];
+//bug 13263
+//    global list(map) fetchmail = [];
 
     /**
      * List of maps: $[comment:, alias:, destinations:] (all are strings)
@@ -127,6 +138,13 @@
 	];
 
     /* ---------------------------------------------------------------- */
+
+    /**
+     * True if preparing data for autoinstallation. In that case,
+     * do not validate against the current system (eg. user names).
+     * TODO: Use Mode::config.
+     */
+    global boolean autoyast_config = false;
 
     /**
      * Has the configuration been changed?
@@ -178,6 +196,7 @@
 	}
 
 	if (connection_type == `dialup &&
+	    size (fetchmail) > 0 &&
 	    ! SCR::Read (.targetpkg.installed, "fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
@@ -188,6 +207,17 @@
 	return message;
     }
 
+    /**
+     * Is a package available for installation?
+     * This is a bit kludgy, since querying .package would take up
+     * a large amount of resources.
+     * @return true/false
+     */
+    define boolean AvailableForInstallation (string package) ``{
+	string cmd = "/usr/bin/grep -q '^RpmName:[ \t]*%1$' %2";
+	string pkd = "/var/adm/current_package_descr/suse/setup/descr/common.pkd";
+	return SCR::Execute (.target.bash, sformat (cmd, package, pkd)) == 0;
+    }
     /* ---------------------------------------------------------------- */
 
     /**
@@ -204,15 +234,15 @@
 	Progress::New (caption, " ", 0, [
 			   // Translators: progress label
 			   // do not translate MTA
-			   _("Determine Mail Transport Agent (MTA)"),
+			   _("Determining Mail Transport Agent (MTA)"),
 			   // Translators: progress label
-			   _("Read general settings"),
+			   _("Reading general settings"),
 			   // Translators: progress label
-			   _("Read masquerading settings"),
+			   _("Reading masquerading settings"),
 			   // Translators: progress label
-			   _("Read downloading settings"),
+			   _("Reading downloading settings"),
 			   // Translators: progress label
-			   _("Read alias tables"),
+			   _("Reading alias tables"),
 			   ],
 		       [], "");
 
@@ -253,42 +283,47 @@
 	create_config = SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG) == "yes";
 
 	// connection_type:
-//	boolean nc = false;
+	boolean nc = false;
 	boolean ex = false;
 	boolean service = false;
 	if (mta == `sendmail)
 	{
-//	    nc = SCR::Read (.sysconfig.sendmail.SENDMAIL_NOCANONIFY) == "yes";
+	    // the service must be always running
+	    nc = SCR::Read (.sysconfig.sendmail.SENDMAIL_NOCANONIFY) == "yes";
 	    ex = SCR::Read (.sysconfig.sendmail.SENDMAIL_EXPENSIVE) == "yes";
-	    service = Runlevel::ServiceEnabled ("sendmail");
+	    if (nc)
+	    {
+		connection_type = (ex)? `dialup : `none;
+	    }
+	    else
+	    {
+		connection_type = `permanent;
+	    }
 	}
 	else if (mta == `postfix)
 	{
 //	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS) == "yes";
 	    ex = SCR::Read (.sysconfig.postfix.POSTFIX_DIALUP) == "yes";
 	    service = Runlevel::ServiceEnabled ("postfix");
+	    if (service)
+	    {
+		connection_type = (ex)? `dialup : `permanent;
+	    }
+	    else
+	    {
+		connection_type = `none;
+	    }
 	}
 	else
 	{
 	    return false;
 	}
 
-//formerly we did not take 'service' into account
-//	if (nc)
-//	    connection_type = (ex)? `dialup : `none;
-//	else
-//	    connection_type = `permanent;
-	if (service)
-	{
-	    connection_type = (ex)? `dialup : `permanent;
-	}
-	else
-	{
-	    connection_type = `none;
-	}
-
 	// amavis
-	use_amavis = (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
+	string amavis_pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
+	amavis_allowed = SCR::Read (.targetpkg.installed, amavis_pkg) ||
+	    AvailableForInstallation (amavis_pkg);
+	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
 	// local_domains
 	string ld_s = "";
@@ -380,6 +415,17 @@
 	}
 	// read 4
 	fetchmail = SCR::Read (.mail.fetchmail.accounts);
+	if (fetchmail == nil)
+	{
+	    // Translators: error message,
+	    // %1 is a file name, %2 is a long file name
+	    Report::Error (sformat(_("Error reading file %1. The file must have
+a fixed format to be readable by YaST2.  For details, see
+%2"),
+			 "/etc/fetchmailrc",
+			 "/usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt"));
+	    return false;
+	}
 	//TODO what to do with a difficult syntax etc?
 
 	// announce 5
@@ -432,9 +478,6 @@
 					 "alias"	: e["key"]: "",
 					 "destinations"	: e["value"]: "",
 					 ]));
-
-
-	// TODO what about the daemon (was .rc.system.SMTP)
 
 	// complete
 	Progress::NextStage ();
@@ -490,30 +533,30 @@
     global define boolean Write (block abort, boolean writeonly) ``{
 	list stages = [
 	    // Translators: progress label
-	    [ _("Write general settings"), ``(WriteGeneral ())],
+	    [ _("Writing general settings"), ``(WriteGeneral ())],
 	    ];
 	if (connection_type != `none)
 	{
 	    // Translators: progress label
-	    stages = add (stages, [ _("Write masquerading settings"), ``(WriteMasquerading ()) ]);
+	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
 	    // Translators: progress label
-	    stages = add (stages, [ _("Write alias tables"), ``(WriteAliases ()) ]);
+	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliases ()) ]);
 	    if (connection_type == `dialup)
 	    {
 		// Translators: progress label
-		stages = add (stages, [ _("Write downloading settings"), ``(WriteDownloading ()) ]);
+		stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
 	    }
 	}
 	// Translators: progress label
-	stages = add (stages, [ _("Finish writing configuration files"), ``(WriteFlush ()) ]);
+	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
 	// autoinstallation does it all together later
 	if (! writeonly)
 	{
 	    // Translators: progress label
-	    stages = add (stages, [ _("Run SuSEconfig"), ``(WriteSuSEconfig ()) ]);
+	    stages = add (stages, [ _("Running SuSEconfig"), ``(WriteSuSEconfig ()) ]);
 
 	    // Translators: progress label
-	    stages = add (stages, [ _("Restart services"), ``(WriteServices ()) ]);
+	    stages = add (stages, [ _("Restarting services"), ``(WriteServices ()) ]);
 	}
 
 	// Translators: dialog caption
@@ -558,25 +601,23 @@
 	    {
 		SCR::Write (nc, "no");
 		SCR::Write (ex, "no");
-		Runlevel::ServiceAdjust ("sendmail", "enable");
 	    }
 	    else if (connection_type == `dialup)
 	    {
 		SCR::Write (nc, "yes");
 		SCR::Write (ex, "yes");
-		Runlevel::ServiceAdjust ("sendmail", "enable");
 	    }
 	    else if (connection_type == `none)
 	    {
 		SCR::Write (nc, "yes");
 		SCR::Write (ex, "no");
-		Runlevel::ServiceAdjust ("sendmail", "disable");
 	    }
 	    else
 	    {
 		y2internal("Unrecognized connection_type: %1", connection_type);
 		return false;
 	    }
+	    Runlevel::ServiceAdjust ("sendmail", "enable");
 	}
 	else if (mta == `postfix)
 	{
@@ -616,10 +657,11 @@
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up
+	// SENDMAIL_CLIENT_ARGS must contain -q... or it will not run!
 	if (mta == `sendmail)
 	{
-	    string default_permanent = "-bd -q30m -om";
-	    string default_dialup = "-bd -om";
+	    string default_permanent = "-L sendmail -Am -bd -q30m -om";
+	    string default_dialup = "-L sendmail -Am -bd -om";
 	    string args = SCR::Read (.sysconfig.sendmail.SENDMAIL_ARGS);
 
 	    if (connection_type == `permanent && args == default_dialup)
@@ -902,27 +944,34 @@
 	    {
 		Runlevel::ServiceAdjust ("amavis", "disable");
 	    }
-	}
-	else if (mta == `postfix)
-	{
-	    service = "postfix";
-	    // There's no separate amavis init script.
-	}
-	else
-	{
-	    return false;
-	}
 
-	Runlevel::RunInitScript (service, "stop");
-	if (connection_type != `none)
-	{
-	    if (Runlevel::RunInitScript (service, "start") != 0)
+	    if (Runlevel::RunInitScript (service, "restart") != 0)
 	    {
 		// Translators: error message
 		Report::Error (sformat (_("Error starting service %1."), service));
 		return false;
 	    }
 	}
+	else if (mta == `postfix)
+	{
+	    // There's no separate amavis init script.
+	    service = "postfix";
+	    Runlevel::RunInitScript (service, "stop");
+	    if (connection_type != `none)
+	    {
+		if (Runlevel::RunInitScript (service, "start") != 0)
+		{
+		    // Translators: error message
+		    Report::Error (sformat (_("Error starting service %1."), service));
+		    return false;
+		}
+	    }
+	}
+	else
+	{
+	    return false;
+	}
+
 	// ServiceAdjust enable/disable is done in WriteGeneral
 
 	return true;

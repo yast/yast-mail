@@ -10,6 +10,7 @@ use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
 use Fcntl; # O_* for sysopen
+use Errno qw(ENOENT);
 
 # Data model:
 # all comments are joined: "# foo\n# bar\n"
@@ -25,6 +26,7 @@ my @parse_errors;
 
 my $filename = "/etc/fetchmailrc";
 
+# return false in case if an error
 sub parse_file ()
 {
     my $whole_file = "";
@@ -33,14 +35,20 @@ sub parse_file ()
     @accounts = ();
     @parse_errors = ();
 
-    open (FILE, $filename) or return y2error ("$filename: $!"), 0;
+    if (!open (FILE, $filename))
+    {
+	return 1 if ($! == ENOENT); # ok if it is not there
+	y2error ("$filename: $!");
+	return 0;
+    }
+
     while (<FILE>)
     {
 	chomp;
 	# we want to match a comment, but not a '#' in a string
 	m{
 	    ^( (?: [^\'\"\#]* | \'[^\']*\' | \"[^\"]*\" )* ) #"
-	     ( \# .* )?
+	     ( \# .* )? $
 	 }x;
 	$whole_file .= "$1\n";
 	$comment .= "$2\n" if defined $2;
@@ -79,11 +87,11 @@ sub parse_file ()
 	{
 	    my $entry = {};
 	    $entry->{enabled} = ($1 eq "skip") ? "false" : "true";
-	    $entry->{sever} = read_string ($2);
+	    $entry->{server} = read_string ($2);
 	    # we leave checking the validity to the ycp code
 	    # to keep the list of protocols in one place.
 	    # but it may prove to be a bad idea.
-	    $entry->{protocol} = $3;
+	    $entry->{protocol} = uc $3;
 	    $entry->{other_server_options} = $4;
 	    $entry->{remote_user} = read_string ($5);
 	    $entry->{password} = read_string ($6);
@@ -144,6 +152,20 @@ foreach my $s (split /\n/, $foo)
 }
 }
 
+sub write_string ($)
+{
+    $_ = shift;
+    my @substrings = split /\\/, $_, -1;
+    foreach my $substring (@substrings)
+    {
+	$substring =~ s/;/\\59/g;# escape semicolons
+	$substring =~ s/"/\\"/g;# escape quotes
+	# escape control chars
+	$substring =~ s/([\000-\027])/sprintf "\\%03o",ord($1)/eg;
+    }
+    return '"'. join ("\\\\", @substrings) .'"';
+}
+
 sub write_file ()
 {
     sysopen (FILE, "$filename.YaST2.new", O_WRONLY | O_TRUNC | O_CREAT, 0600)
@@ -160,15 +182,15 @@ sub write_file ()
     }
     foreach my $entry (@accounts)
     {
-	print FILE ($entry->{enabled} ? "poll ": "skip ");
-	print FILE write_string ($entry->{sever});
+	print FILE ((!defined($entry->{enabled}) || $entry->{enabled}) ? "poll ": "skip ");
+	print FILE write_string ($entry->{server});
 	print FILE " protocol ", $entry->{protocol};
-	print FILE " ", $entry->{other_server_options};
+	print FILE " ", $entry->{other_server_options} || "";
 	print FILE ":";
 	print FILE " user ", write_string ($entry->{remote_user}), " there";
 	print FILE " with password ", write_string ($entry->{password});
 	print FILE " is ", write_string ($entry->{local_user}), " here ";
-	print FILE $entry->{other_user_options};
+	print FILE $entry->{other_user_options} || "";
 	print FILE ";\n"
     }
     close (FILE);
@@ -192,6 +214,7 @@ $_ = <STDIN>;
 exit if ! defined $_;
 # reply to the client (this actually gets eaten by the ScriptingAgent)
 ycp::Return (undef);
+print "\n";
 
 my ($symbol, $config, @rest) = ycp::ParseTerm ($_);
 if ($symbol ne "Fetchmail")
@@ -203,10 +226,12 @@ else
 {
     $filename = $config->{"filename"};
 }
-parse_file ();
+
+my $file_ok = parse_file ();
 
 while ( <STDIN> )
 {
+    next if /^\s*$/;
     my ($command, $path, $argument) = ycp::ParseCommand ($_);
 
     if ($command eq "Dir")
@@ -251,7 +276,11 @@ while ( <STDIN> )
 
     elsif ($command eq "Read")
     {
-	if ($path eq ".comment")
+	if (! $file_ok)
+	{
+	    ycp::Return (undef);
+	}
+	elsif ($path eq ".comment")
 	{
 	    ycp::Return ($comment);
 	}
@@ -266,7 +295,7 @@ while ( <STDIN> )
 	else
 	{
 	    y2error ("Unrecognized path! '$path'");
-	    ycp::Return ("");
+	    ycp::Return (undef);
 	}
     }
 
@@ -281,4 +310,5 @@ while ( <STDIN> )
 	y2error ("Unknown instruction $command or argument: ", ref ($argument));
 	ycp::Return ("false");
     }
+    print "\n";
 }

@@ -12,6 +12,7 @@
 use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
+use Errno qw(ENOENT);
 
 # Global variables:
 # The file specifies a map, but we represent it as a list to preserve
@@ -80,7 +81,14 @@ sub parse_file ()
     @table = ();
     $trailing_comment = "";
 
-    open (FILE, "<$filename") || return log_error ("Opening $filename: $!");
+    if (!open (FILE, $filename))
+    {
+	y2error ("$filename: $!") unless ($! == ENOENT);
+	# a missing file will be fixed by the module anyway
+	# and y2cc starts all agents :(
+	return;
+    }
+
     while (<FILE>)
     {
 	++$linenum;
@@ -95,7 +103,7 @@ sub parse_file ()
 	{
 	    if ($leading_comment_allowed)
 	    {
-		$leading_comment = $trailing_comment;
+		$leading_comment .= $trailing_comment;
 		$trailing_comment = "";
 	    }
 	}
@@ -145,6 +153,12 @@ sub parse_file ()
     }
     # end of file, but we must not forget to process the buffer!
     parse_line ($line);
+    # only a comment: make it a leading one
+    if ($leading_comment_allowed)
+    {
+	$leading_comment .= $trailing_comment;
+	$trailing_comment = "";
+    }
 
     close (FILE);
 }
@@ -164,7 +178,11 @@ sub write_file ()
     return "true" if (! $modified);
 
     open (FILE, ">$filename.YaST2.new") or return log_error ("Creating file: $!");
-    write_comment ($leading_comment);
+    if ($leading_comment)
+    {
+	write_comment ($leading_comment);
+	print FILE "\n";
+    }
     foreach my $entry (@table)
     {
 	write_comment ($entry->{"comment"});
@@ -196,6 +214,7 @@ exit if ! defined $_;
 
 # reply to the client (this actually gets eaten by the ScriptingAgent)
 ycp::Return (undef);
+print "\n";
 
 my ($symbol, $config, @rest) = ycp::ParseTerm ($_);
 if ($symbol ne "Mailtable")
@@ -308,4 +327,5 @@ while ( <STDIN> )
 	y2error ("Unknown instruction $command or argument: ", ref ($argument));
 	ycp::Return ("false");
     }
+    print "\n";
 }

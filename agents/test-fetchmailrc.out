@@ -1,0 +1,7 @@
+(nil)
+[
+$["other_server_options":"","password":"xxxxxx","server":"pop3.foo.com","protocol":"AUTO","remote_user":"barbar","local_user":"bar","enabled":(true),"other_user_options":"",] ,
+$["other_server_options":"envelope \"X-Envelope-To:\" ","password":"xxxxxx","server":"pop3.foo.com","protocol":"POP3","remote_user":"barbar","local_user":"bar","enabled":(true),"other_user_options":"",] ,
+$["other_server_options":"","password":"xxx#xxx","server":"pop3.foo.com","protocol":"AUTO","remote_user":"bar#bar","local_user":"qux","enabled":(false),"other_user_options":"",] ,
+$["other_server_options":"","password":"\\';xxxxx","server":"pop3.mail.foo.com","protocol":"AUTO","remote_user":"barbar","local_user":"bar","enabled":(true),"other_user_options":"",] ,
+] 

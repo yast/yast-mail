@@ -24,11 +24,14 @@
 
     textdomain "mail";
 
+    import "Mail";
     include "mail/ui.ycp";
 
     /* The main () */
     y2milestone ("Mail module started");
     y2milestone ("----------------------------------------");
+
+    Mail::autoyast_config = false;
 
     /* main ui function */
     any ret = MailSequence ();

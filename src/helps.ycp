@@ -61,20 +61,40 @@ An additional dialog will inform you whether it is safe to do so.
     }
 
     /**
+     * @return Help for MTA selection dialog
+     */
+    global define string MtaSelectionDialogHelp () ``{
+	// Translators: mailer (MTA) selection dialog help, part 1 of 1
+	// do not translate MTA
+	return _("<p>Select the mail system (Mail Transfer Agent, MTA)
+to install.</p>");
+    }
+
+    /**
+     * @param amavis_allowed Installation of amavis is possible, mention it
+     *		in the help text
      * @return Help for Connection type dialog
      */
-    global define string ConnectionTypeDialogHelp () ``{
+    global define string ConnectionTypeDialogHelp (boolean amavis_allowed) ``{
 	// Translators: connection type dialog help, part 1 of 2
-	return _("
+	string s =  _("
 <p>How are you connected to the Internet? With a dial-up connection,
 mails will not be sent immediately but rather after invoking
 <b>sendmail&nbsp;-q</b>.</p>
-") +
+");
+	if (amavis_allowed)
+	{
+	    return s +
 	    // Translators: connection type dialog help, part 2 of 2
 	    _("
 <p>If AMaViS is not installed and you want to use it, it will be installed
 automatically.</p>
 ");
+	}
+	else
+	{
+	    return s;
+	}
     }
 
     /**

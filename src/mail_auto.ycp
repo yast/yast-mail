@@ -49,6 +49,7 @@
     // y2milestone("Imported: (%1)", settings); // may contain passwords
 
     Mail::Import ( settings );
+    Mail::autoyast_config = true;
 
     symbol ret = MailAutoSequence ();
     if (ret == `next)

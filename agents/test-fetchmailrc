@@ -1,0 +1,14 @@
+#! /bin/bash
+# $Id$
+set -o errexit
+
+AGPROG='Fetchmail ($["filename": "./test-fetchmailrc.in"])
+Read (.accounts)'
+# kludge: break up the output into lines
+S1='s/\$\[/\
+\$\[/g'
+S2='s/,\] $/,\
+\] /g'
+
+echo "$AGPROG" | ./ag_fetchmailrc | sed -e "$S1" -e "$S2" > test-fetchmailrc.out.tmp
+cmp test-fetchmailrc.out.tmp test-fetchmailrc.out

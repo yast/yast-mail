@@ -1,0 +1,20 @@
+# Edit carefully, see /usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt
+# empty line
+
+# global option
+set syslog;
+# empty statement
+;
+# ordinary entry
+poll "pop3.foo.com" protocol AUTO:
+     user "barbar" there with password "xxxxxx" is "bar" here;
+# server option with a colon, protocol
+poll "pop3.foo.com" protocol pop3 envelope "X-Envelope-To:" :
+     user "barbar" there with password "xxxxxx" is "bar" here;
+# comment filtering
+skip "pop3.foo.com" protocol AUTO:
+     user 'bar#bar' there with password "xxx#xxx" is "qux" here; # blah
+# strings
+# TODO: allow "foo\"bar"
+poll 'pop3\056mail\46foo\x2ecom' protocol AUTO:
+     user "barbar" there with password "\\'\59xxxxx" is "bar" here;

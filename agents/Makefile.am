@@ -22,4 +22,9 @@ scrconf_DATA = \
 	mail_s_generics.scr	\
 	mail_s_virtuser.scr
 
-EXTRA_DIST = $(agents_SCRIPTS) $(scrconf_DATA)
+TESTS = test-fetchmailrc test-mailtable
+testdata = test-fetchmailrc.in test-fetchmailrc.out \
+	test-mailtable-1.in test-mailtable-1.out \
+	test-mailtable-2.in test-mailtable-2.out
+
+EXTRA_DIST = $(agents_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata)
