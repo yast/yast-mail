@@ -1531,7 +1531,7 @@ define symbol MailSequence () ``{
 
     Wizard::CreateDialog ();
     Wizard::SetDesktopIcon("mail");
-    
+
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
     any ret = Sequencer::Run (dialogs, sequence);
