@@ -29,7 +29,8 @@
     import "Service";
     import "Summary";
     import "Progress";
-    import "Require";
+    import "Package";
+    import "PackageSystem";
 
     import "SuSEFirewall";
 
@@ -216,12 +217,12 @@
 
     /**
      * Read only, set by ProbePackages.
-     * Use as an argument to Require::DoInstallAndRemove
+     * Use as an argument to Package::DoInstallAndRemove
      */
     global list<string> install_packages = [];
     /**
      * Read only, set by ProbePackages.
-     * Use as an argument to Require::DoInstallAndRemove
+     * Use as an argument to Package::DoInstallAndRemove
      */
     global list<string> remove_packages = [];
 
@@ -236,26 +237,6 @@
     boolean amavis_service = true;
 
     /**
-     * Is a package available for installation?
-     * This is a bit kludgy, since querying .package would take up
-     * a large amount of resources.
-     * @param	package package name, without version or .rpm suffix
-     * @return true/false
-     */
-    define boolean AvailableForInstallation (string package) ``{
-	return Require::IsPackageAvailable (package);
-    }
-
-    /**
-     * Is a package installed?
-     * @param	package package name, without version or .rpm suffix
-     * @return true/false
-     */
-    define boolean Installed (string package) ``{
-	return Require::AreAllPackagesInstalled ([package]);
-    }
-
-    /**
      * Detect which packages have to be installed
      * and return a descriptive string for a plain text pop-up.
      * @return "" or "Foo will be installed.\nBar will be installed.\n"
@@ -268,7 +249,7 @@
 	if (use_amavis)
 	{
 	    string pkg  = "amavisd-new";
-	    if (! Installed (pkg))
+	    if (! Package::Installed (pkg))
 	    {
 		install_packages = add (install_packages, pkg);
 		// Translators: popup message part, ends with a newline
@@ -277,7 +258,7 @@
 	}
 
 	if (size (fetchmail) > 0 &&
-	    ! Installed ("fetchmail"))
+	    ! Package::Installed ("fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
 	    // Translators: popup message part, ends with a newline
@@ -293,11 +274,12 @@
      * Detect the MTA installed
      */
     define void ReadMta () ``{
-	if (Installed ("sendmail"))
+	// so that AY cloning works, #45071
+	if (PackageSystem::Installed ("sendmail"))
 	{
 	    mta = `sendmail;
 	}
-	else if (Installed ("postfix"))
+	else if (PackageSystem::Installed ("postfix"))
 	{
 	    mta = `postfix;
 	}
@@ -400,8 +382,8 @@
 
 	// amavis
 	string amavis_pkg = "amavisd-new";
-	amavis_allowed = Installed (amavis_pkg) ||
-	    AvailableForInstallation (amavis_pkg);
+	amavis_allowed = PackageSystem::Installed (amavis_pkg) ||
+	    PackageSystem::Available (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
 	// local_domains

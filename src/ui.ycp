@@ -32,7 +32,7 @@ import "CWMFirewallInterfaces";
 import "Popup";
 import "Label";
 import "Sequencer";
-import "Require";
+import "Package";
 
 include "mail/helps.ycp";
 include "mail/wj.ycp";
@@ -129,8 +129,7 @@ define symbol WriteDialog () ``{
     // Cannot do it in Write, autoinstall does it differently.
     if (size (Mail::install_packages) > 0 || size (Mail::remove_packages) > 0)
     {
-	// require.ycp
-	Require::DoInstallAndRemove (Mail::install_packages, Mail::remove_packages);
+	Package::DoInstallAndRemove (Mail::install_packages, Mail::remove_packages);
     }
 
     // Set help text

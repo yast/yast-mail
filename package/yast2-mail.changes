@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Sep 15 14:04:13 CEST 2004 - mvidner@suse.cz
+
+- Use Package[System] instead of Require, fixed cloning (#45071).
+- 2.10.8
+
+-------------------------------------------------------------------
 Tue Sep 14 10:02:08 CEST 2004 - locilka@suse.cz
 
 - Fixed testsuites
