@@ -25,12 +25,17 @@
      * return string The help text.
      */
     global define ReadDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
 	    // For translators: mail read dialog help, part 1 of 2
-_("<P>Help for ReadDialog ()...</P>") +
+_("<P><B><BIG>Initializing mail</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
 	    // For translators: mail read dialog help, part 2 of 2
-_("<P>Split it to more _() if it has more paragraphs to make the life
-of the translators easier.</P>");
+_("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
+You can safely abort the configuration utility by pressing the <B>Abort</B>
+button now.
+</P>");
     }
 
     /**
@@ -38,9 +43,17 @@ of the translators easier.</P>");
      * return string The help text.
      */
     global define WriteDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
-	    // For translators: mail write dialog help, part 1 of 1
-_("<P>Help for WriteDialog ()...</P>");
+	    // For translators: mail write dialog help, part 1 of 2
+_("<P><B><BIG>Saving mail configuration</BIG></B><BR>
+Please wait for a while...
+<BR></P>") +
+	    // For translators: mail write dialog help, part 2 of 2
+_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
+You can abort the saving by pressing the <B>Abort</B> button.
+An additional dialog will inform you whether it is safe to do so or not.
+</P>");
     }
 
     /**
@@ -48,9 +61,23 @@ _("<P>Help for WriteDialog ()...</P>");
      * return string The help text.
      */
     global define DetectedDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
-	    // For translators: mail detected dialog help, part 1 of 1
-_("<P>Help for DetectedDialog ()...</P>");
+	    // For translators: mail detected dialog help, part 1 of 3
+_("<P><B><BIG>Mail setup</BIG></B><BR>
+Here you can configure your mail.
+<BR></P>") +
+	    // For translators: mail detected dialog help, part 2 of 3
+_("<P><B><BIG>Adding a mail:</BIG></B><BR>
+Choose mail from the list of the detected mails. If your mail was
+not autodetected, use <B>Other (not detected)</B>. Then press
+<B>Configure</B>.
+</P>") +
+	    // For translators: mail detected dialog help, part 3 of 3
+_("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+If you press <B>Edit</B>, an additional dialog (where you
+can change the configuration) will open.
+</P>");
     }
 
     /**
@@ -58,9 +85,22 @@ _("<P>Help for DetectedDialog ()...</P>");
      * return string The help text.
      */
     global define OverviewDialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
-	    // For translators: mail overview dialog help, part 1 of 1
-_("<P>Help for OverviewDialog ()...</P>");
+	    // For translators: mail overview dialog help, part 1 of 3
+_("<P><B><BIG>Mail overview</BIG></B><BR>
+Here you can get an overview about installed mails. Additionally
+you can edit their configuration.
+<BR></P>") +
+	    // For translators: mail overview dialog help, part 2 of 3
+_("<P><B><BIG>Adding a mail:</BIG></B><BR>
+If you press <B>Add</B>, you can manually configure a mail.
+</P>") +
+	    // For translators: mail overview dialog help, part 3 of 3
+_("<P><B><BIG>Editing or deleting:</BIG></B><BR>
+Choose a mail, whose configuration you want to change or remove.
+Then press the appropriate button: <B>Edit</B> or <B>Delete</B>.
+</P>");
     }
 
     /**
@@ -68,9 +108,16 @@ _("<P>Help for OverviewDialog ()...</P>");
      * return string The help text.
      */
     global define Configure1DialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
-	    // For translators: mail configure1 dialog help, part 1 of 1
-_("<P>Help for Configure1Dialog ()...</P>");
+	    // For translators: mail configure1 dialog help, part 1 of 2
+_("<P><B><BIG>Configure, part one</BIG></B><BR>
+Please press the <B>Next</B> button.
+<BR></P>") +
+	    // For translators: mail configure1 dialog help, part 2 of 2
+_("<P><B><BIG>Selecting something:</BIG></B><BR>
+It is not possible, you must code it first :-)
+</P>");
     }
 
     /**
@@ -78,9 +125,16 @@ _("<P>Help for Configure1Dialog ()...</P>");
      * return string The help text.
      */
     global define Configure2DialogHelp () ``{
+	// TODO FIXME: Modify it to your needs!
 	return
-	    // For translators: mail configure2 dialog help, part 1 of 1
-_("<P>Help for Configure2Dialog ()...</P>");
+	    // For translators: mail configure1 dialog help, part 1 of 2
+_("<P><B><BIG>Configure, part two</BIG></B><BR>
+Please press the <B>Next</B> button.
+<BR></P>") +
+	    // For translators: mail configure1 dialog help, part 2 of 2
+_("<P><B><BIG>Selecting something:</BIG></B><BR>
+It is not possible, you must code it first :-)
+</P>");
     }
 
 }
