@@ -12,8 +12,6 @@
     // testedfiles: Mail.ycp MailAliases.ycp Require.ycp Service.ycp Testsuite.ycp
 
     include "testsuite.ycp";
-    import "Progress";
-    import "Mail";
 
     map READ = $[
 	// Runlevel:
@@ -131,6 +129,31 @@
 	    ],
 	];
 
+    map EXECUTE_INIT = $[
+	"target": $[
+	    "bash": 1,
+	    "bash_output": $[
+		"exit":0, "stderr":"", "stdout":"charmap=\"UTF-8\"\n"]
+	    ],
+	];
+
+    map READ_INIT = $[
+	"console" : $[
+	    "CONSOLE_ENCODING" : "en_US.UTF-8"
+	    ],
+	"target" : $[
+	    "size" : 1,
+	    ],
+	];
+
+    // added testsuite init, because of firewall
+    TESTSUITE_INIT ([READ_INIT, $[], EXECUTE_INIT], nil);
+
+    import "Progress";
+    import "Mail";
+
+
+
 //    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,
 //			      "amavis-postfix": false]);
 
@@ -148,4 +171,5 @@
 					     EXECUTE_0, //amavis start
 					     EXECUTE_0, //sendmail restart
 					     ]], nil);
+
 }

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep 14 10:02:08 CEST 2004 - locilka@suse.cz
+
+- Fixed testsuites
+- 2.10.7
+
+-------------------------------------------------------------------
 Tue Sep  7 12:36:56 CEST 2004 - mvidner@suse.cz
 
 - Readjusted testsuite, this time correctly.
