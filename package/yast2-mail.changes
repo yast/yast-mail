@@ -1,9 +1,15 @@
 -------------------------------------------------------------------
+Tue Sep 10 14:51:30 CEST 2002 - mvidner@suse.cz
+
+- Provide/Obsolete yast2-trans-sendmail (SL7.3).
+- 2.6.17
+
+-------------------------------------------------------------------
 Wed Sep  4 10:30:47 CEST 2002 - mvidner@suse.cz
 
 - Fixed SetFocus if the 'Outgoing mail server' field is invalid.
 - Build fix: Synced the test suite with the package manager.
-- 2.5.16
+- 2.6.16
 
 -------------------------------------------------------------------
 Fri Aug 30 18:31:02 CEST 2002 - mvidner@suse.cz
