@@ -4,13 +4,15 @@
 
 @HEADER@
 Requires:	yast2 yast2-network yast2-runlevel
-#Requires:	yast2-agent-targetpkg
+Requires:	yast2-packager
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
 Provides:	yast2-config-mail
 Obsoletes:	yast2-config-mail
+Provides:	yast2-trans-mail
+Obsoletes:	yast2-trans-mail
 
 BuildArchitectures:	noarch
 
