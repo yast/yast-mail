@@ -292,9 +292,7 @@ define symbol ConnectionTypeDialog () ``{
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
-	    UI::ChangeWidget (`id (`next), `Label, Label::FinishButton());
-	    //argh, slow
-	    //Wizard::ReplaceNextButton (finish_button);
+	    Wizard::SetNextButton(`next, Label::FinishButton() );
 	}
 
 	ret = UI::UserInput ();
