@@ -1236,8 +1236,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 	// Dont export empty fields
 	foreach (string k, any v, settings, ``{
-	    // FIXME: bug #35240
-	    if (contains ((list<any>)([ "", nil, [], $[] ]), v))
+	    if (contains ([ "", nil, [], $[] ], v))
 	    {
 		settings = remove(settings, k);
 	    }
