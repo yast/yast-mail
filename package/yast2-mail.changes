@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Sep  7 12:36:56 CEST 2004 - mvidner@suse.cz
+
+- Readjusted testsuite, this time correctly.
+- 2.10.6
+
+-------------------------------------------------------------------
 Mon Sep  6 17:52:49 CEST 2004 - mvidner@suse.cz
 
 - Adjusted testsuite to changes in yast2-firewall (#44650).
