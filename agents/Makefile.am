@@ -1,5 +1,5 @@
 #
-# Makefile.am for y2c_mail/conf
+# Makefile.am for y2c_mail/agents
 #
 # $Id$
 #
