@@ -100,7 +100,7 @@
 	    Mail::Set(settings);
 	    set_contents();
 	}
-    } until (ret == `back || ret == `next || ret ==`key);
+    } until (ret == `back || ret == `abort || ret == `next || ret ==`key);
 
     return [ret, settings];
 
