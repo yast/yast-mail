@@ -9,8 +9,9 @@
  * $Id$
  */
 {
+    // testedfiles: Mail.ycp MailAliases.ycp Require.ycp Service.ycp Testsuite.ycp
+
     include "testsuite.ycp";
-    import "Pkg"; // override
     import "Progress";
     import "Mail";
 

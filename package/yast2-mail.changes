@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun 17 13:39:01 CEST 2004 - mvidner@suse.cz
+
+- Added "testedfiles" to test cases to make it work with the new testsuite.
+- 2.10.0
+
+-------------------------------------------------------------------
 Thu May 27 10:52:52 CEST 2004 - mvidner@suse.cz
 
 - Moved ag_fetchmailrc to yast2-mail-aliases because it's
