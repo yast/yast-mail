@@ -443,13 +443,13 @@
 	{
 	    // Translators: progress label
 	    stages = add (stages, [ _("Write masquerading settings"), ``(WriteMasquerading ()) ]);
+	    // Translators: progress label
+	    stages = add (stages, [ _("Write alias tables"), ``(WriteAliases ()) ]);
 	    if (connection_type == `dialup)
 	    {
 		// Translators: progress label
 		stages = add (stages, [ _("Write downloading settings"), ``(WriteDownloading ()) ]);
 	    }
-	    // Translators: progress label
-	    stages = add (stages, [ _("Write alias tables"), ``(WriteAliases ()) ]);
 	}
 	// Translators: progress label
 	stages = add (stages, [ _("Run SuSEconfig"), ``(WriteFinish ()) ]);
@@ -545,6 +545,26 @@
 
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
+
+	// SENDMAIL_ARGS
+	// by default they contain -q30m, not good for dial-up
+	if (mta == `sendmail)
+	{
+	    string default_permanent = "-bd -q30m -om";
+	    string default_dialup = "-bd -om";
+	    string args = SCR::Read (.sysconfig.sendmail.SENDMAIL_ARGS);
+
+	    if (connection_type == `permanent && args == default_dialup)
+	    {
+		SCR::Write (.sysconfig.sendmail.SENDMAIL_ARGS, default_permanent);
+	    }
+	    else if (connection_type == `dialup &&
+		     // if empty, sendmail init-script uses the default
+		     (args == default_permanent || args == ""))
+	    {
+		SCR::Write (.sysconfig.sendmail.SENDMAIL_ARGS, default_dialup);
+	    }
+	}
 
 	// local_domains
 	if (mta == `sendmail)
