@@ -12,6 +12,7 @@
  */
 {
     include "testsuite.ycp";
+    import "Pkg"; // override
     import "Progress";
     import "Mail";
 
@@ -98,7 +99,6 @@
 	    ],
 	];
 
-    import "Pkg"; // override
     Pkg::FAKE (`IsProvided, true);
 
     block dont_abort = ``{return false;};
