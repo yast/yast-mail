@@ -355,6 +355,12 @@ global define symbol MtaSelectionDialog () ``{
 }
 
 /**
+ * A command line argument can override what is read from SCR.
+ * Used when starting mail from lan/modem.
+ */
+global symbol preselect_connection_type = nil;
+
+/**
  * D1
  * @return `back, `abort, `next or `none
  */
@@ -362,6 +368,10 @@ global define symbol ConnectionTypeDialog () ``{
     SetScreenShotName ("mail-1-conntype");
 
     symbol ct = Mail::connection_type;
+    if (preselect_connection_type != nil)
+    {
+	ct = preselect_connection_type;
+    }
 
     // Translators: dialog caption
     string caption = _("Connection type");
@@ -430,6 +440,8 @@ global define symbol ConnectionTypeDialog () ``{
 
 	ret = (ct == `none)? `none: ret;
     }
+    // avoid overriding the choice the user has made
+    preselect_connection_type = nil;
     RestoreScreenShotName ();
     return ret;
 }
