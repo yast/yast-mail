@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  9 22:22:11 CET 2004 - kkaempf@suse.de
+
+- adapt look&feel (sh@suse.de)
+- fix POSTFIX_MDA value
+- 2.9.6
+
+-------------------------------------------------------------------
 Sun Mar  7 12:21:11 CET 2004 - kkaempf@suse.de
 
 - adapt testsuite
