@@ -123,10 +123,31 @@ define list<map> EditTable (symbol action,
 /* ---------------------------------------------------------------- */
 
 /**
- * Function that could be used as a default in lookups for Get_* functions
- * @return nil
+ * Evaluate a function pointer, working around interpreter limitations
  */
-define any fake_nil () ``{
+any evaluate_fp (any fp) {
+    if (is (fp, boolean ()))
+    {
+	boolean () boolean_fp = (boolean ()) fp;
+	return boolean_fp ();
+    }
+    if (is (fp, list ()))
+    {
+	list () list_fp = (list ()) fp;
+	return list_fp ();
+    }
+    if (is (fp, string ()))
+    {
+	string () string_fp = (string ()) fp;
+	return string_fp ();
+    }
+    if (is (fp, symbol ()))
+    {
+	symbol () symbol_fp = (symbol ()) fp;
+	return symbol_fp ();
+    }
+    // report as the caller
+    y2error (1, "evaluate_fp: Unexpected function pointer: %1", fp);
     return nil;
 }
 
@@ -141,10 +162,10 @@ define any fake_nil () ``{
  *	"label": "&Foo",
  *	// if there are choices, they are used to construct the widget,
  *	// otherwise get is used
- *	"choices": [1, 2, 3],
+ *	"choices": Choices_foo          // list ()
  *	"help": _("&lt;p&gt;Foo!&lt;/p&gt;"), // used by WJ_MakeHelp, optional
- *	"get": ``(Get_foo ()),		// gets value from module to widget
- *	"set": ``(Set_foo ()),		// sets value from widget to module
+ *	"get": Get_foo,			// gets value from module to widget
+ *	"set": Set_foo,			// sets value from widget to module
  *	// popups an error and returns false if invalid
  *	"validate": ``(Validate_foo ()),// optional
  *	],
@@ -168,10 +189,12 @@ define term WJ_MakeWidget (symbol id) ``{
     // otherwise set the value directly
     // TODO: verified only for TextEntry. Password, CheckBox, ComboBox
 
-    // "choices" returns list, "get" returns string or boolean
-    any () init = w_def["choices"]:w_def["get"]:fake_nil;
-    widget = add (widget, init ());
-
+    // "choices" returns list, "get" returns string, symbol or boolean
+    any init = evaluate_fp (w_def["choices"]:w_def["get"]:nil);
+    if (init != nil)
+    {
+	return add (widget, init);
+    }
     return widget;
 }
 
@@ -182,8 +205,8 @@ define term WJ_MakeWidget (symbol id) ``{
  */
 define void WJ_GetWidget (symbol id) ``{
     // "get" returns string or boolean:
-    any () e = Widgets[id, "get"]:fake_nil;
-    UI::ChangeWidget (`id (id), `Value, e ());
+    any e = evaluate_fp (Widgets[id, "get"]:nil);
+    UI::ChangeWidget (`id (id), `Value, e);
 }
 
 /**
