@@ -15,7 +15,7 @@
     TESTSUITE_INIT ([ $[], $[], $[] ], nil);
     import "MailAliases";
 
-    list(map) old1 = [
+    list<map> old1 = [
 $["comment":" Basic system aliases that MUST be present.
 ","value":"root","key":"postmaster",] ,
 $["comment":"","value":"postmaster","key":"mailer-daemon",] ,
@@ -32,7 +32,7 @@ $["comment":" Further well-known aliases for dns/news/ftp/mail/fax/web/gnats.
 $["comment":"","value":"news","key":"newsadmin",] ,
 $["comment":"","value":"news","key":"usenet",] ,
 ];
-    list(map) new1 = [
+    list<map> new1 = [
 	$[ "key": "root", "value": "auser", "comment": " I am r00t!",],
 	$[ "key": "B.User", "value": "buser", "comment": " blah",],
 	$[ "key": "usenet", "value": "root", "comment": " direct",],

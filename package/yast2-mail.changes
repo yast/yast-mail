@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Jan 30 17:52:19 CET 2004 - mvidner@suse.cz
+
+- NI fixes to make it build
+- 2.9.2
+
+-------------------------------------------------------------------
 Mon Jan 19 11:00:14 CET 2004 - jsrain@suse.de
 
 - merged the new interpreter branch

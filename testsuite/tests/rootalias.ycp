@@ -15,7 +15,7 @@
     TESTSUITE_INIT ([ $[], $[], $[] ], nil);
     import "MailAliases";
 
-    list(map) aliases = [
+    list<map> aliases = [
 	$["key": "foo", "value": "bar", "comment": "baz",],
 	$["key": "root", "value": "leaf", "comment": "kuk",],
 	$["key": "foo2", "value": "bar2", "comment": "baz2",],

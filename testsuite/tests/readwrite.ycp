@@ -119,7 +119,7 @@
 //    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,
 //			      "amavis-postfix": false]);
 
-    block dont_abort = ``{return false;};
+    block<boolean> dont_abort = ``{return false;};
     Progress::off ();
     TEST (``(Mail::Read (dont_abort)), [READ, WRITE, [
 					    EXECUTE_0, //rpm sendmail

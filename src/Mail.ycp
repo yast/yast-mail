@@ -1043,31 +1043,31 @@ a fixed format to be readable by YaST2.  For details, see
     global define boolean Write (block<boolean> abort) ``{
 	list stages = [
 	    // Translators: progress label
-	    [ _("Writing general settings"), ``(WriteGeneral ())],
+	    [ _("Writing general settings"), WriteGeneral ],
 	    ];
 	if (connection_type != `none)
 	{
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
+	    stages = add (stages, [ _("Writing masquerading settings"), WriteMasquerading ]);
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliasesAndVirtual ()) ]);
+	    stages = add (stages, [ _("Writing alias tables"), WriteAliasesAndVirtual ]);
 	    // Write them unconditionally, because it is now possible to
 	    // enter them also in the Permanent mode. Bug #17417.
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
+	    stages = add (stages, [ _("Writing downloading settings"), WriteDownloading ]);
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing authentication settings..."), ``(WriteSmtpAuth ()) ]);
+	    stages = add (stages, [ _("Writing authentication settings..."), WriteSmtpAuth ]);
 	}
 	// Translators: progress label
-	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
+	stages = add (stages, [ _("Finishing writing configuration files"), WriteFlush ]);
 	// autoinstallation does it all together later
 	if (! write_only)
 	{
 	    // Translators: progress label
-	    stages = add (stages, [ _("Running SuSEconfig"), ``(WriteSuSEconfig ()) ]);
+	    stages = add (stages, [ _("Running SuSEconfig"), WriteSuSEconfig ]);
 
 	    // Translators: progress label
-	    stages = add (stages, [ _("Restarting services"), ``(WriteServices ()) ]);
+	    stages = add (stages, [ _("Restarting services"), WriteServices ]);
 	}
 
 	// Translators: dialog caption
@@ -1083,8 +1083,9 @@ a fixed format to be readable by YaST2.  For details, see
 		return false;
 	    }
 
-	    any f = e[1]:``(false);
-	    if (! (boolean) eval (f))
+	    any af = e[1]:nil;
+	    boolean() f = (boolean ()) af;
+	    if (! f ())
 	    {
 		// TODO: finishes only this iteration, not the function
 		return false;
