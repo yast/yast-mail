@@ -231,8 +231,7 @@
 	    }
 	}
 
-	if (connection_type == `dialup &&
-	    size (fetchmail) > 0 &&
+	if (size (fetchmail) > 0 &&
 	    ! Installed ("fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
