@@ -1091,36 +1091,6 @@ a fixed format to be readable by YaST2.  For details, see
      * @return True on success
      */
     global define boolean Import (map settings) ``{
-	if (size (settings) == 0)
-	{
-	    //Provide defaults for autoinstallation editing:
-	    //Leave empty.
-	    return true;
-	}
-
-	boolean missing = false;
-	// don't require listen_remote for compatibility
-	foreach (`k, ["mta", "connection_type"], ``{
-	    if (! haskey (settings, k))
-	    {
-		y2error ("Missing at Import: '%1'.", k);
-		missing = true;
-	    }
-	});
-	if (missing)
-	{
-	    return false;
-	}
-	Set(settings);
-	return true;
-    }
-
-
-    /**
-     * Set module data without validity checking as in Import()
-     * @param settings @ref mail_autoinst
-     */
-    global define void Set(map settings) ``{
 	y2debug ("before %1", settings); // may contain passwords
 	settings = mapmap(`k,`v, settings,``{
 	    if (k == "mta" && is(v,symbol)) {
