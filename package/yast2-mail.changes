@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Dec  5 13:31:12 CET 2002 - mvidner@suse.cz
+
+- Use the faked Pkg instead of the real one to prevent testsuite failures.
+- 2.7.1
+
+-------------------------------------------------------------------
 Tue Sep 10 14:51:30 CEST 2002 - mvidner@suse.cz
 
 - Provide/Obsolete yast2-trans-sendmail (SL7.3).
