@@ -215,7 +215,18 @@ global define symbol ReadDialog () ``{
     };
 
     // Read the configuration
-    boolean was_ok = Mail::Read ( callback );
+    boolean was_ok = true;
+    if (Mode::screen_shot)
+    {
+	Mail::Fake ();
+	// make it possible to snap this dialog
+	sleep (3000);
+	UI::PollInput ();
+    }
+    else
+    {
+	was_ok = Mail::Read ( callback );
+    }
 
     // TODO FIXME possibly handle the abort
     if (was_ok)
@@ -267,6 +278,12 @@ global define symbol ConfirmDialog () ``{
  * @return `abort or `next
  */
 global define symbol WriteDialog () ``{
+    if (Mode::screen_shot)
+    {
+	y2milestone ("Screenshot mode - skipping Write");
+	return `next;
+    }
+
     // Install packages if needed.
     // Cannot do it in Write, autoinstall does it differently.
     if (size (Mail::install_packages) > 0 || size (Mail::remove_packages) > 0)

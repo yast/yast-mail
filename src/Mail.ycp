@@ -544,6 +544,49 @@ a fixed format to be readable by YaST2.  For details, see
     }
 
     /**
+     * Make up data for screnshots
+     */
+    global define void Fake () ``{
+	mta = `postfix;
+	create_config = true;
+	listen_remote = true;
+	connection_type = `dialup;
+	amavis_allowed = true;
+	use_amavis = true;
+	// good example?
+	local_domains = ["branch1.example.com", "branch2.example.com"];
+	outgoing_mail_server = "mail.example.com";
+	from_header = "example.com";
+	masquerade_other_domains = [];
+	masquerade_users = [
+	    $["user": "hyde", "address": "DrJekyll@Example.com"],
+	    ];
+	fetchmail = [
+	    $[
+		"server": "pop3.example.net",
+		"protocol": "POP3",
+		"remote_user": "jekyll",
+		"local_user": "hyde",
+		"password": "stephenson",
+		],
+	    ];
+
+	// just patch out root
+	MailAliases::ReadAliases ();
+	MailAliases::root_alias = "hyde";
+
+	// TODO virtual
+	enable_smtp_auth = true;
+	smtp_auth = [
+	    $[
+		"server": "mail.example.com",
+		"user": "jekyll",
+		"password": "foo"
+		],
+	    ];
+    }
+
+    /**
      * Update the SCR according to mail settings
      * @param abort A block that can be called by Write to find
      *	      out whether abort is requested. Returns true if abort
