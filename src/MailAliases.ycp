@@ -26,9 +26,6 @@
 
     // no translatable strings, no textdomain.
 
-    import "Report";
-    import "Summary";
-
     /* ---------------------------------------------------------------- */
 
     /**

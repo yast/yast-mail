@@ -1,6 +1,6 @@
 /**
  * Module:
- *   NIS client configuration
+ *   Mail configuration
  *
  * Summary:
  *   Testsuite
@@ -37,7 +37,7 @@ $["comment":"","value":"news","key":"usenet",] ,
 	$[ "key": "B.User", "value": "buser", "comment": " blah",],
 	$[ "key": "usenet", "value": "root", "comment": " direct",],
 	$[ "key": "A.User", "value": "auser", "comment": "",],
-	$[ "key": "newsadmin", "value": "root", "comment": " direct",],	
+	$[ "key": "newsadmin", "value": "root", "comment": " direct",],
 	];
 
     TEST (``(MailAliases::mergeTables ([], [])), [], nil);
