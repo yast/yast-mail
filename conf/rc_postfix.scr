@@ -1,0 +1,35 @@
+/**
+ * File:
+ *   rc_postfix.scr
+ * Summary:
+ *   SCR Agent for reading/writing /etc/sysconfig/postfix
+ *   using the rc-agent
+ * Access:
+ *   read/write
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * See:
+ *   yast2-agent-rcconfig/rcconfig_agent.html
+ *   libscr
+ *   man postfix
+ * Example:
+ *   Dir(.rc.postfix)
+ *   ([])
+ **
+ *   Read(.rc.postfix.SOMETHING)
+ *   ("no")
+ **
+ *   Write(.rc.postfix.SOMETHING, "yes")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/postfix</tt>
+ * (formerly <tt>/etc/rc.config.d/postfix.rc.config</tt>)
+ * in an easy manner.
+ */
+.rc.postfix
+
+`ag_rcconfig(
+  RcFile("/etc/sysconfig/postfix")
+)

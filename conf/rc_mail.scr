@@ -1,0 +1,30 @@
+/**
+ * File:
+ *   rc_mail.scr
+ * Summary:
+ *   SCR Agent for reading/writing /etc/sysconfig/mail
+ *   using the rc-agent
+ * Access:
+ *   read/write
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * See:
+ *   yast2-agent-rcconfig/rcconfig_agent.html
+ *   libscr
+ * Example:
+ *   Read(.rc.mail.FROM_HEADER)
+ *   ("mycompany.com")
+ **
+ *   Write(.rc.mail.FROM_HEADER, "MyCompany.com")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/mail</tt>
+ * in an easy manner.
+ */
+.rc.mail
+
+`ag_rcconfig(
+  RcFile("/etc/sysconfig/mail")
+)

@@ -7,6 +7,9 @@
 scrconfdir = $(YAST2DIR)/scrconf
 
 scrconf_DATA = \
+	rc_mail.scr		\
+	rc_postfix.scr		\
+	rc_sendmail.scr		\
 	mail_fetchmail.scr	\
 	mail_p_aliases.scr	\
 	mail_p_canonical.scr	\

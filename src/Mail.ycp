@@ -293,7 +293,7 @@
 	}
 	// read 3
 	// from_header
-	from_header = SCR::Read (.rc.system.FROM_HEADER);
+	from_header = SCR::Read (.rc.mail.FROM_HEADER);
 
 	// masquerade_other_domains
 	string mod_s = "";
@@ -394,7 +394,7 @@
 					 ]));
 
 
-	// TODO what about SCR::Read(.rc.system.SMTP)
+	// TODO what about the daemon (was .rc.system.SMTP)
 
 	// complete
 	Progress::NextStage ();
@@ -579,12 +579,11 @@
 
     /**
      * Part of Write.
-     * Also flushes .rc.system
      * @return success
      */
     define boolean WriteMasquerading () ``{
 	// from_header
-	SCR::Write (.rc.system.FROM_HEADER, from_header);
+	SCR::Write (.rc.mail.FROM_HEADER, from_header);
 	// masquerade_other_domains
 	string mod = mergestring (masquerade_other_domains, " ");
 	if (mta == `sendmail)
@@ -699,9 +698,9 @@
      */
     define boolean WriteFinish () ``{
 	//flush the agents
-	if (!SCR::Write (.rc.system, nil))
+	if (!SCR::Write (.rc.mail, nil))
 	{
-	    Report::Error (sformat (_("Error writing file %1"), "/etc/rc.config"));
+	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/mail"));
 	    return false;
 	}
 	list(path) tables = nil;
