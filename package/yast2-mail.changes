@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jan 20 10:11:47 CET 2003 - mvidner@suse.de
+
+- Fixed the auto dispatcher (Import) (nashif).
+- 2.7.3
+
+-------------------------------------------------------------------
 Tue Jan 14 17:30:20 CET 2003 - mvidner@suse.de
 
 - Added function key shortcuts for ncurses.
