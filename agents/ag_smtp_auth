@@ -73,7 +73,7 @@ sub parse_file ()
 	    $entry->{server} = $1;
 	    $_ = $2;
 
-	    while (/^"(.)([:=])([^"]*)"\s*/)
+	    while (s/^"(.)([:=])([^"]*)"\s*//)
 	    {
 		my $token = $1;
 		my $b64 = $2 eq "=";
@@ -178,9 +178,9 @@ while ( <STDIN> )
 	ycp::Return (undef);
 	print "\n";
 	$sendmail = ($command eq "AuthSendmail");
-	my $filename = shift @arguments || ($sendmail?
-					    "/etc/mail/auth/auth-info":
-					    "/etc/postfix/sasl_passwd");
+	$filename = shift @arguments || ($sendmail?
+					 "/etc/mail/auth/auth-info":
+					 "/etc/postfix/sasl_passwd");
 	$file_ok = parse_file ();
 	next;
     }
