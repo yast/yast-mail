@@ -29,7 +29,7 @@
 .mail.aliases
 
 `ag_mailtable (
-  Mailtable ($[
+  `Mailtable ($[
     "filename": "/etc/aliases",
     "continue_escaped_newline": true,
     "continue_leading_blanks": true,

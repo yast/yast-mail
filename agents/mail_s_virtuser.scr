@@ -21,7 +21,7 @@
 .mail.sendmail.virtuser
 
 `ag_mailtable (
-  Mailtable ($[
+  `Mailtable ($[
     "filename": "/etc/mail/virtusertable",
     "continue_escaped_newline": false,
     "continue_leading_blanks": false,

@@ -31,5 +31,5 @@
 .sysconfig.sendmail
 
 `ag_ini(
-  SysConfigFile("/etc/sysconfig/sendmail")
+  `SysConfigFile("/etc/sysconfig/sendmail")
 )

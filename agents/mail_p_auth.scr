@@ -21,4 +21,4 @@
  */
 .mail.postfix.auth
 
-`ag_smtp_auth (AuthPostfix ())
+`ag_smtp_auth (`AuthPostfix ())

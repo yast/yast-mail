@@ -21,4 +21,4 @@
  */
 .mail.sendmail.auth
 
-`ag_smtp_auth (AuthSendmail ())
+`ag_smtp_auth (`AuthSendmail ())
