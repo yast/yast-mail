@@ -21,7 +21,7 @@
 .mail.postfix.aliases
 
 `ag_mailtable (
-  Mailtable ($[
+  SCR::Mailtable ($[
     "filename": "/etc/aliases",
     "continue_escaped_newline": false,
     "continue_leading_blanks": true,

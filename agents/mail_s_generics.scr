@@ -21,7 +21,7 @@
 .mail.sendmail.generics
 
 `ag_mailtable (
-  Mailtable ($[
+  SCR::Mailtable ($[
     "filename": "/etc/mail/genericstable",
     "continue_escaped_newline": false,
     "continue_leading_blanks": false,

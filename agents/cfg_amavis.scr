@@ -26,5 +26,5 @@
 .sysconfig.amavis
 
 `ag_ini(
-  SysConfigFile("/etc/sysconfig/amavis")
+  SCR::SysConfigFile("/etc/sysconfig/amavis")
 )
