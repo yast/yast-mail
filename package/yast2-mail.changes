@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Mon Aug 26 14:53:03 CEST 2002 - mvidner@suse.cz
+
+- Unify the no connection case so that also postfix is always started;
+  that way the mail is bounced immediately and does not wait in the queue.
+- Control center: Rename Mail to Mail Transfer Agent (#18058).
+- Again adapt to the new packagemanager interface (#18253).
+- 2.6.14
+
+-------------------------------------------------------------------
 Fri Aug 23 16:34:51 CEST 2002 - mvidner@suse.cz
 
 - Adapt to the new packagemanager interface (#18253).
