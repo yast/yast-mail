@@ -60,11 +60,10 @@ global define list<string> GetLocalUsers () ``{
 	import "Users";
 	import "UsersCache";
 
-	block<boolean> abort_block = ``{ return false;};
-	Users::Read (abort_block, false);
+	Users::Read ();
 	local_users = (list<string>) union (
-		    sort (UsersCache::usernamelists["local"]:[]),
-		    sort (UsersCache::usernamelists["system"]:[]));
+		    UsersCache::GetUsernames ("local"),
+		    UsersCache::GetUsernames ("system"));
     }
     return local_users;
 }
