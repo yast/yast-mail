@@ -218,15 +218,13 @@ global define boolean Validate_outgoing_mail_server(symbol id) ``{
 	regexpsub (oms, ".(.*).", "\\1") : oms;
 
     if (oms_no_brackets != "" &&
-	! check_domainname (oms_no_brackets) &&
-	! check_ip4 (oms_no_brackets))
+	! check_address (oms_no_brackets)
+	||
+	oms_no_brackets == "" &&
+	Mail::connection_type == `dialup)
     {
 	UI::SetFocus (`id (`relay));
-	// Translators: error popup
-	string msg = _("The host name is incorrect");
-	// TODO: describe a valid host specification
-	// (a host name or IP)
-	UI::ErrorPopup (msg);
+	UI::ErrorPopup (valid_address ());
 	return false;
     }
     return true;
@@ -248,10 +246,7 @@ global define boolean Validate_from_header (symbol id) ``{
     if (fh != "" && ! check_domainname (fh))
     {
 	UI::SetFocus (`id (id));
-	// Translators: error popup
-	string msg = _("The domain name is incorrect");
-	// TODO: describe a valid domain name
-	UI::ErrorPopup (msg);
+	UI::ErrorPopup (valid_domainname ());
 	return false;
     }
     return true;
@@ -272,10 +267,7 @@ global define boolean Validate_local_domains (symbol id) ``{
     if (find (string s, lld, ``(! check_domainname (s))) != nil)
     {
 	UI::SetFocus (`id (id));
-	// Translators: error popup
-	string msg = _("The domain name is incorrect");
-	// TODO: describe a valid domain name
-	UI::ErrorPopup (msg);
+	UI::ErrorPopup (valid_domainname ());
 	return false;
     }
     return true;
