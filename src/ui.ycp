@@ -38,39 +38,105 @@ include "mail/helps.ycp";
 global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
 
 /**
+ * A Wizard Sequencer helper
+ * @return	`next
+ */
+global define symbol JustNext () ``{
+    return `next;
+}
+
+global map dialogs = $[
+    "read"	: [ ``( ReadDialog () ), true ],
+    "confirm"	: [ ``( ConfirmDialog () ), true],
+    "write"	: [ ``( WriteDialog () ), true ],
+
+    "connection_type":	``( ConnectionTypeDialog () ),
+    "outgoing":		``( OutgoingDialog () ),
+    "masquerading":	``( MasqueradingDialog () ),
+    "dialup?":		[ ``( DialupOnly () ), true ],
+    "downloading":	``( DownloadingDialog () ),
+    "aliases":		``( AliasesDialog () ),
+    "virtual":		``( VirtualDialog () ),
+    "common-next":	[ ``( JustNext () ), true ],
+    ];
+
+global map common_sequence = $[
+    "ws_start" : "connection_type",
+    "connection_type" :
+    $[
+	`abort	: `abort,
+	`next	: "outgoing",
+	`aliases	: "aliases",
+	`virtual	: "virtual",
+	`none	: "common-next",
+	],
+    "aliases" :
+    $[
+	`abort	: `abort,
+	`next	: "connection_type",
+	],
+    "virtual" :
+    $[
+	`abort	: `abort,
+	`next	: "connection_type",
+	],
+    "outgoing" :
+    $[
+	`abort	: `abort,
+	`next	: "dialup?",
+	`masqdetail : "masquerading",
+	],
+    "masquerading" :
+    $[
+	`abort	: `abort,
+	`next	: "outgoing",
+	],
+    "dialup?" :
+    $[
+	`yes	: "downloading",
+	`no	: "common-next",
+	],
+    "downloading" :
+    $[
+	`abort	: `abort,
+	`next	: "common-next",
+	],
+    "common-next" :
+    $[
+	`next	: `next,
+	],
+    ];
+
+/**
  * Whole configuration of mail
  * @return `back, `abort or `next
  */
 global define symbol MailSequence () ``{
-    map aliases =
-	$[
-	    "read"	: [ ``( ReadDialog () ), true ],
-	    "main"	:   ``( MainSequence () ),
-	    "confirm"	: [ ``( ConfirmDialog () ), true],
-	    "write"	: [ ``( WriteDialog () ), true ]
-	];
-
     map sequence = $[
+	// override
 	"ws_start" : "read",
 	"read" :
 	$[
 	    `abort	: `abort,
-	    `next	: "main"
-	],
-	"main" :
+	    `next	: "connection_type",
+	    ],
+
+	// common_sequence here
+
+	// override
+	"common-next" :
 	$[
-	    `abort	: `abort,
-	    `next	: "confirm"
-	],
+	    `next	: "confirm",
+	    ],
 	"confirm" :
 	$[
 	    `next	: "write"
-	],
+	    ],
 	"write" : $[
 	    `abort	: `abort,
 	    `next	: `next
-	]
-    ];
+	    ]
+	];
 
     // Translators: dialog caption
     string caption = _("Mail configuration");
@@ -83,7 +149,9 @@ global define symbol MailSequence () ``{
 				BackButtonLabel (),
 				NextButtonLabel ());
 
-    any ret = WizardSequencer (aliases, sequence);
+    // the second map must override the first!
+    sequence = union (common_sequence, sequence);
+    any ret = WizardSequencer (dialogs, sequence);
 
     UI::CloseDialog ();
     return ret;
@@ -107,77 +175,11 @@ global define symbol MailAutoSequence () ``{
 				NextButtonLabel ());
 
     // Run the main configuration workflow
-    any ret = MainSequence ();
+    any ret = WizardSequencer (dialogs, common_sequence);
 
     UI::CloseDialog ();
     return ret;
 }
-
-/**
- * Main workflow of the mail configuration
- * @return `back, `abort or `next
- */
-global define symbol MainSequence () ``{
-
-    map dialogs =
-	$[
-	    "connection_type":	``( ConnectionTypeDialog () ),
-	    "outgoing":		``( OutgoingDialog () ),
-	    "masquerading":	``( MasqueradingDialog () ),
-	    "dialup?":		[ ``( DialupOnly () ), true ],
-	    "downloading":	``( DownloadingDialog () ),
-	    "aliases":		``( AliasesDialog () ),
-	    "virtual":		``( VirtualDialog () ),
-	];
-
-    map sequence = $[
-	"ws_start" : "connection_type",
-	"connection_type" :
-	$[
-	    `abort	: `abort,
-	    `next	: "outgoing",
-	    `aliases	: "aliases",
-	    `virtual	: "virtual",
-	    `none	: `next
-	],
-	"aliases" :
-	$[
-	    `abort	: `abort,
-	    `next	: "connection_type",
-	],
-	"virtual" :
-	$[
-	    `abort	: `abort,
-	    `next	: "connection_type",
-	],
-	"outgoing" :
-	$[
-	    `abort	: `abort,
-	    `next	: "dialup?",
-	    `masqdetail : "masquerading",
-	],
-	"masquerading" :
-	$[
-	    `abort	: `abort,
-	    `next	: "outgoing",
-	],
-	"dialup?" :
-	$[
-	    `yes	: "downloading",
-	    `no		: `next,
-	],
-	"downloading" :
-	$[
-	    `abort	: `abort,
-	    `next	: `next,
-	],
-    ];
-
-    any ret = WizardSequencer (dialogs, sequence);
-
-    return ret;
-}
-
 
 
 /**
