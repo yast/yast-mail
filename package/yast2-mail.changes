@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 10 11:48:27 CET 2004 - mvidner@suse.cz
+
+- Updated to new Mode.
+- Replaced lookups and selects by brackets.
+- 2.11.1
+
+-------------------------------------------------------------------
 Wed Sep 15 14:04:13 CEST 2004 - mvidner@suse.cz
 
 - Use Package[System] instead of Require, fixed cloning (#45071).

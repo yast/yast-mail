@@ -53,7 +53,7 @@ define symbol ReadDialog () ``{
 
     // Read the configuration
     boolean was_ok = true;
-    if (Mode::screen_shot)
+    if (Mode::screen_shot())
     {
 	Mail::Fake ();
 	// make it possible to snap this dialog
@@ -119,7 +119,7 @@ define symbol ConfirmDialog () ``{
  * @return `abort or `next
  */
 define symbol WriteDialog () ``{
-    if (Mode::screen_shot)
+    if (Mode::screen_shot())
     {
 	y2milestone ("Screenshot mode - skipping Write");
 	return `next;
@@ -666,8 +666,8 @@ define boolean check_mail_address (string address) ``{
  * @return		$["comment": "", "user": "address":] or $[] on cancel
  */
 define map MasqueradeUserPopup (map default, list<map> existing) ``{
-    string user = lookup (default, "user", "");
-    string address = lookup (default, "address", "");
+    string user = default["user"]:"";
+    string address = default["address"]:"";
     list<string> forbidden = maplist (map e, existing, ``( e["user"]:"" ));
 
     term contents =
@@ -677,7 +677,7 @@ define map MasqueradeUserPopup (map default, list<map> existing) ``{
 		`VSpacing(0.2),
 		// Translators: popup dialog heading
 		`Heading (_("Sender address rewriting")),
-		Mode::config ?
+		Mode::config () ?
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`user), _("&Local user"), user)) :
 		`Left (`ComboBox (`id (`user), `opt (`editable, `hstretch), _("&Local user"), GetLocalUsers ())),
@@ -1205,8 +1205,8 @@ define symbol DownloadingDialog () ``{
  * @return		$["comment": ""?, "alias": "destinations":] or $[] on cancel
  */
 define map AliasPopup (map default, list<map> existing) ``{
-    string alias = lookup (default, "alias", "");
-    string destinations = lookup (default, "destinations", "");
+    string alias = default["alias"]:"";
+    string destinations = default["destinations"]:"";
     list<string> forbidden = maplist (map e, existing, ``( e["alias"]:"" ));
 
     term contents =

@@ -1242,9 +1242,9 @@ a fixed format to be readable by YaST2.  For details, see
 	    foreach (any d, (list) value, ``{
 		string entry = "";
 		if (is(d,map))
-		    entry = lookup ((map)d, index, "???");
+		    entry = ((map)d)[index]:"???";
 		else if (is (d,list))
-		    entry = (string) select ((list)d, (integer)index, "???");
+		    entry = ((list)d)[(integer)index]:"???";
 		else
 		    entry = (string) d;
 

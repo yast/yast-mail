@@ -38,7 +38,7 @@ define list<term> makeItems (list<map> data, list<string> keys) ``{
 	term t = `item (`id (i));
 	i = i + 1;
 	foreach (string k, keys, ``{
-	    t = add (t, lookup (d, k, ""));
+	    t = add (t, d[k]:"");
 	});
 	return t;
     });
@@ -85,7 +85,7 @@ define list<map> EditTable (symbol action,
     else if (action == `edit)
     {
 	// edit known fields, preserve unknown fields
-	map old_entry = select (data, entryno, $[]);
+	map old_entry = data[entryno]:$[];
 	map entry = editEntry (old_entry, remove (data, entryno));
 	if (size (entry) > 0)
 	{
@@ -254,7 +254,7 @@ define boolean WJ_Validate (list widgets) ``{
 	    if (is(id,symbol))
 	    {
 		symbol id_sym = (symbol) id;
-		map w_def = (map) lookup (Widgets, id, nil);
+		map w_def = (map) Widgets[id]:nil;
 		if (w_def== nil)
 		{
 		    // report as the caller
