@@ -339,7 +339,7 @@ global define symbol ConnectionTypeDialog () ``{
 		)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (), BackButtonLabel (), NextButtonLabel ());
 
     any ret = nil;
     while (true)
@@ -508,7 +508,7 @@ global define symbol MasqueradingDialog () ``{
 	    `VSpacing (1)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, MasqueradingDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -660,7 +660,7 @@ global define symbol DownloadingDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DummyHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), NextButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -808,6 +808,10 @@ global define symbol AliasesDialog () ``{
 	else if (contains ([`add, `edit, `delete], ret))
 	{
 	    aliases = EditTable(ret, aliases, ["alias", "destinations"], ``(AliasPopup ()), `tab);
+	}
+	else if (ret == "man_aliases")
+	{
+	    y2milestone ("TODO: man aliases");
 	}
 	else if (ret == `abort && !UI::ReallyAbortPopup (Mail::touched || edit_touched))
 	{
