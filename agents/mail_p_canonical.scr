@@ -21,7 +21,7 @@
 .mail.postfix.sendercanonical
 
 `ag_mailtable (
-  SCR::Mailtable ($[
+  Mailtable ($[
     "filename": "/etc/postfix/sender_canonical",
     "continue_escaped_newline": false,
     "continue_leading_blanks": true,

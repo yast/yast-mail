@@ -28,5 +28,5 @@
 .sysconfig.postfix
 
 `ag_ini(
-  SCR::SysConfigFile("/etc/sysconfig/postfix")
+  SysConfigFile("/etc/sysconfig/postfix")
 )

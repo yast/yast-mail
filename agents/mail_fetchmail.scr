@@ -15,7 +15,7 @@
 .mail.fetchmail
 
 `ag_fetchmailrc (
-  SCR::Fetchmail ($[
+  Fetchmail ($[
     "filename": "/etc/fetchmailrc",
   ])
 )

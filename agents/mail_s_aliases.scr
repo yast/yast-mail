@@ -21,7 +21,7 @@
 .mail.sendmail.aliases
 
 `ag_mailtable (
-  SCR::Mailtable ($[
+  Mailtable ($[
     "filename": "/etc/aliases",
     "continue_escaped_newline": true,
     "continue_leading_blanks": true,

@@ -26,5 +26,5 @@
 .sysconfig.mail
 
 `ag_ini(
-  SCR::SysConfigFile("/etc/sysconfig/mail")
+  SysConfigFile("/etc/sysconfig/mail")
 )

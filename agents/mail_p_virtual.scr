@@ -21,7 +21,7 @@
 .mail.postfix.virtual
 
 `ag_mailtable (
-  SCR::Mailtable ($[
+  Mailtable ($[
     "filename": "/etc/postfix/virtual",
     "continue_escaped_newline": false,
     "continue_leading_blanks": true,
