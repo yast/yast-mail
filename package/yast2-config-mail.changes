@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed May 22 16:19:21 CEST 2002 - mvidner@suse.cz
+
+- Added Mail::{Get,Set}RootAlias, bug 11730.
+- Adapted to new autoinstall configuration system (nashif).
+- Using current devtools; menuentries -> config.
+- 2.6.1
+
+-------------------------------------------------------------------
 Mon Mar 18 17:16:26 CET 2002 - mvidner@suse.cz
 
 - Fix adding/editing fetchmail entries (#15130, broken in 2.5.16).
