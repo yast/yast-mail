@@ -7,9 +7,12 @@
 @HEADER@
 
 Summary:	Configuration of mail
+Provides:	yast2-config-sendmail
+Obsoletes:	yast2-config-sendmail
 Requires:	yast2 yast2-trans-mail yast2-lib-sequencer
 Requires:	yast2-lib-wizard >= 2.5.8
 Requires:	yast2-agent-targetpkg
+Requires:	yast2-agent-ini >= 2.5.8
 BuildArchitectures:	noarch
 
 %description
@@ -31,4 +34,14 @@ BuildArchitectures:	noarch
 @YAST2DIR@/clients/mail_*.ycp
 @YAST2DIR@/modules/Mail.ycp
 @YAST2DIR@/menuentries/menuentry_mail.y2cc
+@YAST2DIR@/scrconf/cfg_mail.scr
+@YAST2DIR@/scrconf/cfg_postfix.scr
+@YAST2DIR@/scrconf/cfg_sendmail.scr
+@YAST2DIR@/scrconf/mail_fetchmail.scr
+@YAST2DIR@/scrconf/mail_p_aliases.scr
+@YAST2DIR@/scrconf/mail_p_canonical.scr
+@YAST2DIR@/scrconf/mail_p_virtual.scr
+@YAST2DIR@/scrconf/mail_s_aliases.scr
+@YAST2DIR@/scrconf/mail_s_generics.scr
+@YAST2DIR@/scrconf/mail_s_virtuser.scr
 %doc @DOCDIR@
