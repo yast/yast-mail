@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 29 15:15:44 CEST 2004 - mvidner@suse.cz
+
+- enable/disable rcfetchmail (#37139)
+- 2.9.11
+
+-------------------------------------------------------------------
 Thu Mar 25 18:19:24 CET 2004 - mvidner@suse.cz
 
 - fixed local domain checking to allow "\$" (#36871)

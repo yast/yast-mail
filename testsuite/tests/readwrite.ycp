@@ -32,12 +32,17 @@
 			"start": [ "3", "5"],
 			"stop":	 [ "3", "5"],
 			],
+		    "fetchmail": $[
+			"start": [ "3", "5"],
+			"stop":	 [ "3", "5"],
+			],
 		    ],
 		// their contents is not important for ServiceAdjust
 		"comment": $[
 		    "sendmail": $[],
 		    "postfix": $[],
 		    "amavis": $[],
+		    "fetchmail": $[],
 		    ],
 		],
 	    ],

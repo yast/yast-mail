@@ -23,13 +23,13 @@ Write	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no" true
 Read	.init.scripts.exists "sendmail" true
 Read	.init.scripts.exists "sendmail" true
 Read	.init.scripts.exists "sendmail" true
-Read	.init.scripts.runlevel "sendmail" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "sendmail" $["amavis":$[], "postfix":$[], "sendmail":$[]]
+Read	.init.scripts.runlevel "sendmail" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
+Read	.init.scripts.comment "sendmail" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
 Write	.sysconfig.amavis.USE_AMAVIS "yes" true
 Read	.init.scripts.exists "amavis" true
 Read	.init.scripts.exists "amavis" true
-Read	.init.scripts.runlevel "amavis" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "amavis" $["amavis":$[], "postfix":$[], "sendmail":$[]]
+Read	.init.scripts.runlevel "amavis" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
+Read	.init.scripts.comment "amavis" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
 Read	.sysconfig.sendmail.SENDMAIL_ARGS "-L sendmail -Am -bd -q30m -om"
 Write	.sysconfig.sendmail.SENDMAIL_LOCALHOST "" true
 Write	.sysconfig.sendmail.SENDMAIL_SMARTHOST "" true
@@ -40,6 +40,12 @@ Write	.mail.aliases.table [] true
 Write	.mail.sendmail.virtuser.table [] true
 Write	.mail.fetchmail.accounts [] true
 Write	.mail.fetchmail nil true
+Read	.init.scripts.exists "fetchmail" true
+Read	.init.scripts.exists "fetchmail" true
+Read	.init.scripts.exists "fetchmail" true
+Read	.init.scripts.runlevel "fetchmail" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
+Read	.init.scripts.comment "fetchmail" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
+Execute	.target.bash_output "/sbin/insserv -r /etc/init.d/fetchmail" $["exit":0, "stderr":"", "stdout":""]
 Write	.mail.sendmail.auth.accounts [$["more":1, "password":"p", "server":"s", "user":"u"]] true
 Write	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS "plain gssapi digest-md5 cram-md5" true
 Write	.sysconfig.mail nil true
@@ -54,6 +60,8 @@ Read	.init.scripts.exists "amavis" true
 Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0
 Read	.init.scripts.exists "amavis" true
 Execute	.target.bash "/etc/init.d/amavis start" $["TERM":"raw"] 0
+Read	.init.scripts.exists "fetchmail" true
+Execute	.target.bash "/etc/init.d/fetchmail stop" $["TERM":"raw"] 0
 Read	.init.scripts.exists "sendmail" true
 Execute	.target.bash "/etc/init.d/sendmail restart" $["TERM":"raw"] 0
 Return	true

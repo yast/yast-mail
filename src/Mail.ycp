@@ -129,6 +129,8 @@
      *                    /etc/sysconfig/network/if-{up,down}.d
      * </dl>
      * #22903
+     * Unused yet!
+     * #37139, just enable rcfetchmail.
      */
     global symbol fetchmail_mode = `manual;
 
@@ -300,6 +302,13 @@
 	{
 	    mta = `other;
 	}
+    }
+
+    /**
+     * Whether rcfetchmail should run
+     */
+    define boolean RunFetchmailGlobally () ``{
+	return size (fetchmail) > 0;
     }
 
     /**
@@ -826,6 +835,15 @@ a fixed format to be readable by YaST2.  For details, see
 	    Report::Error (_("Error writing the fetchmail configuration."));
 	    return false;
 	}
+
+	if (RunFetchmailGlobally ())
+	{
+	    Service::Enable ("fetchmail");
+	}
+	else
+	{
+	    Service::Disable ("fetchmail");
+	}
 	return true;
     }
 
@@ -1011,6 +1029,18 @@ a fixed format to be readable by YaST2.  For details, see
 		    Report::Error (sformat (_("Error starting service %1."), "amavis"));
 		    return false;
 		}
+	    }
+	}
+
+	Service::Stop ("fetchmail");
+	if (RunFetchmailGlobally ())
+	{
+	    if (!Service::Start ("fetchmail"))
+	    {
+		// Translators: error message
+		Report::Error (sformat (_("Error starting service %1."), "fetchmail"));
+		return false;
+
 	    }
 	}
 
