@@ -20,11 +20,13 @@ Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
 Write	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes" true
 Write	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no" true
 Write	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no" true
+Log	Runlevel module is deprecated, use Service instead
 Read	.init.scripts.exists "sendmail" true
 Read	.init.scripts.exists "sendmail" true
 Read	.init.scripts.runlevel "sendmail" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
 Read	.init.scripts.comment "sendmail" $["amavis":$[], "postfix":$[], "sendmail":$[]]
 Write	.sysconfig.amavis.USE_AMAVIS "yes" true
+Log	Runlevel module is deprecated, use Service instead
 Read	.init.scripts.exists "amavis" true
 Read	.init.scripts.exists "amavis" true
 Read	.init.scripts.runlevel "amavis" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
@@ -49,7 +51,10 @@ Write	.mail.aliases nil true
 Write	.mail.sendmail.virtuser nil true
 Write	.mail.sendmail.auth nil true
 Execute	.target.bash "/sbin/SuSEconfig --module sendmail" 0
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/amavis start" $["TERM":"raw"] 0
+Log	Runlevel module is deprecated, use Service instead
 Execute	.target.bash "/etc/init.d/sendmail restart" $["TERM":"raw"] 0
 Return	true
