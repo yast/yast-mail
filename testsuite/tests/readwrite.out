@@ -21,23 +21,6 @@ Read	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS ""
 Return	true
 Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
 Write	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes" true
-Execute	.target.bash "/etc/init.d/SuSEfirewall2_setup stop" $["TERM":"raw"] 0
-Read	.init.scripts.exists "SuSEfirewall2_init" true
-Read	.init.scripts.exists "SuSEfirewall2_init" true
-Read	.init.scripts.exists "SuSEfirewall2_init" true
-Read	.init.scripts.runlevel "SuSEfirewall2_init" $["SuSEfirewall2_final":$["start":["3", "4", "5"]], "SuSEfirewall2_init":$["start":["2", "3", "4", "5"]], "SuSEfirewall2_setup":$["start":["3", "4", "5"]], "amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "SuSEfirewall2_init" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
-Read	.init.scripts.exists "SuSEfirewall2_setup" true
-Read	.init.scripts.exists "SuSEfirewall2_setup" true
-Read	.init.scripts.exists "SuSEfirewall2_setup" true
-Read	.init.scripts.runlevel "SuSEfirewall2_setup" $["SuSEfirewall2_final":$["start":["3", "4", "5"]], "SuSEfirewall2_init":$["start":["2", "3", "4", "5"]], "SuSEfirewall2_setup":$["start":["3", "4", "5"]], "amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "SuSEfirewall2_setup" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
-Read	.init.scripts.exists "SuSEfirewall2_final" true
-Read	.init.scripts.exists "SuSEfirewall2_final" true
-Read	.init.scripts.exists "SuSEfirewall2_final" true
-Read	.init.scripts.runlevel "SuSEfirewall2_final" $["SuSEfirewall2_final":$["start":["3", "4", "5"]], "SuSEfirewall2_init":$["start":["2", "3", "4", "5"]], "SuSEfirewall2_setup":$["start":["3", "4", "5"]], "amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
-Read	.init.scripts.comment "SuSEfirewall2_final" $["amavis":$[], "fetchmail":$[], "postfix":$[], "sendmail":$[]]
-Execute	.target.bash "/etc/init.d/SuSEfirewall2_final start" $["TERM":"raw"] 0
 Write	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no" true
 Write	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no" true
 Read	.init.scripts.exists "sendmail" true
