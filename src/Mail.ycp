@@ -1193,6 +1193,7 @@ a fixed format to be readable by YaST2.  For details, see
 	virtual_users = settings["virtual_users"]: [];
 	smtp_auth = settings["smtp_auth"]: [];
 	y2debug ("after %1", settings); // may contain passwords
+        return true;
     }
 
 
