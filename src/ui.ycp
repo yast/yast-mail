@@ -318,6 +318,7 @@ global define symbol MtaSelectionDialog () ``{
 		`id (`mtag),
 		`HSquash (
 		    `VBox (
+			`HSpacing (23), // qt bug workaround, #23979
 			`VSpacing (0.2),
 			// MTA name does not need translation
 			`Left (`RadioButton (`id (`sendmail), `opt(`autoShortcut), "Sendmail", mta == `sendmail)),
