@@ -27,8 +27,8 @@ import "Mode";
 import "Mail";
 import "MailAliases";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 include "wizard/sequencer.ycp";
 include "network/dns.ycp";
 include "network/ip.ycp";
@@ -157,8 +157,8 @@ global define symbol MailSequence () ``{
     Wizard::SetContentsButtons ( caption,
 				contents,
 				"",
-				BackButtonLabel (),
-				NextButtonLabel ());
+				Label::BackButton (),
+				Label::NextButton ());
 
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
@@ -195,8 +195,8 @@ global define symbol MailAutoSequence () ``{
     Wizard::SetContentsButtons ( caption,
 				contents,
 				"",
-				BackButtonLabel (),
-				NextButtonLabel ());
+				Label::BackButton (),
+				Label::NextButton ());
 
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
@@ -243,7 +243,7 @@ global define symbol ReadDialog () ``{
 	    string setting = "MAIL_CREATE_CONFIG";
 	    // Translators: continue/cancel dialog
 	    // %1 is a sysconfig variable name
-	    was_ok = UI::ContinueCancelPopup (sformat (_("The setting %1 is turned off. You have
+	    was_ok = Popup::ContinueCancel (sformat (_("The setting %1 is turned off. You have
 probably modified the configuration files directly.
 If you continue, it will be turned on and
 SuSEconfig will overwrite manual changes.
@@ -261,7 +261,7 @@ SuSEconfig will overwrite manual changes.
 	    // bb) read English
 	    // TODO: look at exim and mention it in the popup
 	    // Translators: error popup
-	    UI::ErrorPopup (_("YaST2 can only configure Postfix and Sendmail,
+	    Popup::Error (_("YaST2 can only configure Postfix and Sendmail,
 but neither of them is installed."));
 	}
     }
@@ -277,7 +277,7 @@ global define symbol ConfirmDialog () ``{
     // continue-cancel popup
     string message1 = _("The configuration will be written now.\n");
     string message2 = Mail::ProbePackages ();
-    return UI::ContinueCancelPopup (message1 + message2) ? `next : `back;
+    return Popup::ContinueCancel (message1 + message2) ? `next : `back;
 }
 
 /**
@@ -354,7 +354,7 @@ global define symbol MtaSelectionDialog () ``{
 		)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, MtaSelectionDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, MtaSelectionDialogHelp (), Label::BackButton (), Label::NextButton ());
 
     any ret = nil;
     while (true)
@@ -366,7 +366,7 @@ global define symbol MtaSelectionDialog () ``{
 	}
 
 	if (ret == `back || ret == `next ||
-	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	    (ret == `abort && Popup::ReallyAbort (Mail::touched)))
 	{
 	    break;
 	}
@@ -447,7 +447,7 @@ global define symbol ConnectionTypeDialog () ``{
 				WJ_MakeHelp (
 				    prepend (widgets,
 					     ConnectionTypeDialogHelp ())),
-				BackButtonLabel (), NextButtonLabel ());
+				Label::BackButton (), Label::NextButton ());
     any ret = nil;
     while (true)
     {
@@ -455,7 +455,7 @@ global define symbol ConnectionTypeDialog () ``{
 	if (ct == `permanent || ct == `dialup)
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, true);
-	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel());
+	    UI::ChangeWidget (`id (`next), `Label, Label::NextButton());
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
 	}
@@ -463,7 +463,7 @@ global define symbol ConnectionTypeDialog () ``{
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
-	    UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
+	    UI::ChangeWidget (`id (`next), `Label, Label::FinishButton());
 	    //argh, slow
 	    //Wizard::ReplaceNextButton (finish_button);
 	}
@@ -475,7 +475,7 @@ global define symbol ConnectionTypeDialog () ``{
 	}
 
 	if (ret == `back ||
-	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	    (ret == `abort && Popup::ReallyAbort (Mail::touched)))
 	{
 	    break;
 	}
@@ -547,8 +547,8 @@ global define symbol OutgoingDialog () ``{
     string help = ""; //TODO
     Wizard::SetContentsButtons (
 	caption, contents, WJ_MakeHelp (widgets),
-	BackButtonLabel (),
-	NextButtonLabel ());
+	Label::BackButton (),
+	Label::NextButton ());
 
     any ret = nil;
     while (true)
@@ -560,7 +560,7 @@ global define symbol OutgoingDialog () ``{
 	}
 
 	if (ret == `back ||
-	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	    (ret == `abort && Popup::ReallyAbort (Mail::touched)))
 	{
 	    break;
 	}
@@ -678,8 +678,8 @@ global define symbol IncomingDialog () ``{
     string help = ""; //TODO
     Wizard::SetContentsButtons (
 	caption, contents, WJ_MakeHelp (widgets),
-	BackButtonLabel (),
-	FinishButtonLabel ());
+	Label::BackButton (),
+	Label::FinishButton ());
 
     WJ_GetWidget (`fm_protocol);
     WJ_GetWidget (`fm_local_user);
@@ -697,7 +697,7 @@ global define symbol IncomingDialog () ``{
 	}
 
 	if (ret == `back ||
-	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	    (ret == `abort && Popup::ReallyAbort (Mail::touched)))
 	{
 	    break;
 	}
@@ -809,7 +809,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	    `VSpacing (1)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, MasqueradingDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, MasqueradingDialogHelp (), Label::BackButton (), Label::OKButton ());
 
     any ret = nil;
     edit_touched = false;
@@ -841,7 +841,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	    mu = EditTable(ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
 	}
 	else if ((ret == `abort
-		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		  && Popup::ReallyAbort (Mail::touched || edit_touched))
 		 || ret == `back)
 	{
 	    break;
@@ -879,7 +879,7 @@ global define symbol OutgoingDetailsDialog () ``{
 		// Already in Translation Memory
 		string msg = _("The domain name is incorrect");
 		// TODO: describe a valid domain name
-		UI::ErrorPopup (msg);
+		Popup::Error (msg);
 	    }
 	    else
 	    {
@@ -939,7 +939,7 @@ global define symbol OutgoingAuthOptions() ``{
 	);
     //);
 
-    Wizard::SetContentsButtons (caption, contents, AuthenticationDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, AuthenticationDialogHelp (), Label::BackButton (), Label::OKButton ());
 
     any ret = nil;
     map config = Mail::smtp_auth[0]:$[];
@@ -962,7 +962,7 @@ global define symbol OutgoingAuthOptions() ``{
 	    ret = `abort;
 	}
 
-	if ((ret == `abort && UI::ReallyAbortPopup (Mail::touched))
+	if ((ret == `abort && Popup::ReallyAbort (Mail::touched))
 	    || ret == `back)
 	{
 	    break;
@@ -1118,8 +1118,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1147,13 +1147,13 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	    if (!check_username (user))
 	    {
 		UI::SetFocus (`id (`user));
-		UI::ErrorPopup (valid_username ());
+		Popup::Error (valid_username ());
 	    }
 	    else if (contains (forbidden, user))
 	    {
 		UI::SetFocus (`id (`user));
 		// Translators: error message
-		UI::ErrorPopup (_("The address for this user is already defined."));
+		Popup::Error (_("The address for this user is already defined."));
 	    }
 	    else if (!check_mail_address (address))
 	    {
@@ -1161,7 +1161,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// no-spaces@valid_domainname
 		UI::SetFocus (`id (`address));
 		// error popup
-		UI::ErrorPopup (_("The mail address format is incorrect."));
+		Popup::Error (_("The mail address format is incorrect."));
 	    }
 	    else
 	    {
@@ -1232,7 +1232,7 @@ global define symbol DownloadingDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), Label::BackButton (), Label::OKButton ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -1260,7 +1260,7 @@ global define symbol DownloadingDialog () ``{
 	    fm = EditTable(ret, fm, ["server", "protocol", "remote_user", "local_user"], ``(FetchmailPopup ()), `tab);
 	}
 	else if ((ret == `abort
-		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		  && Popup::ReallyAbort (Mail::touched || edit_touched))
 		 || ret == `next || ret == `back)
 	{
 	    break;
@@ -1308,8 +1308,8 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		`Left (WJ_MakeWidget (`fm_password)),
 		`Left (WJ_MakeWidget (`fm_local_user)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1378,7 +1378,7 @@ global define symbol AliasesDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), Label::BackButton (), Label::OKButton ());
 
     any ret = nil;
     edit_touched = false;
@@ -1406,7 +1406,7 @@ global define symbol AliasesDialog () ``{
 	    y2milestone ("TODO: man aliases");
 	}
 	else if ((ret == `abort
-		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		  && Popup::ReallyAbort (Mail::touched || edit_touched))
 		 || ret == `next || ret == `back)
 	{
 	    break;
@@ -1448,8 +1448,8 @@ global define map AliasPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`destinations), _("&Destinations"), destinations)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1480,13 +1480,13 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	    {
 		UI::SetFocus (`id (`alias));
 		// Translators: error message
-		UI::MessagePopup (_("The alias format is incorrect."));
+		Popup::Message (_("The alias format is incorrect."));
 	    }
 	    else if (contains (forbidden, alias))
 	    {
 		UI::SetFocus (`id (`alias));
 		// Translators: error message
-		UI::MessagePopup (_("The destinations for this alias are already defined."));
+		Popup::Message (_("The destinations for this alias are already defined."));
 	    }
 	    else
 	    {
@@ -1536,7 +1536,7 @@ global define symbol VirtualDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), Label::BackButton (), Label::OKButton ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -1564,7 +1564,7 @@ global define symbol VirtualDialog () ``{
 	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
 	else if ((ret == `abort
-		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		  && Popup::ReallyAbort (Mail::touched || edit_touched))
 		 || ret == `next || ret == `back)
 	{
 	    break;

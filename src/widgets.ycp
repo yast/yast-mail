@@ -21,8 +21,8 @@ textdomain "mail";
 import "Mail";
 import "MailAliases";
 
-include "ui/common_popups.ycp";
-include "ui/common_messages.ycp";
+import "Popup";
+import "Label";
 include "network/dns.ycp";
 include "network/ip.ycp";
 
@@ -31,7 +31,7 @@ include "network/ip.ycp";
  */
 global term finish_button = `PushButton (`id (`next),
 					 `opt (`default, `key_F10),
-					 FinishButtonLabel());
+					 Label::FinishButton());
 
 /**
  * @ref widget_def
@@ -215,7 +215,7 @@ global define boolean Validate_foo (symbol id) ``{
 	UI::SetFocus (`id (id));
 	// Translators: error popup
 	string msg = _("The host name is incorrect");
-	UI::ErrorPopup (msg);
+	Popup::Error (msg);
 	return false;
     }
     return true;
@@ -247,7 +247,7 @@ global define boolean Validate_outgoing_mail_server(symbol id) ``{
 	Mail::connection_type == `dialup)
     {
 	UI::SetFocus (`id (id));
-	UI::ErrorPopup (valid_address ());
+	Popup::Error (valid_address ());
 	return false;
     }
     return true;
@@ -269,7 +269,7 @@ global define boolean Validate_from_header (symbol id) ``{
     if (fh != "" && ! check_domainname (fh))
     {
 	UI::SetFocus (`id (id));
-	UI::ErrorPopup (valid_domainname ());
+	Popup::Error (valid_domainname ());
 	return false;
     }
     return true;
@@ -290,7 +290,7 @@ global define boolean Validate_local_domains (symbol id) ``{
     if (find (string s, lld, ``(! check_domainname (s))) != nil)
     {
 	UI::SetFocus (`id (id));
-	UI::ErrorPopup (valid_domainname ());
+	Popup::Error (valid_domainname ());
 	return false;
     }
     return true;
@@ -344,7 +344,7 @@ global define boolean Validate_fm_server (symbol id) ``{
 	UI::SetFocus (`id (id));
 	// Translators: error popup
 	string msg = _("The host name is incorrect");
-	UI::ErrorPopup (msg);
+	Popup::Error (msg);
 	return false;
     }
     return true;
@@ -379,7 +379,7 @@ global define boolean Validate_fm_remote_user (symbol id) ``{
     {
 	UI::SetFocus (`id (id));
 	// Translators: error popup
-	UI::ErrorPopup (_("The user name format is incorrect."));
+	Popup::Error (_("The user name format is incorrect."));
 	return false;
     }
     return true;
@@ -415,7 +415,7 @@ global define boolean Validate_fm_local_user (symbol id) ``{
 	// it may be ok if it is directed to an alias
 	UI::SetFocus (`id (id));
 	// Translators: error popup
-	UI::ErrorPopup (_("The user name format is incorrect."));
+	Popup::Error (_("The user name format is incorrect."));
 	return false;
     }
     return true;
@@ -438,7 +438,7 @@ global define boolean Validate_root_alias (symbol id) ``{
     {
 	UI::SetFocus (`id (id));
 	// Translators: error popup
-	UI::ErrorPopup (_("The user name format is incorrect."));
+	Popup::Error (_("The user name format is incorrect."));
 	return false;
     }
     return true;

@@ -189,7 +189,7 @@
 
     /**
      * Has the configuration been changed?
-     * Can be used as an argument to UI::ReallyAbortPopup
+     * Can be used as an argument to Popup::ReallyAbort
      */
     global boolean touched = false;
 
