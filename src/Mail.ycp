@@ -1035,27 +1035,40 @@ a fixed format to be readable by YaST2.  For details, see
 
 	string nc = Summary::NotConfigured ();
 	string summary = "";
+	// summary header; mail transfer agent
 	summary = Summary::AddHeader(summary, _("MTA"));
 	summary = Summary::AddLine(summary, agent);
+	// summary header
 	summary = Summary::AddHeader(summary, _("Connection Type"));
 	summary = Summary::AddLine(summary,con_type );
 
+	// summary header
 	summary = Summary::AddHeader(summary, _("Outgoing Mail Server"));
 	summary = Summary::AddLine(summary, (outgoing_mail_server != "") ? outgoing_mail_server : nc);
 
+	// summary header; the "From: foo@bar.com" mail header
 	summary = Summary::AddHeader(summary, _("From Header"));
 	summary = Summary::AddLine(summary, (from_header != "") ? from_header : nc);
 
-
+	// summary item
 	summary = summary + ListItem (_("Local Domains"), local_domains, nil);
+	// summary item
 	summary = summary + ListItem (_("Masquerade Other Domains"), masquerade_other_domains, nil);
+	// summary item
 	summary = summary + ListItem (_("Masquerade Users"), masquerade_users, "user");
+	// summary header
 	summary = Summary::AddHeader(summary, _("Accept remote SMTP connections"));
+	// summary item
 	summary = Summary::AddLine(summary, (listen_remote) ? _("Yes") : _("No"));
+	// summary header
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
+	// summary item
 	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : _("No"));
+	// summary item
 	summary = summary + ListItem (_("Fetchmail"), fetchmail, "server");
+	// summary item
 	summary = summary + ListItem (_("Aliases"), MailAliases::MergeRootAlias (MailAliases::aliases), "alias");
+	// summary item
 	summary = summary + ListItem (_("Virtual Users"), virtual_users, "alias");
 	return summary;
     }

@@ -141,6 +141,7 @@ global define symbol MailSequence () ``{
 
     // Translators: dialog caption
     string caption = _("Mail configuration");
+    // label
     term contents = `Label (_("Initializing..."));
 
     Wizard::CreateDialog ();
@@ -178,6 +179,7 @@ global define symbol MailAutoSequence () ``{
 
     // Translators: dialog caption
     string caption = _("Mail configuration");
+    // label
     term contents = `Label (_("Initializing..."));
 
     Wizard::CreateDialog ();
@@ -237,6 +239,7 @@ SuSEconfig will overwrite manual changes.
  * @return `back or `next
  */
 global define symbol ConfirmDialog () ``{
+    // continue-cancel popup
     string message1 = _("The configuration will be written now.\n");
     string message2 = Mail::ProbePackages ();
     return UI::ContinueCancelPopup (message1 + message2) ? `next : `back;
@@ -495,6 +498,7 @@ global define symbol BasicDialog () ``{
 		),
 	    WJ_MakeWidget (`fm_local_user)
 	    );
+	// frame label: mail downloading (fetchmail)
 	term fm_frame = `Frame (_("&Downloading"), fm_contents);
 	i_contents = add (i_contents,
 			  `HBox (
@@ -524,15 +528,21 @@ global define symbol BasicDialog () ``{
 
     i_contents = add (
 	i_contents,
+	// menu button: details of incoming mail
 	`MenuButton (`id (`incoming_details), _("&Incoming details..."), [
+			 // menu button: mail downloading (fetchmail)
 			 `item (`id (`downloading), _("&Downloading...")),
+			 // menu button
 			 `item (`id (`aliases), _("&Aliases...")),
+			 // menu button
 			 `item (`id (`virtual), _("&Virtual domains...")),
 			 ])
 	);
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
 
+    // frame label
     term o_frame = `Frame (_("Outgoing mail"), `HSquash (o_contents));
+    // frame label
     term i_frame = `Frame (_("Incoming mail"), `HSquash (i_contents));
     term contents = `VBox (
 	`VStretch (),
@@ -658,7 +668,9 @@ global define symbol OutgoingDetailsDialog () ``{
 		`id (`tab),
 		`opt (`notify, `immediate),
 		// Translators: table column headings
-		`header (_("Local user"), _("Display as")),
+		`header (_("Local user"),
+		// Translators: table column headings
+			 _("Display as")),
 		makeItems (mu, ["user", "address"])
 		),
 /*
@@ -918,6 +930,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// string valid_mail_address
 		// no-spaces@valid_domainname
 		UI::SetFocus (`id (`address));
+		// error popup
 		UI::ErrorPopup (_("The mail address format is incorrect."));
 	    }
 	    else
@@ -951,7 +964,13 @@ global define symbol DownloadingDialog () ``{
 		`id (`tab),
 		`opt (`notify, `immediate),
 		// Translators: table column headings
-		`header (_("Server"), _("Protocol"), _("User"), _("Local user")),
+		`header (_("Server"),
+		// Translators: table column headings
+			 _("Protocol"),
+		// Translators: table column headings
+			 _("User"),
+		// Translators: table column headings
+			 _("Local user")),
 		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
 		),
 /*
@@ -1099,7 +1118,9 @@ global define symbol AliasesDialog () ``{
 		`id (`tab),
 		`opt (`notify, `immediate),
 		// Translators: table column headings
-		`header (_("Alias"), _("Destinations")),
+		`header (_("Alias"),
+		// Translators: table column headings
+			 _("Destinations")),
 		makeItems (aliases, ["alias", "destinations"])
 		),
 	    `HBox(
@@ -1252,7 +1273,9 @@ global define symbol VirtualDialog () ``{
 		`id (`tab),
 		`opt (`notify, `immediate),
 		// Translators: table column headings
-		`header (_("Alias"), _("Destinations")),
+		`header (_("Alias"),
+		// Translators: table column headings
+			 _("Destinations")),
 		makeItems (vu, ["alias", "destinations"])
 		),
 	    `HBox(

@@ -69,13 +69,16 @@
 		  `RichText( `id(`summary), Mail::Summary()),
 		  `VSpacing(),
 		  `HBox(
+		      // button label
 			`PushButton(`id(`configure), _("&Configure Mail")),
 			`HStretch(),
+		      // button label
 			`PushButton(`id(`reset), _("&Reset Configuration"))
 			),
 		  `VSpacing(1)
 		  );
 
+	// dialog heading
 	Wizard::SetContents(_("Mail Configuration"),
 			    contents, "", true, true);
     }

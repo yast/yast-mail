@@ -41,6 +41,7 @@ global map Widgets = $[
 	// if there are choices, they are used to construct the widget,
 	// otherwise get is used
 	"choices": [1, 2, 3],
+	// just a template, do not translate
 	"help": _("."),
 	"get": ``(Get_foo ()),
 	"set": ``(Set_foo ()),
@@ -50,6 +51,7 @@ global map Widgets = $[
 	"widget": `TextEntry (),
 	// Translators: text entry label
 	"label": _("&Outgoing mail server"),
+	// help text
 	"help": _("
 <p>The outgoing mail server is generally intended for dial-up connections.
 Enter the Internet service provider's SMTP server, such as
@@ -63,6 +65,7 @@ Enter the Internet service provider's SMTP server, such as
 	"widget": `TextEntry (),
 	// Translators: text entry label
 	"label": _("Do&main for the 'From' header"),
+	// help text
 	"help": _("
 <p>You may want the mail you sent to appear as if it originated from
 <b>company.com</b> instead of <b>pc-042.company.com</b>.
@@ -76,6 +79,7 @@ Use the text box provided or a more detailed dialog.</p>
 	"widget": `TextEntry (),
 	// Translators: text entry label
 	"label": _("&Domains for locally delivered mail"),
+	// help text
 	"help": _("
 <p>Here, specify the domains for which the mail
 will be delivered locally. If you enter nothing,
@@ -87,7 +91,9 @@ the local host name is assumed.</p>
 	],
     `listen_remote: $[
 	"widget": `CheckBox (),
+	// check box label
 	"label": _("Accept remote &SMTP connections"),
+	// help text
 	"help": _("
 <p>Mail can be received directly via the SMTP protocol
 or it can be downloaded from
@@ -97,7 +103,9 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>"),
 	],
     `use_amavis: $[
 	"widget": `CheckBox (),
+	// checkbox label
 	"label": _("&Enable virus scanning (AMaViS)"),
+	// help text
 	"help": _("
 <p>If AMaViS is not installed and you want to use it, it will be installed
 automatically.</p>
