@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Jan 15 19:15:29 CET 2002 - mvidner@suse.cz
+
+- Include forgotten agent configurations.
+- Obsolete yast2-config-sendmail.
+- Using ini-agent instead of rc-agent.
+- 2.5.4
+
+-------------------------------------------------------------------
 Mon Jan 14 17:16:56 CET 2002 - mvidner@suse.cz
 
 - /etc/fetchmailrc: use permissions 0600, refer to file format docs.
