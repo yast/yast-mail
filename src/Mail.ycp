@@ -809,6 +809,14 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 	return true;
+
+	// postfix_mda
+	if (mta == `postfix)
+	{
+	    // strip the quote
+	    string s_mda = "" + postfix_mda;
+	    SCR::Write (.sysconfig.postfix.POSTFIX_MDA, s_mda);
+	}
     }
 
     /**
@@ -1125,6 +1133,8 @@ a fixed format to be readable by YaST2.  For details, see
 		return([k,v]);
 	    } else if (k == "connection_type" && is(v,symbol)) {
 		return([k,v]);
+	    } else if (k == "postfix_mda" && is(v,symbol)) {
+		return([k,v]);
 	    }
 	    if (k == "mta" && v == "sendmail") {
 		return(["mta", `sendmail]);
@@ -1138,11 +1148,15 @@ a fixed format to be readable by YaST2.  For details, see
 		return(["connection_type", `dialup]);
 	    } else  if (k == "connection_type") {
 		return(["connection_type", `none]);
+	    } else if (k == "postfix_mda" && v == "local") {
+		return(["postfix_mda", `local]);
+	    } else if (k == "postfix_mda" && v == "procmail") {
+		return(["postfix_mda", `procmail]);
+	    } else if (k == "postfix_mda") {
+		return(["postfix_mda", `cyrus]);
 	    } else {
 		return ([k,v]);
 	    }
-
-
 	});
 
 	mta = settings["mta"]: `other;
@@ -1151,6 +1165,7 @@ a fixed format to be readable by YaST2.  For details, see
 	use_amavis = settings["use_amavis"]: false;
 	local_domains = settings["local_domains"]: [];
 	outgoing_mail_server = settings["outgoing_mail_server"]: "";
+	postfix_mda = settings["postfix_mda"]: `local;
 	from_header = settings["from_header"]: "";
 	masquerade_other_domains = settings["masquerade_other_domains"]: [];
 	masquerade_users = settings["masquerade_users"]: [];
@@ -1186,6 +1201,10 @@ a fixed format to be readable by YaST2.  For details, see
 	    "virtual_users": virtual_users,
 	    "smtp_auth": smtp_auth,
 	    ];
+	if (mta == `postfix)
+	{
+	    settings = add (settings, "postfix_mda", postfix_mda);
+	}
 	// Dont export empty fields
 	foreach (`k, `v, settings, ``{
 	    if (size(v) == 0 )

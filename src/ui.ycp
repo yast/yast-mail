@@ -651,9 +651,11 @@ global define symbol IncomingDialog () ``{
     i_contents = add (i_contents, WJ_MakeWidget (`root_alias));
     widgets = add (widgets, `root_alias);
 
-    // TODO combo box, postfix only!
-    i_contents = add (i_contents, WJ_MakeWidget (`delivery_mode));
-    widgets = add (widgets, `delivery_mode);
+    if (Mail::mta == `postfix)
+    {
+	i_contents = add (i_contents, WJ_MakeWidget (`delivery_mode));
+	widgets = add (widgets, `delivery_mode);
+    }
 
     i_contents = add (
 	i_contents,
@@ -681,8 +683,10 @@ global define symbol IncomingDialog () ``{
 	Label::BackButton (),
 	Label::FinishButton ());
 
+    // set combo boxes to proper values
     WJ_GetWidget (`fm_protocol);
     WJ_GetWidget (`fm_local_user);
+    WJ_GetWidget (`delivery_mode);
 
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
@@ -1190,6 +1194,9 @@ global define symbol DownloadingDialog () ``{
     term contents =
 	`VBox (
 	    `VSpacing (0.2),
+	    /*
+	     * no time to implement this :-(
+	     * #22903
 	    `Frame (
 		// Translators: frame label
 		// When should Fetchmail run
@@ -1208,6 +1215,7 @@ global define symbol DownloadingDialog () ``{
 		    )
 		),
 	    `VSpacing (0.5),
+	    */
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
@@ -1316,6 +1324,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
+    // set combo boxes to proper values
     WJ_GetWidget (`fm_protocol);
     WJ_GetWidget (`fm_local_user);
     UI::SetFocus (`id (`fm_server));

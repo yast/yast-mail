@@ -169,7 +169,9 @@ automatically.</p>
 	"widget": `TextEntry (),
 	// Translators: text entry label
 	"label": _("&Forward root's mail to"),
-	"help": "",
+	// help text
+	"help": _("<p>It is recommended to have a regular user account
+for the system administrator and redirect root's mail to this account.</p>"),
 	"get": ``(Get_root_alias ()),
 	"set": ``(Set_root_alias ()),
 	"validate": ``(Validate_root_alias ()),
@@ -178,21 +180,27 @@ automatically.</p>
 	"widget": `ComboBox (),
 	"opt": `opt (`hstretch),
 	// Translators: combo box label
+	// /etc/sysconfig/postfix: POSTFIX_MDA
 	"label": _("&Delivery mode"),
 	"choices": [
-	    // TODO explain
-	    `item (`id (`dm_direct), _("Direct")),
-	    // TODO explain
-	    `item (`id (`dm_procmail), _("Procmail")),
-	    // TODO explain
-	    `item (`id (`dm_cyrus), _("Cyrus")),
+	    // combo box choice:
+	    // deliver mail normally
+	    `item (`id (`dm_local), _("Directly")),
+	    // combo box choice:
+	    // deliver mail through procmail
+	    `item (`id (`dm_procmail), _("Through procmail")),
+	    // combo box choice:
+	    // deliver mail to cyrus-imapd using LMTP
+	    `item (`id (`dm_cyrus), _("To Cyrus IMAP server")),
+	    /* TODO: should check whether cyrus-imapd is installed.
+	       And show the choice only if it is.
+	       But SuSEconfig.postfix falls back to local if it's not, so OK */
 	    ],
-	// TODO
-	"help": "",
-	// TODO, dummy now
-	"get": `dm_direct,
-	// TODO, _set_, this is a dummy
-	"set": ``(WJ_Validate_True ()),
+	// help text
+	"help": _("<p>The <b>delivery mode</b> is usually <b>procmail</b>, unless you do not forward root's mail or want to access the mail via IMAP.</p>"),
+	"get": ``(Get_delivery_mode ()),
+	"set": ``(Set_delivery_mode ()),
+	"validate": ``(Validate_delivery_mode ()),
 	],
     ];
 
@@ -444,6 +452,60 @@ global define boolean Validate_root_alias (symbol id) ``{
     return true;
 }
 
+global define string Get_delivery_mode () ``{
+    map scr2ui = $[
+	`local: `dm_local,
+	`procmail: `dm_procmail,
+	`cyrus: `dm_cyrus,
+	];
+    symbol val = scr2ui[Mail::postfix_mda]:`dm_local;
+    return val;
+}
+
+global define void Set_delivery_mode (symbol id) ``{
+    symbol val = UI::QueryWidget (`id (id), `Value);
+    map ui2scr = $[
+	`dm_local: `local,
+	`dm_procmail: `procmail,
+	`dm_cyrus: `cyrus,
+	];
+    val = ui2scr[val]:`local;
+    Mail::Touch (Mail::postfix_mda != val);
+    Mail::postfix_mda = val;
+}
+
+global define boolean Validate_delivery_mode (symbol id) ``{
+    symbol val = UI::QueryWidget (`id (id), `Value);
+    // Procmail is only OK if root has an alias
+    // Because postfix runs procmail as nobody instead of root
+    // and the mail would end up in the wrong place
+    boolean ok = true;
+
+    // the root alias widget should be in the same dialog!
+    symbol ra_id = `root_alias;
+    if (!UI::WidgetExists (`id (ra_id)))
+    {
+	y2error ("Widget %1 not found, skipping validation of %2", ra_id, id);
+    }
+    else
+    {
+	string ra_val = UI::QueryWidget (`id (ra_id), `Value);
+	if (ra_val == "" && val == `dm_procmail)
+	{
+	    ok = false;
+	}
+    }
+
+    if (!ok)
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	// Validation
+	Popup::Error (_("Cannot use procmail when root's mail is not forwarded."));
+	return false;
+    }
+    return true;
+}
 
 
 }
