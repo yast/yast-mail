@@ -87,7 +87,7 @@
      * Domains for locally delivered mail.
      * (ahost.acompany.com is a domain)
      */
-    global list(string) local_domains = [];
+    global list<string> local_domains = [];
 
     /**
      * A relay server for outgoing mail.
@@ -106,13 +106,13 @@
      * local_domains, otherwise from these domains. (Remember: mail
      * domains)
      */
-    global list(string) masquerade_other_domains = [];
+    global list<string> masquerade_other_domains = [];
 
     /**
      * User specific sender masquerading.
      * List of maps: $[comment:, user:, address:] (all are strings)
      */
-    global list(map) masquerade_users = [];
+    global list<map> masquerade_users = [];
 
     /**
      * sysconfig/postfix:POSTFIX_MDA
@@ -137,13 +137,13 @@
      * $[server:, protocol:, remote_user:, local_user:, password:,
      * enabled:(bool), other_(server|client)_options: ]
      */
-    global list(map) fetchmail = [];
+    global list<map> fetchmail = [];
 
     /**
      * Domain-specific aliases.
      * List of maps: $[comment:, alias:, destinations:] (all are strings)
      */
-    global list(map) virtual_users = [];
+    global list<map> virtual_users = [];
 
     /**
      * SMTP AUTH (#23000)
@@ -152,7 +152,7 @@
      * $[server: string, user: string, password: string(plain text)]
      * There are other map keys that must be preserved on editing.
      */
-    global list(map) smtp_auth = [];
+    global list<map> smtp_auth = [];
 
     /**
      * Sysconfig setting that enables the feature.
@@ -178,7 +178,7 @@
      * Must check for validity: the agent matches [[:alnum:]]+,
      * lowercase names are valid too.
      */
-    global list(string) protocol_choices = [
+    global list<string> protocol_choices = [
 	"AUTO",
 	"POP2",
 	"POP3",
@@ -213,12 +213,12 @@
      * Read only, set by ProbePackages.
      * Use as an argument to Require::DoInstallAndRemove
      */
-    global list(string) install_packages = [];
+    global list<string> install_packages = [];
     /**
      * Read only, set by ProbePackages.
      * Use as an argument to Require::DoInstallAndRemove
      */
-    global list(string) remove_packages = [];
+    global list<string> remove_packages = [];
 
     /**
      * Of the four available amavis packages, amavis-postfix does not need
@@ -229,6 +229,28 @@
      * This is only used if use_amavis is on, of course.
      */
     boolean amavis_service = true;
+
+    /**
+     * Is a package available for installation?
+     * This is a bit kludgy, since querying .package would take up
+     * a large amount of resources.
+     * @param	package package name, without version or .rpm suffix
+     * @return true/false
+     */
+    define boolean AvailableForInstallation (string package) ``{
+	// require.ycp
+	return Require::IsPackageAvailable (package);
+    }
+
+    /**
+     * Is a package installed?
+     * @param	package package name, without version or .rpm suffix
+     * @return true/false
+     */
+    define boolean Installed (string package) ``{
+	// require.ycp
+	return Require::AreAllPackagesInstalled ([package]);
+    }
 
     /**
      * Detect which packages have to be installed
@@ -262,29 +284,25 @@
 	return message;
     }
 
-    /**
-     * Is a package available for installation?
-     * This is a bit kludgy, since querying .package would take up
-     * a large amount of resources.
-     * @param	package package name, without version or .rpm suffix
-     * @return true/false
-     */
-    define boolean AvailableForInstallation (string package) ``{
-	// require.ycp
-	return Require::IsPackageAvailable (package);
-    }
-
-    /**
-     * Is a package installed?
-     * @param	package package name, without version or .rpm suffix
-     * @return true/false
-     */
-    define boolean Installed (string package) ``{
-	// require.ycp
-	return Require::AreAllPackagesInstalled ([package]);
-    }
-
     /* ---------------------------------------------------------------- */
+
+    /**
+     * Detect the MTA installed
+     */
+    define void ReadMta () ``{
+	if (Installed ("sendmail"))
+	{
+	    mta = `sendmail;
+	}
+	else if (Installed ("postfix"))
+	{
+	    mta = `postfix;
+	}
+	else
+	{
+	    mta = `other;
+	}
+    }
 
     /**
      * Read all mail settings from the SCR
@@ -293,7 +311,7 @@
      *	      was pressed.
      * @return True on success
      */
-    global define boolean Read (block abort) ``{
+    global define boolean Read (block<boolean> abort) ``{
 	// Translators: dialog caption
 	string caption = _("Initializing mail configuration");
 
@@ -377,26 +395,28 @@
 	string ld_s = "";
 	if (mta == `sendmail)
 	{
-	    ld_s = SCR::Read (.sysconfig.sendmail.SENDMAIL_LOCALHOST);
+	    ld_s = (string) SCR::Read (.sysconfig.sendmail.SENDMAIL_LOCALHOST);
 	}
 	else if (mta == `postfix)
 	{
-	    ld_s = SCR::Read (.sysconfig.postfix.POSTFIX_LOCALDOMAINS);
+	    ld_s = (string) SCR::Read (.sysconfig.postfix.POSTFIX_LOCALDOMAINS);
 	}
 	else
 	{
 	    return false;
 	}
-	local_domains = filter (`s, splitstring (ld_s, " ,;"), ``(s != ""));
+	local_domains = filter (string s, splitstring(ld_s, " ,;"),``(s != ""));
 
 	// outgoing_mail_server
 	if (mta == `sendmail)
 	{
-	    outgoing_mail_server = SCR::Read (.sysconfig.sendmail.SENDMAIL_SMARTHOST);
+	    outgoing_mail_server = (string)
+		SCR::Read (.sysconfig.sendmail.SENDMAIL_SMARTHOST);
 	}
 	else if (mta == `postfix)
 	{
-	    outgoing_mail_server = SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
+	    outgoing_mail_server = (string)
+		SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	}
 	else
 	{
@@ -406,7 +426,8 @@
 	// postfix_mda
 	if (mta == `postfix)
 	{
-	    string postfix_mda_s = SCR::Read (.sysconfig.postfix.POSTFIX_MDA);
+	    string postfix_mda_s = (string)
+		SCR::Read (.sysconfig.postfix.POSTFIX_MDA);
 	    if (postfix_mda_s == "local")
 	    {
 		postfix_mda = `local;
@@ -433,7 +454,7 @@
 	}
 	// read 3
 	// from_header
-	from_header = SCR::Read (.sysconfig.mail.FROM_HEADER);
+	from_header = (string) SCR::Read (.sysconfig.mail.FROM_HEADER);
 	// handle nonexistent file
 	if (from_header == nil)
 	{
@@ -444,27 +465,28 @@
 	string mod_s = "";
 	if (mta == `sendmail)
 	{
-	    mod_s = SCR::Read (.sysconfig.sendmail.MASQUERADE_DOMAINS);
+	    mod_s = (string) SCR::Read (.sysconfig.sendmail.MASQUERADE_DOMAINS);
 	}
 	else if (mta == `postfix)
 	{
-	    mod_s = SCR::Read (.sysconfig.postfix.POSTFIX_MASQUERADE_DOMAIN);
+	    mod_s = (string) SCR::Read (.sysconfig.postfix.POSTFIX_MASQUERADE_DOMAIN);
 	}
 	else
 	{
 	    return false;
 	}
-	masquerade_other_domains = filter (`s, splitstring (mod_s, " ,;"), ``(s != ""));
+	masquerade_other_domains = filter (string s, splitstring (mod_s, " ,;"),
+	    ``(s != ""));
 
 	// masquerade_users
-	list(map) mu_raw = [];
+	list<map> mu_raw = [];
 	if (mta == `sendmail)
 	{
-	    mu_raw = SCR::Read (.mail.sendmail.generics.table);
+	    mu_raw = (list<map>)SCR::Read (.mail.sendmail.generics.table);
 	}
 	else if (mta == `postfix)
 	{
-	    mu_raw = SCR::Read (.mail.postfix.sendercanonical.table);
+	    mu_raw = (list<map>)SCR::Read (.mail.postfix.sendercanonical.table);
 	}
 	else
 	{
@@ -487,7 +509,7 @@
 	// TODO
 	fetchmail_mode = `manual;
 
-	fetchmail = SCR::Read (.mail.fetchmail.accounts);
+	fetchmail = (list<map>) SCR::Read (.mail.fetchmail.accounts);
 	if (fetchmail == nil)
 	{
 	    // Translators: error message,
@@ -517,14 +539,14 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 	// virtual_users
-	list(map) v_raw = [];
+	list<map> v_raw = [];
 	if (mta == `sendmail)
 	{
-	    v_raw = SCR::Read (.mail.sendmail.virtuser.table);
+	    v_raw = (list<map>) SCR::Read (.mail.sendmail.virtuser.table);
 	}
 	else if (mta == `postfix)
 	{
-	    v_raw = SCR::Read (.mail.postfix.virtual.table);
+	    v_raw = (list<map>) SCR::Read (.mail.postfix.virtual.table);
 	}
 	else
 	{
@@ -546,8 +568,9 @@ a fixed format to be readable by YaST2.  For details, see
 	// read 6
 	if (mta == `sendmail)
 	{
-	    smtp_auth = SCR::Read (.mail.sendmail.auth.accounts);
-	    string mechanisms = SCR::Read (.sysconfig.sendmail.SMTP_AUTH_MECHANISMS);
+	    smtp_auth = (list<map>) SCR::Read (.mail.sendmail.auth.accounts);
+	    string mechanisms =
+		(string) SCR::Read (.sysconfig.sendmail.SMTP_AUTH_MECHANISMS);
 	    if (mechanisms != sendmail_all_mechanisms && mechanisms != "")
 	    {
 		enable_smtp_auth = nil;
@@ -555,7 +578,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 	else if (mta == `postfix)
 	{
-	    smtp_auth = SCR::Read (.mail.postfix.auth.accounts);
+	    smtp_auth = (list<map>) SCR::Read (.mail.postfix.auth.accounts);
 	}
 	else
 	{
@@ -566,24 +589,6 @@ a fixed format to be readable by YaST2.  For details, see
 	// complete
 	Progress::NextStage ();
 	return true;
-    }
-
-    /**
-     * Detect the MTA installed
-     */
-    define void ReadMta () ``{
-	if (Installed ("sendmail"))
-	{
-	    mta = `sendmail;
-	}
-	else if (Installed ("postfix"))
-	{
-	    mta = `postfix;
-	}
-	else
-	{
-	    mta = `other;
-	}
     }
 
     /**
@@ -627,69 +632,6 @@ a fixed format to be readable by YaST2.  For details, see
 		"password": "foo"
 		],
 	    ];
-    }
-
-    /**
-     * Update the SCR according to mail settings
-     * @param abort A block that can be called by Write to find
-     *	      out whether abort is requested. Returns true if abort
-     *	      was pressed.
-     * @return True on success
-     */
-    global define boolean Write (block abort) ``{
-	list stages = [
-	    // Translators: progress label
-	    [ _("Writing general settings"), ``(WriteGeneral ())],
-	    ];
-	if (connection_type != `none)
-	{
-	    // Translators: progress label
-	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
-	    // Translators: progress label
-	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliasesAndVirtual ()) ]);
-	    // Write them unconditionally, because it is now possible to
-	    // enter them also in the Permanent mode. Bug #17417.
-	    // Translators: progress label
-	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
-	    // Translators: progress label
-	    stages = add (stages, [ _("Writing authentication settings..."), ``(WriteSmtpAuth ()) ]);
-	}
-	// Translators: progress label
-	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
-	// autoinstallation does it all together later
-	if (! write_only)
-	{
-	    // Translators: progress label
-	    stages = add (stages, [ _("Running SuSEconfig"), ``(WriteSuSEconfig ()) ]);
-
-	    // Translators: progress label
-	    stages = add (stages, [ _("Restarting services"), ``(WriteServices ()) ]);
-	}
-
-	// Translators: dialog caption
-	string caption = _("Saving mail configuration");
-	// We do not set help text here, because it was set outside
-	Progress::New (caption, " ", 0, maplist (list e, stages, ``(e[0]:"")), [], "");
-
-	foreach (list e, stages, ``{
-	    Progress::NextStage ();
-	    if (eval (abort))
-	    {
-		// TODO: finishes only this iteration, not the function
-		return false;
-	    }
-
-	    term f = e[1]:``(false);
-	    if (! eval (f))
-	    {
-		// TODO: finishes only this iteration, not the function
-		return false;
-	    }
-	});
-
-	// complete
-	Progress::NextStage ();
-	return true;
     }
 
     /**
@@ -765,7 +707,7 @@ a fixed format to be readable by YaST2.  For details, see
 	{
 	    string default_permanent = "-L sendmail -Am -bd -q30m -om";
 	    string default_dialup = "-L sendmail -Am -bd -om";
-	    string args = SCR::Read (.sysconfig.sendmail.SENDMAIL_ARGS);
+	    string args = (string) SCR::Read (.sysconfig.sendmail.SENDMAIL_ARGS);
 
 	    if (connection_type == `permanent && args == default_dialup)
 	    {
@@ -813,7 +755,7 @@ a fixed format to be readable by YaST2.  For details, see
 	if (mta == `postfix)
 	{
 	    // strip the quote
-	    string s_mda = "" + postfix_mda;
+	    string s_mda = "" + tostring (postfix_mda);
 	    SCR::Write (.sysconfig.postfix.POSTFIX_MDA, s_mda);
 	}
 	return true;
@@ -843,7 +785,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 
 	// masquerade_users
-	list(map) mu_raw = maplist (map e, masquerade_users,
+	list<map> mu_raw = maplist (map e, masquerade_users,
 				    ``($[
 					   "comment"	: e["comment"]:"",
 					   // TODO check that nonempty
@@ -894,7 +836,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 
 	// virtual_users
-	list(map) v_raw = maplist (map e, virtual_users,
+	list<map> v_raw = maplist (map e, virtual_users,
 				   ``($[
 					  "comment"	: e["comment"]:"",
 					  "key"		: e["alias"]:"",
@@ -967,7 +909,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/amavis"));
 	    return false;
 	}
-	list(path) tables = nil;
+	list<path> tables = nil;
 	if (mta == `sendmail)
 	{
 	    if (!SCR::Write (.sysconfig.sendmail, nil))
@@ -1006,7 +948,8 @@ a fixed format to be readable by YaST2.  For details, see
 	foreach (path p, tables, ``{
 	    if (!SCR::Write (p, nil))
 	    {
-		string filename = SCR::Read (p + topath (".meta.filename"));
+		string filename =
+		    (string) SCR::Read (p + topath (".meta.filename"));
 		// Translators: error message
 		Report::Error (sformat (_("Error writing file %1"), filename));
 		return false;
@@ -1025,11 +968,13 @@ a fixed format to be readable by YaST2.  For details, see
 	integer ret = 0;
 	if (mta == `sendmail)
 	{
-	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module sendmail");
+	    ret = (integer)
+		SCR::Execute(.target.bash,"/sbin/SuSEconfig --module sendmail");
 	}
 	else if (mta == `postfix)
 	{
-	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module postfix");
+	    ret = (integer)
+		SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix");
 	}
 	else
 	{
@@ -1091,6 +1036,70 @@ a fixed format to be readable by YaST2.  For details, see
     }
 
     /**
+     * Update the SCR according to mail settings
+     * @param abort A block that can be called by Write to find
+     *	      out whether abort is requested. Returns true if abort
+     *	      was pressed.
+     * @return True on success
+     */
+    global define boolean Write (block<boolean> abort) ``{
+	list stages = [
+	    // Translators: progress label
+	    [ _("Writing general settings"), ``(WriteGeneral ())],
+	    ];
+	if (connection_type != `none)
+	{
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliasesAndVirtual ()) ]);
+	    // Write them unconditionally, because it is now possible to
+	    // enter them also in the Permanent mode. Bug #17417.
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing authentication settings..."), ``(WriteSmtpAuth ()) ]);
+	}
+	// Translators: progress label
+	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
+	// autoinstallation does it all together later
+	if (! write_only)
+	{
+	    // Translators: progress label
+	    stages = add (stages, [ _("Running SuSEconfig"), ``(WriteSuSEconfig ()) ]);
+
+	    // Translators: progress label
+	    stages = add (stages, [ _("Restarting services"), ``(WriteServices ()) ]);
+	}
+
+	// Translators: dialog caption
+	string caption = _("Saving mail configuration");
+	// We do not set help text here, because it was set outside
+	Progress::New (caption, " ", 0, maplist (list e, stages, ``(e[0]:"")), [], "");
+
+	foreach (list e, stages, ``{
+	    Progress::NextStage ();
+	    if (eval (abort))
+	    {
+		// TODO: finishes only this iteration, not the function
+		return false;
+	    }
+
+	    any f = e[1]:``(false);
+	    if (! (boolean) eval (f))
+	    {
+		// TODO: finishes only this iteration, not the function
+		return false;
+	    }
+	});
+
+	// complete
+	Progress::NextStage ();
+	return true;
+    }
+
+
+    /**
      * Get all mail settings from the first parameter
      * (For use by autoinstallation.)
      * @param settings The YCP structure to be imported.
@@ -1098,34 +1107,34 @@ a fixed format to be readable by YaST2.  For details, see
      */
     global define boolean Import (map settings) ``{
 	y2debug ("before %1", settings); // may contain passwords
-	settings = mapmap(`k,`v, settings,``{
+	settings = mapmap(string k, any v, settings,``{
 	    if (k == "mta" && is(v,symbol)) {
-		return([k,v]);
+		return($[k : v]);
 	    } else if (k == "connection_type" && is(v,symbol)) {
-		return([k,v]);
+		return($[k : v]);
 	    } else if (k == "postfix_mda" && is(v,symbol)) {
-		return([k,v]);
+		return($[k : v]);
 	    }
 	    if (k == "mta" && v == "sendmail") {
-		return(["mta", `sendmail]);
+		return($["mta" : `sendmail]);
 	    } else if (k == "mta" && v == "postfix") {
-		return(["mta", `postfix]);
+		return($["mta" : `postfix]);
 	    } else if (k == "mta") {
-		return(["mta", `other]);
+		return($["mta" : `other]);
 	    } else if (k == "connection_type" && v == "permanent") {
-		return(["connection_type", `permanent]);
+		return($["connection_type" : `permanent]);
 	    } else if (k == "connection_type" && v == "dialup") {
-		return(["connection_type", `dialup]);
+		return($["connection_type" : `dialup]);
 	    } else  if (k == "connection_type") {
-		return(["connection_type", `none]);
+		return($["connection_type" : `none]);
 	    } else if (k == "postfix_mda" && v == "local") {
-		return(["postfix_mda", `local]);
+		return($["postfix_mda" : `local]);
 	    } else if (k == "postfix_mda" && v == "procmail") {
-		return(["postfix_mda", `procmail]);
+		return($["postfix_mda" : `procmail]);
 	    } else if (k == "postfix_mda") {
-		return(["postfix_mda", `cyrus]);
+		return($["postfix_mda" : `cyrus]);
 	    } else {
-		return ([k,v]);
+		return ($[k : v]);
 	    }
 	});
 
@@ -1176,13 +1185,44 @@ a fixed format to be readable by YaST2.  For details, see
 	    settings = add (settings, "postfix_mda", postfix_mda);
 	}
 	// Dont export empty fields
-	foreach (`k, `v, settings, ``{
-	    if (size(v) == 0 )
+	foreach (string k, any v, settings, ``{
+	    if (contains ([ "", nil, [], $[] ], v))
 	    {
 		settings = remove(settings, k);
 	    }
 	});
 	return settings;
+    }
+
+    /**
+     * Summarizes a list of data
+     * @param title passed to Summary::AddHeader
+     * @param value a list (of scalars, lists or maps)
+     * @param index if the entries are not scalars,
+     *   use this index to get a scalar
+     * @return Summary-formatted description
+     */
+    define string ListItem(string title, any value, any index) ``{
+	string summary = "";
+	summary = Summary::AddHeader(summary, title);
+	if (is(value,list) && value != []) {
+	    summary = Summary::OpenList(summary);
+	    foreach (any d, (list) value, ``{
+		string entry = "";
+		if (is(d,map))
+		    entry = lookup ((map)d, index, "???");
+		else if (is (d,list))
+		    entry = (string) select ((list)d, (integer)index, "???");
+		else
+		    entry = (string) d;
+
+		summary = Summary::AddListItem(summary, entry);
+	    });
+	    summary = Summary::CloseList(summary);
+	} else {
+	    summary = Summary::AddLine(summary,Summary::NotConfigured ());
+	}
+	return summary;
     }
 
     /**
@@ -1249,35 +1289,6 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = summary + ListItem (_("Virtual Users"), virtual_users, "alias");
 	// summary item
 	summary = summary + ListItem (_("Authentication"), smtp_auth, "server");
-	return summary;
-    }
-
-    /**
-     * Summarizes a list of data
-     * @param title passed to Summary::AddHeader
-     * @param value a list (of scalars, lists or maps)
-     * @param index if the entries are not scalars,
-     *   use this index to get a scalar
-     * @return Summary-formatted description
-     */
-    define string ListItem(string title, any value, any index) ``{
-	string summary = "";
-	summary = Summary::AddHeader(summary, title);
-	if (is(value,list) && size(value)>0) {
-	    summary = Summary::OpenList(summary);
-	    foreach (`d, value, ``{
-		string entry = "";
-		if (is(d,map) || is (d,list))
-		    entry = d[index]:"???";
-		else
-		    entry = d;
-
-		summary = Summary::AddListItem(summary, entry);
-	    });
-	    summary = Summary::CloseList(summary);
-	} else {
-	    summary = Summary::AddLine(summary,Summary::NotConfigured ());
-	}
 	return summary;
     }
 

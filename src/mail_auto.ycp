@@ -42,21 +42,23 @@ map param = $[];
 
 /* Fallback for the old calling convention:
    Do nothing instead of looping endlessly */
-if (size (Args ()) > 0 &&
-    (is (Args(0), map) || is (Args(0), list)))
+if (size (WFM::Args ()) > 0 &&
+    (is (WFM::Args(0), map) || is (WFM::Args(0), list)))
 {
     y2error ("This new-style module won't work with the old autoyast");
-    return [UI::UserInput (), Args (0)];
+    return (any) [UI::UserInput (), WFM::Args (0)];
 }
 
 /* Check arguments */
-if(size(Args()) > 0 && is(Args(0), string)) {
-    func = WFM::Args(0);
-    if(size(Args()) > 1 && is(Args(1), map))
-	param = WFM::Args(1);
+if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+    func = (string) WFM::Args(0);
+    if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+	param = (map) WFM::Args(1);
 }
 y2debug("func=%1", func);
 y2debug("param=%1", param);
+
+block<boolean> abort_block = ``{ return false; };
 
 /* Import */
 if(func == "Import") {
@@ -75,7 +77,7 @@ else if (func == "Packages") {
     ret = Mail::AutoPackages();
 }
 else if (func == "Read") {
-    ret = Mail::Read(``{});
+    ret = Mail::Read (abort_block);
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
@@ -90,9 +92,9 @@ else if (func == "Write") {
     import "Progress";
     Mail::write_only = true;
     Progress::off();
-    ret = Mail::Write(``{ return false; });
+    ret = Mail::Write(abort_block);
     Progress::on();
-	return ret;
+    return ret;
 }
 /* Unknown function */
 else {

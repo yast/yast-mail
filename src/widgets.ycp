@@ -21,10 +21,76 @@ textdomain "mail";
 import "Mail";
 import "MailAliases";
 
+import "Hostname";
+import "Address";
+
 import "Popup";
 import "Label";
-include "network/dns.ycp";
-include "network/ip.ycp";
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * See RFC 2822, 3.4
+ * But for now, nonempty, no-spaces.
+ * @param address an address to check
+ * @return valid?
+ */
+global define boolean check_mail_local_part (string address) ``{
+    return address != "" && findfirstof (address, " ") == nil;
+}
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * A list to check entered user names against.
+ * It is initialized on first use.
+ */
+global list<string> local_users = nil;
+
+/**
+ * Read user names from passwd.
+ * It does not get the NIS entries, that's why one combo is editable.
+ * "+" is filtered out.
+ * @return user name list
+ */
+global define list<string> GetLocalUsers () ``{
+    if (local_users == nil)
+    {
+	// initialize the list
+	// CHECK .etc.passwd is in yast2
+	// TODO use Users module...
+	list<map> passwd = (list<map>) SCR::Read (.etc.passwd);
+	local_users = maplist (map entry, passwd, ``(entry["username"]:"") );
+	local_users = sort (filter (string u, local_users, ``(u != "+")));
+    }
+    return local_users;
+}
+
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * Formats a list for a TextEntry, separating the elements by ", "
+ * @param alist	a list
+ * @return	a string
+ */
+global define string listToString (list<string> alist) ``{
+    return mergestring (alist, ", ");
+}
+
+/**
+ * Splits a TextEntry string into a list of strings
+ * separated by spaces, commas or semicolons.
+ * Empty strings are removed.
+ * @param astring	a string
+ * @return		a list of strings
+ */
+global define list<string> stringToList (string astring) ``{
+    list<string> alist = splitstring (astring, " ,;");
+    return filter (`s, alist, ``(s != ""));
+}
+
+/* ---------------------------------------------------------------- */
 
 /**
  * A replacement for the Next button: "Finish", `next
@@ -32,6 +98,308 @@ include "network/ip.ycp";
 global term finish_button = `PushButton (`id (`next),
 					 `opt (`default, `key_F10),
 					 Label::FinishButton());
+/**
+ * @struct fetchmail
+ *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
+ */
+global map fetchmail_item = $[];
+
+// don't forget to reset it!
+global boolean fetchmail_item_touched = false;
+
+
+global define string Get_foo () ``{
+    return fetchmail_item["protocol"]:"";
+}
+
+global define void Set_foo (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["protocol"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "protocol", val);
+}
+
+global define boolean Validate_foo (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    if (!Hostname::CheckDomain (val))
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The host name is incorrect");
+	Popup::Error (msg);
+	return false;
+    }
+    return true;
+}
+
+global define string Get_outgoing_mail_server () ``{
+     return Mail::outgoing_mail_server;
+}
+
+global define void Set_outgoing_mail_server (symbol id) ``{
+    string oms = (string) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::outgoing_mail_server != oms);
+    Mail::outgoing_mail_server = oms;
+}
+
+global define boolean Validate_outgoing_mail_server(symbol id) ``{
+    // when validating: may be enclosed in brackets (prevents mx lookups)
+    string oms = (string) UI::QueryWidget (`id (id), `Value);
+    // watch this: "[", no brackets, "]"
+    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
+	regexpsub (oms, ".(.*).", "\\1") : oms;
+
+    if (oms_no_brackets != "" &&
+	! Address::Check (oms_no_brackets)
+	||
+	oms_no_brackets == "" &&
+	Mail::connection_type == `dialup)
+    {
+	UI::SetFocus (`id (id));
+	Popup::Error (Address::Valid4 ());
+	return false;
+    }
+    return true;
+}
+
+
+global define string Get_from_header () ``{
+     return Mail::from_header;
+}
+
+global define void Set_from_header (symbol id) ``{
+    string fh = (string) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::from_header != fh);
+    Mail::from_header = fh;
+}
+
+global define boolean Validate_from_header (symbol id) ``{
+    string fh = (string) UI::QueryWidget (`id (id), `Value);
+    if (fh != "" && ! Hostname::CheckDomain (fh))
+    {
+	UI::SetFocus (`id (id));
+	Popup::Error (Hostname::ValidDomain ());
+	return false;
+    }
+    return true;
+}
+
+global define string Get_local_domains () ``{
+     return listToString (Mail::local_domains);
+}
+
+global define void Set_local_domains (symbol id) ``{
+    list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
+    Mail::Touch (Mail::local_domains != lld);
+    Mail::local_domains = lld;
+}
+
+global define boolean Validate_local_domains (symbol id) ``{
+    list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
+    if (find (string s, lld, ``(! Hostname::CheckDomain (s))) != nil)
+    {
+	UI::SetFocus (`id (id));
+	Popup::Error (Hostname::ValidDomain ());
+	return false;
+    }
+    return true;
+}
+
+global define boolean Get_listen_remote () ``{
+    return Mail::listen_remote;
+}
+
+global define void Set_listen_remote (symbol id) ``{
+    boolean lr = (boolean) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::listen_remote != lr);
+    Mail::listen_remote = lr;
+}
+
+global define boolean Get_use_amavis () ``{
+    return Mail::use_amavis;
+}
+
+global define void Set_use_amavis (symbol id) ``{
+    boolean am = (boolean) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::use_amavis != am);
+    Mail::use_amavis = am;
+}
+
+
+global define string Get_fm_server () ``{
+    return fetchmail_item["server"]:"";
+}
+
+global define void Set_fm_server (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["server"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "server", val);
+}
+
+// also used for smtp_auth server
+global define boolean Validate_fm_server (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    if (!Hostname::CheckDomain (val))
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The host name is incorrect");
+	Popup::Error (msg);
+	return false;
+    }
+    return true;
+}
+
+global define string Get_fm_protocol () ``{
+    return fetchmail_item["protocol"]:"AUTO";
+}
+
+global define void Set_fm_protocol (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["protocol"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "protocol", val);
+}
+
+global define string Get_fm_remote_user () ``{
+    return fetchmail_item["remote_user"]:"";
+}
+
+global define void Set_fm_remote_user (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["remote_user"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "remote_user", val);
+}
+
+// also used for smtp_auth user
+global define boolean Validate_fm_remote_user (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    if (val == "")
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	Popup::Error (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+global define string Get_fm_password () ``{
+    return fetchmail_item["password"]:"";
+}
+
+global define void Set_fm_password (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["password"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "password", val);
+}
+
+
+global define string Get_fm_local_user () ``{
+    return fetchmail_item["local_user"]:"";
+}
+
+global define void Set_fm_local_user (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["local_user"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "local_user", val);
+}
+
+global define boolean Validate_fm_local_user (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    if (!check_mail_local_part (val))
+    {
+	// it may be ok if it is directed to an alias
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	Popup::Error (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+global define string Get_root_alias () ``{
+    return MailAliases::root_alias;
+}
+
+global define void Set_root_alias (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (MailAliases::root_alias != val);
+    MailAliases::root_alias = val;
+}
+
+global define boolean Validate_root_alias (symbol id) ``{
+    string val = (string) UI::QueryWidget (`id (id), `Value);
+    // user@machine, \\root - too much variation, don't check yet
+    if (false)
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	Popup::Error (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+global define symbol Get_delivery_mode () ``{
+    map scr2ui = $[
+	`local: `dm_local,
+	`procmail: `dm_procmail,
+	`cyrus: `dm_cyrus,
+	];
+    symbol val = scr2ui[Mail::postfix_mda]:`dm_local;
+    return val;
+}
+
+global define void Set_delivery_mode (symbol id) ``{
+    symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
+    map ui2scr = $[
+	`dm_local: `local,
+	`dm_procmail: `procmail,
+	`dm_cyrus: `cyrus,
+	];
+    val = ui2scr[val]:`local;
+    Mail::Touch (Mail::postfix_mda != val);
+    Mail::postfix_mda = val;
+}
+
+global define boolean Validate_delivery_mode (symbol id) ``{
+    symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
+    // Procmail is only OK if root has an alias
+    // Because postfix runs procmail as nobody instead of root
+    // and the mail would end up in the wrong place
+    boolean ok = true;
+
+    // the root alias widget should be in the same dialog!
+    symbol ra_id = `root_alias;
+    if (!UI::WidgetExists (`id (ra_id)))
+    {
+	y2error ("Widget %1 not found, skipping validation of %2", ra_id, id);
+    }
+    else
+    {
+	string ra_val = (string) UI::QueryWidget (`id (ra_id), `Value);
+	if (ra_val == "" && val == `dm_procmail)
+	{
+	    ok = false;
+	}
+    }
+
+    if (!ok)
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	// Validation
+	Popup::Error (_("Cannot use procmail when root's mail is not forwarded."));
+	return false;
+    }
+    return true;
+}
+
 
 /**
  * @ref widget_def
@@ -192,9 +560,9 @@ for the system administrator and redirect root's mail to this account.</p>"),
 	    // combo box choice:
 	    // deliver mail to cyrus-imapd using LMTP
 	    `item (`id (`dm_cyrus), _("To Cyrus IMAP Server")),
-	    /* TODO: should check whether cyrus-imapd is installed.
-	       And show the choice only if it is.
-	       But SuSEconfig.postfix falls back to local if it's not, so OK */
+	    // TODO: should check whether cyrus-imapd is installed.
+	    // And show the choice only if it is.
+	    // But SuSEconfig.postfix falls back to local if it's not, so OK
 	    ],
 	// help text
 	"help": _("<p>The <b>delivery mode</b> is usually <b>procmail</b>, unless you do not forward root's mail or want to access the mail via IMAP.</p>"),
@@ -203,309 +571,6 @@ for the system administrator and redirect root's mail to this account.</p>"),
 	"validate": ``(Validate_delivery_mode ()),
 	],
     ];
-
-
-global define string Get_foo () ``{
-    return fetchmail_item["protocol"]:"";
-}
-
-global define void Set_foo (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["protocol"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "protocol", val);
-}
-
-global define boolean Validate_foo (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    if (!check_domainname (val))
-    {
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	string msg = _("The host name is incorrect");
-	Popup::Error (msg);
-	return false;
-    }
-    return true;
-}
-
-
-
-global define string Get_outgoing_mail_server () ``{
-     return Mail::outgoing_mail_server;
-}
-
-global define void Set_outgoing_mail_server (symbol id) ``{
-    string oms = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (Mail::outgoing_mail_server != oms);
-    Mail::outgoing_mail_server = oms;
-}
-
-global define boolean Validate_outgoing_mail_server(symbol id) ``{
-    // when validating: may be enclosed in brackets (prevents mx lookups)
-    string oms = UI::QueryWidget (`id (id), `Value);
-    // watch this: "[", no brackets, "]"
-    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
-	regexpsub (oms, ".(.*).", "\\1") : oms;
-
-    if (oms_no_brackets != "" &&
-	! check_address (oms_no_brackets)
-	||
-	oms_no_brackets == "" &&
-	Mail::connection_type == `dialup)
-    {
-	UI::SetFocus (`id (id));
-	Popup::Error (valid_address ());
-	return false;
-    }
-    return true;
-}
-
-
-global define string Get_from_header () ``{
-     return Mail::from_header;
-}
-
-global define void Set_from_header (symbol id) ``{
-    string fh = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (Mail::from_header != fh);
-    Mail::from_header = fh;
-}
-
-global define boolean Validate_from_header (symbol id) ``{
-    string fh = UI::QueryWidget (`id (id), `Value);
-    if (fh != "" && ! check_domainname (fh))
-    {
-	UI::SetFocus (`id (id));
-	Popup::Error (valid_domainname ());
-	return false;
-    }
-    return true;
-}
-
-global define string Get_local_domains () ``{
-     return listToString (Mail::local_domains);
-}
-
-global define void Set_local_domains (symbol id) ``{
-    list(string) lld = stringToList (UI::QueryWidget (`id (id), `Value));
-    Mail::Touch (Mail::local_domains != lld);
-    Mail::local_domains = lld;
-}
-
-global define boolean Validate_local_domains (symbol id) ``{
-    list(string) lld = stringToList (UI::QueryWidget (`id (id), `Value));
-    if (find (string s, lld, ``(! check_domainname (s))) != nil)
-    {
-	UI::SetFocus (`id (id));
-	Popup::Error (valid_domainname ());
-	return false;
-    }
-    return true;
-}
-
-global define boolean Get_listen_remote () ``{
-    return Mail::listen_remote;
-}
-
-global define void Set_listen_remote (symbol id) ``{
-    boolean lr = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (Mail::listen_remote != lr);
-    Mail::listen_remote = lr;
-}
-
-global define boolean Get_use_amavis () ``{
-    return Mail::use_amavis;
-}
-
-global define void Set_use_amavis (symbol id) ``{
-    boolean am = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (Mail::use_amavis != am);
-    Mail::use_amavis = am;
-}
-
-/**
- * @struct fetchmail
- *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
- */
-global map fetchmail_item = $[];
-
-// don't forget to reset it!
-global boolean fetchmail_item_touched = false;
-
-global define string Get_fm_server () ``{
-    return fetchmail_item["server"]:"";
-}
-
-global define void Set_fm_server (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["server"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "server", val);
-}
-
-// also used for smtp_auth server
-global define boolean Validate_fm_server (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    if (!check_domainname (val))
-    {
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	string msg = _("The host name is incorrect");
-	Popup::Error (msg);
-	return false;
-    }
-    return true;
-}
-
-global define string Get_fm_protocol () ``{
-    return fetchmail_item["protocol"]:"AUTO";
-}
-
-global define void Set_fm_protocol (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["protocol"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "protocol", val);
-}
-
-global define string Get_fm_remote_user () ``{
-    return fetchmail_item["remote_user"]:"";
-}
-
-global define void Set_fm_remote_user (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["remote_user"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "remote_user", val);
-}
-
-// also used for smtp_auth user
-global define boolean Validate_fm_remote_user (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    if (val == "")
-    {
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	Popup::Error (_("The user name format is incorrect."));
-	return false;
-    }
-    return true;
-}
-
-global define string Get_fm_password () ``{
-    return fetchmail_item["password"]:"";
-}
-
-global define void Set_fm_password (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["password"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "password", val);
-}
-
-
-global define string Get_fm_local_user () ``{
-    return fetchmail_item["local_user"]:"";
-}
-
-global define void Set_fm_local_user (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    fetchmail_item_touched = fetchmail_item_touched ||
-	(fetchmail_item["local_user"]:"" != val);
-    fetchmail_item = add (fetchmail_item, "local_user", val);
-}
-
-global define boolean Validate_fm_local_user (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    if (!check_mail_local_part (val))
-    {
-	// it may be ok if it is directed to an alias
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	Popup::Error (_("The user name format is incorrect."));
-	return false;
-    }
-    return true;
-}
-
-global define string Get_root_alias () ``{
-    return MailAliases::root_alias;
-}
-
-global define void Set_root_alias (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (MailAliases::root_alias != val);
-    MailAliases::root_alias = val;
-}
-
-global define boolean Validate_root_alias (symbol id) ``{
-    string val = UI::QueryWidget (`id (id), `Value);
-    // user@machine, \\root - too much variation, don't check yet
-    if (false)
-    {
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	Popup::Error (_("The user name format is incorrect."));
-	return false;
-    }
-    return true;
-}
-
-global define string Get_delivery_mode () ``{
-    map scr2ui = $[
-	`local: `dm_local,
-	`procmail: `dm_procmail,
-	`cyrus: `dm_cyrus,
-	];
-    symbol val = scr2ui[Mail::postfix_mda]:`dm_local;
-    return val;
-}
-
-global define void Set_delivery_mode (symbol id) ``{
-    symbol val = UI::QueryWidget (`id (id), `Value);
-    map ui2scr = $[
-	`dm_local: `local,
-	`dm_procmail: `procmail,
-	`dm_cyrus: `cyrus,
-	];
-    val = ui2scr[val]:`local;
-    Mail::Touch (Mail::postfix_mda != val);
-    Mail::postfix_mda = val;
-}
-
-global define boolean Validate_delivery_mode (symbol id) ``{
-    symbol val = UI::QueryWidget (`id (id), `Value);
-    // Procmail is only OK if root has an alias
-    // Because postfix runs procmail as nobody instead of root
-    // and the mail would end up in the wrong place
-    boolean ok = true;
-
-    // the root alias widget should be in the same dialog!
-    symbol ra_id = `root_alias;
-    if (!UI::WidgetExists (`id (ra_id)))
-    {
-	y2error ("Widget %1 not found, skipping validation of %2", ra_id, id);
-    }
-    else
-    {
-	string ra_val = UI::QueryWidget (`id (ra_id), `Value);
-	if (ra_val == "" && val == `dm_procmail)
-	{
-	    ok = false;
-	}
-    }
-
-    if (!ok)
-    {
-	UI::SetFocus (`id (id));
-	// Translators: error popup
-	// Validation
-	Popup::Error (_("Cannot use procmail when root's mail is not forwarded."));
-	return false;
-    }
-    return true;
-}
 
 
 }

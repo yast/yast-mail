@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Dec  5 15:45:26 CET 2003 - jsuchome@suse.cz
+
+- syntax fixes for new interpreter, part 1: compatible with old one
+- 2.9.1
+
+-------------------------------------------------------------------
 Mon Sep 15 08:48:21 CEST 2003 - jsuchome@suse.cz
 
 - write proper value for default of local domains

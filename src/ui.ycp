@@ -26,176 +26,15 @@ import "Progress";
 import "Mode";
 import "Mail";
 import "MailAliases";
+import "Hostname";
 
 import "Popup";
 import "Label";
 include "wizard/sequencer.ycp";
-include "network/dns.ycp";
-include "network/ip.ycp";
 import "Require";
 
 include "mail/helps.ycp";
-include "mail/widgets.ycp";
 include "mail/wj.ycp";
-
-/**
- * A Wizard Sequencer helper
- * @return	`next
- */
-global define symbol JustNext () ``{
-    return `next;
-}
-
-global map dialogs = $[
-    "read"	: [ ``( ReadDialog () ), true ],
-    "confirm"	: [ ``( ConfirmDialog () ), true],
-    "write"	: [ ``( WriteDialog () ), true ],
-
-    "mta":		``( MtaSelectionDialog () ),
-
-    "connection_type":	``( ConnectionTypeDialog () ),
-    "outgoing":		``( OutgoingDialog () ),
-    "incoming":		``( IncomingDialog () ),
-    "outgoing-details":	``( OutgoingDetailsDialog () ),
-    "outgoing-auth":	``( OutgoingAuthOptions () ),
-    "downloading":	``( DownloadingDialog () ),
-    "aliases":		``( AliasesDialog () ),
-    "virtual":		``( VirtualDialog () ),
-    "common-next":	[ ``( JustNext () ), true ],
-    ];
-
-global map common_sequence = $[
-    //"ws_start" : must be defined in an overriding sequence
-    "connection_type" :
-    $[
-	`abort	: `abort,
-	`next	: "outgoing",
-	`none	: "common-next",
-	],
-    "outgoing" :
-    $[
-	`abort	: `abort,
-	`outgoing_details	: "outgoing-details",
-	`outgoing_auth_opts	: "outgoing-auth",
-	`next			: "incoming",
-	],
-    "incoming" :
-    $[
-	`abort	: `abort,
-	`downloading		: "downloading",
-	`aliases		: "aliases",
-	`virtual		: "virtual",
-	`next			: "common-next",
-	],
-    "outgoing-details" :
-    $[
-	`abort	: `abort,
-	`next	: "outgoing",
-	],
-    "outgoing-auth" :
-    $[
-	`abort : `abort,
-	`next  : "outgoing",
-	],
-    "downloading" :
-    $[
-	`abort	: `abort,
-	`next	: "incoming",
-	],
-    "aliases" :
-    $[
-	`abort	: `abort,
-	`next	: "incoming",
-	],
-    "virtual" :
-    $[
-	`abort	: `abort,
-	`next	: "incoming",
-	],
-    "common-next" :
-    $[
-	`next	: `next,
-	],
-    ];
-
-/**
- * Whole configuration of mail
- * @return `back, `abort or `next
- */
-global define symbol MailSequence () ``{
-    map sequence = $[
-	"ws_start" : "read",
-	"read" :
-	$[
-	    `abort	: `abort,
-	    `next	: "connection_type",
-	    ],
-
-	// common_sequence here
-
-	// override
-	"common-next" :
-	$[
-	    `next	: "confirm",
-	    ],
-	"confirm" :
-	$[
-	    `next	: "write"
-	    ],
-	"write" : $[
-	    `abort	: `abort,
-	    `next	: `next
-	    ]
-	];
-
-    Wizard::CreateDialog ();
-
-    // the second map must override the first!
-    sequence = union (common_sequence, sequence);
-    any ret = WizardSequencer (dialogs, sequence);
-
-    UI::CloseDialog ();
-    return ret;
-}
-
-/**
- * Whole configuration of mail but without reading and writing.
- * MTA is selected first.
- * For use with autoinstallation.
- * @return `back, `abort or `next
- */
-global define symbol MailAutoSequence () ``{
-    map sequence = $[
-	"ws_start":	"mta",
-	"mta":
-	$[
-	    `abort	: `abort,
-	    `next	: "connection_type",
-	    ],
-
-	// common_sequence here
-	];
-
-    // Translators: dialog caption
-    string caption = _("Mail configuration");
-    // label
-    term contents = `Label (_("Initializing..."));
-
-    Wizard::CreateDialog ();
-    Wizard::SetContentsButtons ( caption,
-				contents,
-				"",
-				Label::BackButton (),
-				Label::NextButton ());
-
-    // the second map must override the first!
-    sequence = union (common_sequence, sequence);
-    any ret = WizardSequencer (dialogs, sequence);
-
-    UI::CloseDialog ();
-    return ret;
-}
-
 
 /**
  * Read settings dialog
@@ -207,7 +46,7 @@ global define symbol ReadDialog () ``{
     Wizard::RestoreHelp (ReadDialogHelp ());
 
     // A callback function for abort
-    block callback = ``{
+    block<boolean> callback = ``{
 	return UI::PollInput () == `abort;
     };
 
@@ -293,7 +132,7 @@ global define symbol WriteDialog () ``{
     Wizard::RestoreHelp (WriteDialogHelp ());
 
     // A callback function for abort
-    block callback = ``{
+    block<boolean> callback = ``{
 	return UI::PollInput () == `abort;
     };
 
@@ -364,12 +203,12 @@ global define symbol MtaSelectionDialog () ``{
 
     if (ret == `next)
     {
-	mta = UI::QueryWidget (`id (`mtag), `CurrentButton);
+	mta = (symbol) UI::QueryWidget (`id (`mtag), `CurrentButton);
 	Mail::Touch (Mail::mta != mta);
 	Mail::mta = mta;
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -385,7 +224,7 @@ global symbol preselect_connection_type = nil;
 global define symbol ConnectionTypeDialog () ``{
     Wizard::SetScreenShotName ("mail-1-conntype");
 
-    list(symbol) widgets = [];
+    list<symbol> widgets = [];
 
     symbol ct = Mail::connection_type;
     if (preselect_connection_type != nil)
@@ -441,7 +280,7 @@ global define symbol ConnectionTypeDialog () ``{
     any ret = nil;
     while (true)
     {
-	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
+	ct = (symbol) UI::QueryWidget (`id (`ctg), `CurrentButton);
 	if (ct == `permanent || ct == `dialup)
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, true);
@@ -482,7 +321,7 @@ global define symbol ConnectionTypeDialog () ``{
     {
 	WJ_Set (widgets);
 
-	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
+	ct = (symbol) UI::QueryWidget (`id (`ctg), `CurrentButton);
 	Mail::Touch (Mail::connection_type != ct);
 	Mail::connection_type = ct;
 
@@ -491,7 +330,7 @@ global define symbol ConnectionTypeDialog () ``{
     // avoid overriding the choice the user has made
     preselect_connection_type = nil;
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -503,8 +342,8 @@ global define symbol OutgoingDialog () ``{
 
     // what buttons can be used to leave this dialog
     //(except the std wizarding ones)
-    list(symbol) buttons = [];
-    list(symbol) widgets = [
+    list<symbol> buttons = [];
+    list<symbol> widgets = [
 	`outgoing_mail_server,
 	];
 
@@ -572,7 +411,7 @@ global define symbol OutgoingDialog () ``{
 	WJ_Set (widgets);
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -582,10 +421,10 @@ global define symbol OutgoingDialog () ``{
 global define symbol IncomingDialog () ``{
     Wizard::SetScreenShotName ("mail-22-incoming");
 
-    list(symbol) buttons = [];
+    list<symbol> buttons = [];
     // watch out, fm_widgets are not part of widgets
     // because of special validation requirements
-    list(symbol) widgets = [
+    list<symbol> widgets = [
 	`listen_remote,
 	];
 
@@ -596,7 +435,7 @@ global define symbol IncomingDialog () ``{
 
     i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
 
-    list(symbol) fm_widgets = [];
+    list<symbol> fm_widgets = [];
     if (true) // always embed the first account
     {
 	// Edit the first fetchmail item here.
@@ -740,7 +579,7 @@ the value of POSTFIX_LOCALDOMAINS in /etc/sysconfig/postfix will be set to
 	}
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -751,8 +590,8 @@ global define symbol OutgoingDetailsDialog () ``{
     Wizard::SetScreenShotName ("mail-2o-outgoing-details");
 
     string mod = listToString (Mail::masquerade_other_domains);
-    list(string) lmod = [];
-    list(map) mu = Mail::masquerade_users;
+    list<string> lmod = [];
+    list<map> mu = Mail::masquerade_users;
 
     // Translators: dialog caption
     string caption = _("Masquerading");
@@ -848,7 +687,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	}
 	else if (contains ([`add, `edit, `delete], ret))
 	{
-	    mu = EditTable(ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
+	    mu = EditTable((symbol)ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
 	}
 	else if ((ret == `abort
 		  && Popup::ReallyAbort (Mail::touched || edit_touched))
@@ -863,10 +702,10 @@ global define symbol OutgoingDetailsDialog () ``{
 	    // The table contents is maintained and validated
 	    // at the EditTable call.
 
-	    symbol rb = UI::QueryWidget (`id (`mdg), `CurrentButton);
+	    symbol rb = (symbol) UI::QueryWidget (`id (`mdg), `CurrentButton);
 	    if (rb == `masqothers)
 	    {
-		mod = UI::QueryWidget (`id (`masqdomains), `Value);
+		mod = (string) UI::QueryWidget (`id (`masqdomains), `Value);
 		lmod = stringToList (mod);
 	    }
 	    else
@@ -882,7 +721,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	    {
 		// nothing, already done
 	    }
-	    else if (find (string s, lmod, ``(! check_domainname (s))) != nil)
+	    else if (find (string s, lmod, ``(! Hostname::CheckDomain (s))) != nil)
 	    {
 		UI::SetFocus (`id (`masqdomains));
 		// Translators: error popup
@@ -912,7 +751,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	Mail::masquerade_users = mu;
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 }
 
 /**
@@ -924,8 +763,8 @@ global define symbol OutgoingAuthOptions() ``{
     Wizard::SetScreenShotName ("mail-2o-outgoing-authentication");
 
     //string mod = listToString (Mail::masquerade_other_domains);
-    //list(string) lmod = [];
-    //list(map) mu = Mail::masquerade_users;
+    //list<string> lmod = [];
+    //list<map> mu = Mail::masquerade_users;
 
     // Translators: dialog caption
     string caption = _("Outgoing Server Authentication");
@@ -979,9 +818,9 @@ global define symbol OutgoingAuthOptions() ``{
 	}
 	else if (ret == `next)
 	{
-	    string server   = UI::QueryWidget (`id (`server), `Value);
-	    string user     = UI::QueryWidget (`id (`user), `Value);
-	    string password = UI::QueryWidget (`id (`passw), `Value);
+	    string server   = (string) UI::QueryWidget (`id (`server), `Value);
+	    string user     = (string) UI::QueryWidget (`id (`user), `Value);
+	    string password = (string) UI::QueryWidget (`id (`passw), `Value);
 
 	    if (server == "" && user == "" && password == "")
 	    {
@@ -1017,7 +856,7 @@ global define symbol OutgoingAuthOptions() ``{
 	}
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol)ret;
 }
 
 /**
@@ -1053,53 +892,19 @@ Please try again.
 
 /**
  * See RFC 2822, 3.4
- * But for now, nonempty, no-spaces.
- * @param address an address to check
- * @return valid?
- */
-global define boolean check_mail_local_part (string address) ``{
-    return address != "" && findfirstof (address, " ") == nil;
-}
-
-/**
- * See RFC 2822, 3.4
  * But for now, no-spaces@valid_domainname
  * @param address an address to check
  * @return valid?
  */
 global define boolean check_mail_address (string address) ``{
-    list(string) parts = splitstring (address, "@");
+    list<string> parts = splitstring (address, "@");
     if (size (parts) != 2)
     {
 	return false;
     }
 
     return check_mail_local_part (parts[0]:"")
-	&& check_domainname (parts[1]:"");
-}
-
-/**
- * A list to check entered user names against.
- * It is initialized on first use.
- */
-global list(string) local_users = nil;
-
-/**
- * Read user names from passwd.
- * It does not get the NIS entries, that's why one combo is editable.
- * "+" is filtered out.
- * @return user name list
- */
-global define list(string) GetLocalUsers () ``{
-    if (local_users == nil)
-    {
-	// initialize the list
-	// CHECK .etc.passwd is in yast2
-	list(map) passwd = SCR::Read (.etc.passwd);
-	local_users = maplist (map entry, passwd, ``(entry["username"]:"") );
-	local_users = sort (filter (string u, local_users, ``(u != "+")));
-    }
-    return local_users;
+	&& Hostname::CheckDomain (parts[1]:"");
 }
 
 /**
@@ -1109,10 +914,10 @@ global define list(string) GetLocalUsers () ``{
  * @param existing	current masqueading list
  * @return		$["comment": "", "user": "address":] or $[] on cancel
  */
-global define map MasqueradeUserPopup (map default, list(map) existing) ``{
+global define map MasqueradeUserPopup (map default, list<map> existing) ``{
     string user = lookup (default, "user", "");
     string address = lookup (default, "address", "");
-    list(string) forbidden = maplist (`e, existing, ``( lookup (e, "user", "") ));
+    list<string> forbidden = maplist (map e, existing, ``( e["user"]:"" ));
 
     term contents =
 	`HBox(
@@ -1150,8 +955,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	else if (ret == `ok)
 	{
 	    // Input validation
-	    user = UI::QueryWidget (`id (`user), `Value);
-	    address = UI::QueryWidget (`id (`address), `Value);
+	    user	= (string) UI::QueryWidget (`id (`user), `Value);
+	    address	= (string) UI::QueryWidget (`id (`address), `Value);
 
 
 	    if (!check_username (user))
@@ -1193,7 +998,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 global define symbol DownloadingDialog () ``{
     Wizard::SetScreenShotName ("mail-2ia-download");
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
-    list(map) fm = Mail::fetchmail;
+    list<map> fm = Mail::fetchmail;
 
     // Translators: dialog caption
     string caption = _("Mail downloading");
@@ -1251,7 +1056,7 @@ global define symbol DownloadingDialog () ``{
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
 
-    any ret = nil;
+    symbol ret = nil;
     edit_touched = false;
     while (true)
     {
@@ -1262,7 +1067,7 @@ global define symbol DownloadingDialog () ``{
 	// Kludge, because a `Table still does not have a shortcut.
 	UI::SetFocus (`id (`tab));
 
-	ret = UI::UserInput ();
+	ret = (symbol) UI::UserInput ();
 	if (ret == `cancel)
 	{
 	    ret = `abort;
@@ -1297,11 +1102,11 @@ global define symbol DownloadingDialog () ``{
  * @param existing	unused
  * @return edited data (with no other fields) or $[] on cancel
  */
-global define map FetchmailPopup (map default, list(map) existing) ``{
+global define map FetchmailPopup (map default, list<map> existing) ``{
     fetchmail_item = default;
     fetchmail_item_touched = false;
 
-    list(symbol) widgets = [
+    list<symbol> widgets = [
 	`fm_server,
 	`fm_protocol,
 	`fm_remote_user,
@@ -1366,7 +1171,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
  */
 global define symbol AliasesDialog () ``{
     Wizard::SetScreenShotName ("mail-2ib-aliases");
-    list(map) aliases = MailAliases::MergeRootAlias (MailAliases::aliases);
+    list<map> aliases = MailAliases::MergeRootAlias (MailAliases::aliases);
 
     // Translators: dialog caption
     string caption = _("Aliases");
@@ -1414,7 +1219,7 @@ global define symbol AliasesDialog () ``{
 
 	if (contains ([`add, `edit, `delete], ret))
 	{
-	    aliases = EditTable(ret, aliases, ["alias", "destinations"], ``(AliasPopup ()), `tab);
+	    aliases = EditTable((symbol)ret, aliases, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
 	else if (ret == "man_aliases")
 	{
@@ -1435,7 +1240,7 @@ global define symbol AliasesDialog () ``{
 	MailAliases::FilterRootAlias ();
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 
 }
 
@@ -1446,10 +1251,10 @@ global define symbol AliasesDialog () ``{
  * @param existing	current entry list
  * @return		$["comment": ""?, "alias": "destinations":] or $[] on cancel
  */
-global define map AliasPopup (map default, list(map) existing) ``{
+global define map AliasPopup (map default, list<map> existing) ``{
     string alias = lookup (default, "alias", "");
     string destinations = lookup (default, "destinations", "");
-    list(string) forbidden = maplist (`e, existing, ``( lookup (e, "alias", "") ));
+    list<string> forbidden = maplist (map e, existing, ``( e["alias"]:"" ));
 
     term contents =
 	`HBox(
@@ -1484,8 +1289,8 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	else if (ret == `ok)
 	{
 	    // Input validation
-	    alias = UI::QueryWidget (`id (`alias), `Value);
-	    destinations = UI::QueryWidget (`id (`destinations), `Value);
+	    alias = (string) UI::QueryWidget (`id (`alias), `Value);
+	    destinations = (string)UI::QueryWidget (`id (`destinations),`Value);
 
 	    // TODO: this only works because check_mail_local part is too
 	    // permissive. Virtusertable aliases may contain @ so it is not
@@ -1524,7 +1329,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
  */
 global define symbol VirtualDialog () ``{
     Wizard::SetScreenShotName ("mail-2ic-virtdomains");
-    list(map) vu = Mail::virtual_users;
+    list<map> vu = Mail::virtual_users;
 
     // Translators: dialog caption
     string caption = _("Virtual domains");
@@ -1576,7 +1381,7 @@ global define symbol VirtualDialog () ``{
 
 	if (contains ([`add, `edit, `delete], ret))
 	{
-	    vu = EditTable(ret, vu, ["alias", "destinations"], ``(AliasPopup ()), `tab);
+	    vu = EditTable((symbol)ret, vu, ["alias", "destinations"], ``(AliasPopup ()), `tab);
 	}
 	else if ((ret == `abort
 		  && Popup::ReallyAbort (Mail::touched || edit_touched))
@@ -1592,8 +1397,168 @@ global define symbol VirtualDialog () ``{
 	Mail::virtual_users = vu;;
     }
     Wizard::RestoreScreenShotName ();
-    return ret;
+    return (symbol) ret;
 
 }
+
+/**
+ * A Wizard Sequencer helper
+ * @return	`next
+ */
+global define symbol JustNext () ``{
+    return `next;
+}
+
+global map dialogs = $[
+    "read"	: [ ``( ReadDialog () ), true ],
+    "confirm"	: [ ``( ConfirmDialog () ), true],
+    "write"	: [ ``( WriteDialog () ), true ],
+
+    "mta":		``( MtaSelectionDialog () ),
+
+    "connection_type":	``( ConnectionTypeDialog () ),
+    "outgoing":		``( OutgoingDialog () ),
+    "incoming":		``( IncomingDialog () ),
+    "outgoing-details":	``( OutgoingDetailsDialog () ),
+    "outgoing-auth":	``( OutgoingAuthOptions () ),
+    "downloading":	``( DownloadingDialog () ),
+    "aliases":		``( AliasesDialog () ),
+    "virtual":		``( VirtualDialog () ),
+    "common-next":	[ ``( JustNext () ), true ],
+    ];
+
+global map common_sequence = $[
+    //"ws_start" : must be defined in an overriding sequence
+    "connection_type" :
+    $[
+	`abort	: `abort,
+	`next	: "outgoing",
+	`none	: "common-next",
+	],
+    "outgoing" :
+    $[
+	`abort	: `abort,
+	`outgoing_details	: "outgoing-details",
+	`outgoing_auth_opts	: "outgoing-auth",
+	`next			: "incoming",
+	],
+    "incoming" :
+    $[
+	`abort	: `abort,
+	`downloading		: "downloading",
+	`aliases		: "aliases",
+	`virtual		: "virtual",
+	`next			: "common-next",
+	],
+    "outgoing-details" :
+    $[
+	`abort	: `abort,
+	`next	: "outgoing",
+	],
+    "outgoing-auth" :
+    $[
+	`abort : `abort,
+	`next  : "outgoing",
+	],
+    "downloading" :
+    $[
+	`abort	: `abort,
+	`next	: "incoming",
+	],
+    "aliases" :
+    $[
+	`abort	: `abort,
+	`next	: "incoming",
+	],
+    "virtual" :
+    $[
+	`abort	: `abort,
+	`next	: "incoming",
+	],
+    "common-next" :
+    $[
+	`next	: `next,
+	],
+    ];
+
+/**
+ * Whole configuration of mail
+ * @return `back, `abort or `next
+ */
+global define symbol MailSequence () ``{
+    map sequence = $[
+	"ws_start" : "read",
+	"read" :
+	$[
+	    `abort	: `abort,
+	    `next	: "connection_type",
+	    ],
+
+	// common_sequence here
+
+	// override
+	"common-next" :
+	$[
+	    `next	: "confirm",
+	    ],
+	"confirm" :
+	$[
+	    `next	: "write"
+	    ],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	    ]
+	];
+
+    Wizard::CreateDialog ();
+
+    // the second map must override the first!
+    sequence = union (common_sequence, sequence);
+    any ret = WizardSequencer (dialogs, sequence);
+
+    UI::CloseDialog ();
+    return (symbol) ret;
+}
+
+/**
+ * Whole configuration of mail but without reading and writing.
+ * MTA is selected first.
+ * For use with autoinstallation.
+ * @return `back, `abort or `next
+ */
+global define symbol MailAutoSequence () ``{
+    map sequence = $[
+	"ws_start":	"mta",
+	"mta":
+	$[
+	    `abort	: `abort,
+	    `next	: "connection_type",
+	    ],
+
+	// common_sequence here
+	];
+
+    // Translators: dialog caption
+    string caption = _("Mail configuration");
+    // label
+    term contents = `Label (_("Initializing..."));
+
+    Wizard::CreateDialog ();
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				"",
+				Label::BackButton (),
+				Label::NextButton ());
+
+    // the second map must override the first!
+    sequence = union (common_sequence, sequence);
+    any ret = WizardSequencer (dialogs, sequence);
+
+    UI::CloseDialog ();
+    return (symbol) ret;
+}
+
+
 
 }
