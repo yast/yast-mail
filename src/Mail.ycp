@@ -68,6 +68,7 @@
     /**
      * Use a virus scanner (AMaViS).
      * amavis-sendmail or amavis-postfix must be installed.
+     * Or its daemon variant, amavisd-...
      * It will be installed if amavis_allowed and it is not installed.
      */
     global boolean use_amavis = false;
@@ -208,8 +209,13 @@
 
 	if (use_amavis)
 	{
-	    string pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
-	    if (! Installed (pkg))
+	    // use the appropriate MTA variant.
+	    // If neither the daemon nor the original variant is installed,
+	    // install the original variant
+	    string mta_suffix = (mta == `sendmail)? "sendmail":"postfix";
+	    string pkgd = sformat ("amavisd-%1", mta_suffix);
+	    string pkg  = sformat ("amavis-%1", mta_suffix);
+	    if (! Installed (pkg) && ! Installed (pkgd))
 	    {
 		install_packages = add (install_packages, pkg);
 		// Translators: popup message part, ends with a newline
@@ -336,7 +342,9 @@
 
 	// amavis
 	string amavis_pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
+	string amavis_pkgd = (mta == `sendmail)? "amavisd-sendmail":"amavisd-postfix";
 	amavis_allowed = Installed (amavis_pkg) ||
+	    Installed (amavis_pkgd) ||
 	    AvailableForInstallation (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
