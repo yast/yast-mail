@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jan 10 16:27:57 CET 2003 - mvidner@suse.de
+
+- Prevent agent from returning strings as integers/booleans (#21804).
+- Using the new *_auto dispatcher (nashif).
+- 2.7.2
+
+-------------------------------------------------------------------
 Thu Dec  5 13:31:12 CET 2002 - mvidner@suse.cz
 
 - Use the faked Pkg instead of the real one to prevent testsuite failures.
