@@ -74,13 +74,13 @@
 		    "table": [
 			],
 		    ],
-		"aliases": $[
-		    "table": [
-			],
-		    ],
 		"virtuser": $[
 		    "table": [
 			],
+		    ],
+		],
+	    "aliases": $[
+		"table": [
 		    ],
 		],
 	    "fetchmail": $[

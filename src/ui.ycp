@@ -1105,7 +1105,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
  */
 global define symbol AliasesDialog () ``{
     SetScreenShotName ("mail-2ib-aliases");
-    list(map) aliases = Mail::MergeRootAlias (Mail::aliases);
+    list(map) aliases = MailAliases::MergeRootAlias (MailAliases::aliases);
 
     // Translators: dialog caption
     string caption = _("Aliases");
@@ -1165,8 +1165,8 @@ global define symbol AliasesDialog () ``{
     if (ret == `next)
     {
 	Mail::Touch (edit_touched);
-	Mail::aliases = aliases;
-	Mail::FilterRootAlias ();
+	MailAliases::aliases = aliases;
+	MailAliases::FilterRootAlias ();
     }
     RestoreScreenShotName ();
     return ret;

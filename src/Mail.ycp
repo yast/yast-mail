@@ -23,70 +23,10 @@
     module "Mail";
     textdomain "mail";
 
+    import "MailAliases";
     import "Report";
     import "Runlevel";
     import "Summary";
-
-    /* ---------------------------------------------------------------- */
-
-    /**
-     * For use by the Users package.
-     * Does not rely on the internal state, first calls the agent.
-     * @return eg. "joe, \\root", "" if not defined
-     */
-    global define string GetRootAlias () ``{
-	ReadMta ();
-	if (!ReadAliases ())
-	{
-	    return "";
-	}
-	return root_alias;
-    }
-
-
-    /**
-     * For use by the Users package.
-     * Does not use the internal state, just calls the agent.
-     * SuSEconfig or newaliases is NOT called!
-     * (TODO: what if it is called while the main module is running?)
-     * Errors are reported via Report::Error.
-     * @param destinations The new alias. If "", it is removed.
-     * @return true on success
-     */
-    global define boolean SetRootAlias (string destinations) ``{
-	ReadMta ();
-	if (!ReadAliases ())
-	{
-	    return false;
-	}
-
-	root_alias = destinations;
-	root_alias_comment = ""; // TODO: "created by the ... yast2 module"?
-
-	if (!WriteAliases ())
-	{
-	    return false;
-	}
-
-	path flush_path = nil;
-	if (mta == `sendmail)
-	{
-	    flush_path = .mail.sendmail.aliases;
-	}
-	else if (mta == `postfix)
-	{
-	    flush_path = .mail.postfix.aliases;
-	}
-	else
-	{
-	    return false;
-	}
-	if (! SCR::Write (flush_path, nil))
-	{
-	    return false;
-	}
-	return true;
-    }
 
     /* ---------------------------------------------------------------- */
 
@@ -166,26 +106,6 @@
      * enabled:(bool), other_(server|client)_options: ]
      */
     global list(map) fetchmail = [];
-
-    /**
-     * List of maps: $[comment:, alias:, destinations:] (all are strings)
-     * Except root.
-     */
-    global list(map) aliases = [];
-    /**
-     * Separated/joined with aliases by read/write/set/export
-     */
-    global string root_alias = "";
-    /**
-     * Separated/joined with aliases by read/write/set/export
-     */
-    string root_alias_comment = "";
-
-    /**
-     * Useful for autoinstall: the provided aliases will be (with
-     * higher priority) merged with existing ones (presumably system defaults).
-     */
-//    global boolean merge_aliases = false;
 
     /**
      * Domain-specific aliases.
@@ -495,10 +415,10 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 	// read 5
-//	merge_aliases = false;
+//	MailAliases::merge_aliases = false;
 
 	// aliases
-	if (!ReadAliases ())
+	if (!MailAliases::ReadAliases ())
 	{
 	    return false;
 	}
@@ -544,106 +464,6 @@ a fixed format to be readable by YaST2.  For details, see
 	{
 	    mta = `other;
 	}
-    }
-
-    /**
-     * Read the aliases table (and separate the root alias)
-     * @return success?
-     */
-    define boolean ReadAliases () ``{
-	list(map) a_raw = [];
-	if (mta == `sendmail)
-	{
-	    a_raw = SCR::Read (.mail.sendmail.aliases.table);
-	}
-	else if (mta == `postfix)
-	{
-	    a_raw = SCR::Read (.mail.postfix.aliases.table);
-	}
-	else
-	{
-	    return false;
-	}
-	aliases =  maplist (map e, a_raw,
-			    ``($[
-				   "comment"		: e["comment"]: "",
-				   "alias"		: e["key"]: "",
-				   "destinations"	: e["value"]: "",
-				   ]));
-	FilterRootAlias ();
-	return true;
-    }
-
-    /**
-     * Separates aliases into aliases, root_alias and root_alias_comment
-     */
-    global define void FilterRootAlias () ``{
-	root_alias = "";
-	root_alias_comment = "";
-	aliases = filter (map e, aliases, ``{
-	    if (e["alias"]:"" == "root" )
-	    {
-		root_alias = e["destinations"]:"";
-		root_alias_comment = e["comment"]:"";
-		return false;
-	    }
-	    return true;
-	});
-    }
-
-    /**
-     * @param	aliases an alias table
-     * @return prepend root alias data to aliases, if set
-     */
-    global define list(map) MergeRootAlias (list(map) aliases) ``{
-	list(map) ret = aliases;
-	if (root_alias != "")
-	{
-	    ret = prepend (ret, $[
-				 "alias": "root",
-				 "destinations": root_alias,
-				 "comment": root_alias_comment,
-				 ]);
-	}
-	return ret;
-    }
-
-    /* ---------------------------------------------------------------- */
-
-    /**
-     * Merges mail tables, which are order-preserving maps.
-     * First are the entries of the old map, with values updated
-     * from the new one, then the rest of the new map.
-     * @param new	new table
-     * @param old	old table
-     * @return		merged table
-     */
-    define list(map) mergeTables (list(map) new, list(map) old) ``{
-	// make a true map
-	map new_m = listmap (map e, new,
-			     ``([
-				    e["key"]:"",
-				    [ e["comment"]:"", e["value"]:"" ]
-				    ]));
-	// update old values
-	list(map) replaced = maplist (map e, old, ``{
-	    string k = e["key"]:"";
-	    list cv = new_m[k]:[];
-	    if (size (cv) > 0)
-	    {
-		new_m[k] = []; // ok, newly constructed
-		return $["key": k, "comment": cv[0]:"", "value": cv[1]:""];
-	    }
-	    else
-	    {
-		return $["key": k, "comment": e["comment"]:"", "value": e["value"]:""];
-	    }
-	});
-	// remove already updated values
-	list(map) filtered = filter (map e, new, ``(
-					 size (new_m[ e["key"]:"" ]:[]) > 0)
-	    );
-	return flatten ([replaced, filtered]);
     }
 
     /**
@@ -905,7 +725,7 @@ a fixed format to be readable by YaST2.  For details, see
      */
     define boolean WriteAliasesAndVirtual () ``{
 	// aliases
-	if (! WriteAliases ())
+	if (! MailAliases::WriteAliases ())
 	{
 	    return false;
 	}
@@ -929,40 +749,6 @@ a fixed format to be readable by YaST2.  For details, see
 	{
 	    return false;
 	}
-	return true;
-    }
-
-    /**
-     * Part of Write.
-     * @return success
-     * @see SetRootAlias
-     */
-    define boolean WriteAliases () ``{
-	// aliases
-	path alias_path = nil;
-	if (mta == `sendmail)
-	{
-	    alias_path = .mail.sendmail.aliases.table;
-	}
-	else if (mta == `postfix)
-	{
-	    alias_path = .mail.postfix.aliases.table;
-	}
-	else
-	{
-	    return false;
-	}
-	list(map) a_raw = maplist (map e, MergeRootAlias (aliases),
-				   ``($[
-					  "comment"	: e["comment"]:"",
-					  "key"		: e["alias"]:"",
-					  "value"	: e["destinations"]:"",
-					  ]));
-//	if (merge_aliases)
-//	{
-//	    a_raw = mergeTables (a_raw, SCR::Read (alias_path));
-//	}
-	SCR::Write (alias_path, a_raw);
 	return true;
     }
 
@@ -995,7 +781,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    }
 	    tables = [
 		.mail.sendmail.generics,
-		.mail.sendmail.aliases,
+		.mail.aliases,
 		.mail.sendmail.virtuser,
 		];
 	}
@@ -1009,7 +795,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    }
 	    tables = [
 		.mail.postfix.sendercanonical,
-		.mail.postfix.aliases,
+		.mail.aliases,
 		.mail.postfix.virtual,
 		];
 	}
@@ -1191,9 +977,9 @@ a fixed format to be readable by YaST2.  For details, see
 	masquerade_other_domains = settings["masquerade_other_domains"]: [];
 	masquerade_users = settings["masquerade_users"]: [];
 	fetchmail = settings["fetchmail"]: [];
-	aliases = settings["aliases"]: [];
-	FilterRootAlias ();
-//	merge_aliases = settings["merge_aliases"]: false;
+	MailAliases::aliases = settings["aliases"]: [];
+	MailAliases::FilterRootAlias ();
+//	MailAliases::merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
 	y2debug ("after %1", settings); // may contain passwords
     }
@@ -1216,8 +1002,8 @@ a fixed format to be readable by YaST2.  For details, see
 	    "masquerade_other_domains": masquerade_other_domains,
 	    "masquerade_users": masquerade_users,
 	    "fetchmail": fetchmail,
-	    "aliases": MergeRootAlias (aliases),
-//	    "merge_aliases": merge_aliases,
+	    "aliases": MailAliases::MergeRootAlias (MailAliases::aliases),
+//	    "merge_aliases": MailAliases::merge_aliases,
 	    "virtual_users": virtual_users,
 	    ];
     }
@@ -1269,7 +1055,7 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
 	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : _("No"));
 	summary = summary + ListItem (_("Fetchmail"), fetchmail, "server");
-	summary = summary + ListItem (_("Aliases"), MergeRootAlias (aliases), "alias");
+	summary = summary + ListItem (_("Aliases"), MailAliases::MergeRootAlias (MailAliases::aliases), "alias");
 	summary = summary + ListItem (_("Virtual Users"), virtual_users, "alias");
 	return summary;
     }

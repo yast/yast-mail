@@ -397,13 +397,13 @@ global define boolean Validate_fm_local_user (symbol id) ``{
 }
 
 global define string Get_root_alias () ``{
-    return Mail::root_alias;
+    return MailAliases::root_alias;
 }
 
 global define void Set_root_alias (symbol id) ``{
     string val = UI::QueryWidget (`id (id), `Value);
-    Mail::Touch (Mail::root_alias != val);
-    Mail::root_alias = val;
+    Mail::Touch (MailAliases::root_alias != val);
+    MailAliases::root_alias = val;
 }
 
 global define boolean Validate_root_alias (symbol id) ``{

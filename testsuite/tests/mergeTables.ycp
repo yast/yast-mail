@@ -12,7 +12,7 @@
  */
 {
     include "testsuite.ycp";
-    import "Mail";
+    import "MailAliases";
 
     list(map) old1 = [
 $["comment":" Basic system aliases that MUST be present.
@@ -39,8 +39,8 @@ $["comment":"","value":"news","key":"usenet",] ,
 	$[ "key": "newsadmin", "value": "root", "comment": " direct",],	
 	];
 
-    TEST (``(Mail::mergeTables ([], [])), [], nil);
-    TEST (``(Mail::mergeTables (new1, [])), [], nil);
-    TEST (``(Mail::mergeTables ([], old1)), [], nil);
-    TEST (``(Mail::mergeTables (new1, old1)), [], nil);
+    TEST (``(MailAliases::mergeTables ([], [])), [], nil);
+    TEST (``(MailAliases::mergeTables (new1, [])), [], nil);
+    TEST (``(MailAliases::mergeTables ([], old1)), [], nil);
+    TEST (``(MailAliases::mergeTables (new1, old1)), [], nil);
 }

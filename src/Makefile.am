@@ -21,6 +21,7 @@ config_DATA =			\
 	mail.y2cc
 
 module_DATA =			\
+	MailAliases.ycp \
 	Mail.ycp
 
 

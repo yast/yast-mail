@@ -11,7 +11,7 @@ Read	.sysconfig.mail.FROM_HEADER "foo.test"
 Read	.sysconfig.sendmail.MASQUERADE_DOMAINS ""
 Read	.mail.sendmail.generics.table []
 Read	.mail.fetchmail.accounts []
-Read	.mail.sendmail.aliases.table []
+Read	.mail.aliases.table []
 Read	.mail.sendmail.virtuser.table []
 Return	true
 Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
@@ -29,13 +29,13 @@ Write	.sysconfig.sendmail.SENDMAIL_SMARTHOST "" true
 Write	.sysconfig.mail.FROM_HEADER "foo.test" true
 Write	.sysconfig.sendmail.MASQUERADE_DOMAINS "" true
 Write	.mail.sendmail.generics.table [] true
-Write	.mail.sendmail.aliases.table [] true
+Write	.mail.aliases.table [] true
 Write	.mail.sendmail.virtuser.table [] true
 Write	.sysconfig.mail nil true
 Write	.sysconfig.amavis nil true
 Write	.sysconfig.sendmail nil true
 Write	.mail.sendmail.generics nil true
-Write	.mail.sendmail.aliases nil true
+Write	.mail.aliases nil true
 Write	.mail.sendmail.virtuser nil true
 Execute	.target.bash "/sbin/SuSEconfig --module sendmail" 0
 Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0

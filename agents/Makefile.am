@@ -12,10 +12,9 @@ scrconf_DATA = \
 	cfg_postfix.scr		\
 	cfg_sendmail.scr	\
 	mail_fetchmail.scr	\
-	mail_p_aliases.scr	\
+	mail_aliases.scr	\
 	mail_p_canonical.scr	\
 	mail_p_virtual.scr	\
-	mail_s_aliases.scr	\
 	mail_s_generics.scr	\
 	mail_s_virtuser.scr
 
