@@ -860,31 +860,21 @@ a fixed format to be readable by YaST2.  For details, see
 	    {
 		Runlevel::ServiceAdjust ("amavis", "disable");
 	    }
-
-	    if (Runlevel::RunInitScript (service, "restart") != 0)
-	    {
-		// Translators: error message
-		Report::Error (sformat (_("Error starting service %1."), service));
-		return false;
-	    }
 	}
 	else if (mta == `postfix)
 	{
 	    // There's no separate amavis init script.
 	    service = "postfix";
-	    Runlevel::RunInitScript (service, "stop");
-	    if (connection_type != `none)
-	    {
-		if (Runlevel::RunInitScript (service, "start") != 0)
-		{
-		    // Translators: error message
-		    Report::Error (sformat (_("Error starting service %1."), service));
-		    return false;
-		}
-	    }
 	}
 	else
 	{
+	    return false;
+	}
+
+	if (Runlevel::RunInitScript (service, "restart") != 0)
+	{
+	    // Translators: error message
+	    Report::Error (sformat (_("Error starting service %1."), service));
 	    return false;
 	}
 
