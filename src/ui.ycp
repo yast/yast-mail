@@ -398,7 +398,7 @@ global define symbol ConnectionTypeDialog () ``{
 	    //Wizard::RestoreNextButton ();
 	    UI::ChangeWidget (`id (`amavis), `Enabled, true);
 	}
-	else if (ret == `none)
+	else if (ct == `none)
 	{
 	    UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
 	    //argh, slow
