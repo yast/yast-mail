@@ -1048,7 +1048,7 @@ a fixed format to be readable by YaST2.  For details, see
 
 
 	summary = summary + ListItem (_("Local Domains"), local_domains, nil);
-	summary = summary + ListItem (_("Masquerade other Domains"), masquerade_other_domains, nil);
+	summary = summary + ListItem (_("Masquerade Other Domains"), masquerade_other_domains, nil);
 	summary = summary + ListItem (_("Masquerade Users"), masquerade_users, "user");
 	summary = Summary::AddHeader(summary, _("Accept remote SMTP connections"));
 	summary = Summary::AddLine(summary, (listen_remote) ? _("Yes") : _("No"));

@@ -158,7 +158,7 @@ global define symbol MailSequence () ``{
 
     // Translators: dialog caption
     string caption = _("Mail configuration");
-    term contents = `Label (_("Initializing ..."));
+    term contents = `Label (_("Initializing..."));
 
     Wizard::CreateDialog ();
     Wizard::SetContentsButtons ( caption,
@@ -195,7 +195,7 @@ global define symbol MailAutoSequence () ``{
 
     // Translators: dialog caption
     string caption = _("Mail configuration");
-    term contents = `Label (_("Initializing ..."));
+    term contents = `Label (_("Initializing..."));
 
     Wizard::CreateDialog ();
     Wizard::SetContentsButtons ( caption,
@@ -474,7 +474,7 @@ global define symbol BasicDialog () ``{
 		WJ_MakeWidget (`outgoing_mail_server),
 		`HSpacing (1),
 		// Translators: button
-		`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details ...")))
+		`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details...")))
 		)
 	    );
     buttons = add (buttons, `outgoing_details);
@@ -541,10 +541,10 @@ global define symbol BasicDialog () ``{
 
     i_contents = add (
 	i_contents,
-	`MenuButton (`id (`incoming_details), _("&Incoming details ..."), [
-			 `item (`id (`downloading), _("&Downloading ...")),
-			 `item (`id (`aliases), _("&Aliases ...")),
-			 `item (`id (`virtual), _("&Virtual domains ...")),
+	`MenuButton (`id (`incoming_details), _("&Incoming details..."), [
+			 `item (`id (`downloading), _("&Downloading...")),
+			 `item (`id (`aliases), _("&Aliases...")),
+			 `item (`id (`virtual), _("&Virtual domains...")),
 			 ])
 	);
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
