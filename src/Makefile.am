@@ -19,9 +19,12 @@ myynclude_DATA =		\
 config_DATA =			\
 	mail.y2cc
 
+desktop_DATA =			\
+	mail.desktop
+
 module_DATA =			\
 	MailAliases.ycp		\
 	Mail.ycp
 
 
-EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(config_DATA) $(module_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(config_DATA) $(module_DATA) $(desktop_DATA)
