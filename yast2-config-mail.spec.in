@@ -30,5 +30,5 @@ BuildArchitectures:	noarch
 @YAST2DIR@/clients/mail.ycp
 @YAST2DIR@/clients/mail_*.ycp
 @YAST2DIR@/modules/Mail.ycp
-@YAST2DIR@/menuentries/menuentry_mail.ycp
+@YAST2DIR@/menuentries/menuentry_mail.y2cc
 %doc @DOCDIR@
