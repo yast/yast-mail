@@ -407,12 +407,13 @@
 	if (fetchmail == nil)
 	{
 	    // Translators: error message,
-	    // %1 is a file name, %2 is a long file name
+	    // %1 is a file name,
+	    // %2 is a long file name - leave it on a separate line
 	    Report::Error (sformat(_("Error reading file %1. The file must have
 a fixed format to be readable by YaST2.  For details, see
 %2"),
 			 "/etc/fetchmailrc",
-			 "/usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt"));
+			 "/usr/share/doc/packages/yast2-mail/fetchmailrc.txt"));
 	    return false;
 	}
 	//TODO what to do with a difficult syntax etc?
