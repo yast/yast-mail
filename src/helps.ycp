@@ -80,6 +80,7 @@ to install.</p>");
 mails will not be sent immediately but rather after invoking
 <b>sendmail&nbsp;-q</b>.</p>
 ");
+	return s;
     }
 
     /**
