@@ -31,6 +31,8 @@ Write	.sysconfig.sendmail.MASQUERADE_DOMAINS "" true
 Write	.mail.sendmail.generics.table [] true
 Write	.mail.aliases.table [] true
 Write	.mail.sendmail.virtuser.table [] true
+Write	.mail.fetchmail.accounts [] true
+Write	.mail.fetchmail nil true
 Write	.sysconfig.mail nil true
 Write	.sysconfig.amavis nil true
 Write	.sysconfig.sendmail nil true

@@ -486,11 +486,11 @@ a fixed format to be readable by YaST2.  For details, see
 	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
 	    // Translators: progress label
 	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliasesAndVirtual ()) ]);
-	    if (connection_type == `dialup)
-	    {
-		// Translators: progress label
-		stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
-	    }
+	    // Write them unconditionally, because it is now possible to
+	    // enter them also in the Permanent mode. Bug #17417.
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
+
 	}
 	// Translators: progress label
 	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
