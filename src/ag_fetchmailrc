@@ -6,8 +6,7 @@
 # An agent for parsing and writing fetchmailrc files.
 # See fetchmailrc.txt for the format restrictions.
 
-#use lib "/usr/lib/YaST2/agents_non_y2";
-use lib "/home/mvidner/yast2/source/y2scr/agents_perl/lib"; #TODO
+use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
 
@@ -274,6 +273,4 @@ while ( <STDIN> )
 	y2error ("Unknown instruction $command or argument: ", ref ($argument));
 	ycp::Return ("false");
     }
-
-    print "\n";
 }
