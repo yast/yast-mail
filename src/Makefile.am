@@ -15,12 +15,10 @@ agents_SCRIPTS = ag_mailtable ag_fetchmailrc
 clients_DATA =			\
 	mail.ycp		\
 	mail_auto.ycp	\
-	mail_summary.ycp	\
 	mail_write.ycp
 
 include_DATA =			\
 	helps.ycp		\
-	misc.ycp		\
 	ui.ycp
 
 menu_DATA =			\
