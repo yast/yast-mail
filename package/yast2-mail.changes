@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Jul 19 17:33:38 CEST 2002 - mvidner@suse.cz
+
+- Separated aliases handling into yast2.rpm/MailAliases.ycp (~#11730).
+- Merged proofread texts.
+- 2.6.8
+
+-------------------------------------------------------------------
 Fri Jul 12 16:14:32 CEST 2002 - arvin@suse.de
 
 - use proper namespace for Args and CallFunction (#16776)
