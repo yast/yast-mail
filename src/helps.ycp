@@ -157,6 +157,9 @@ for a description of advanced features.</p>
 ");
     }
 
+    /**
+     * @return Help for virtual domains dialog
+     */
     global define string VirtualDialogHelp () ``{
 
 	return _("
