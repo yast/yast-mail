@@ -16,7 +16,7 @@
  *  that is, comments have the leading '#' stripped but not the newline.
  *
  * Example:
- *   Read (.mail.postfix.sendercanonical.map)
+ *   Read (.mail.postfix.sendercanonical.table)
  */
 .mail.postfix.sendercanonical
 

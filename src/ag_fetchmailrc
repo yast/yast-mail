@@ -130,6 +130,7 @@ sub read_string ($)
     return $output;
 }
 
+#TODO: move it out!
 sub test_read_string ()
 {
 my $foo = <<'END';
@@ -142,8 +143,6 @@ foreach my $s (split /\n/, $foo)
     print $s." '".read_string ($s)."'\n";
 }
 }
-
-test_read_string;
 
 sub write_file ()
 {
@@ -180,26 +179,23 @@ sub write_file ()
 # MAIN cycle
 #
 
-# # read the agent arguments
-# $_ = <STDIN>;
-# # reply to the client (this actually gets eaten by the ScriptingAgent)
-# ycp::Return (undef);
+# read the agent arguments
+$_ = <STDIN>;
+# no input at all - simply exit
+exit if ! defined $_;
+# reply to the client (this actually gets eaten by the ScriptingAgent)
+ycp::Return (undef);
 
-# my ($symbol, $config, @rest) = ycp::ParseTerm ($_);
-# if ($symbol ne "Mailtable")
-# {
-#     y2error ("The first command must be the configuration.(Seen '$_')");
-#     exit;
-# }
-# else
-# {
-#     $filename = $config->{"filename"};
-#     $continue_escaped_newline = $config->{"continue_escaped_newline"};
-#     $continue_leading_blanks = $config->{"continue_leading_blanks"};
-#     $separator = $config->{"colon"} ? qr/:\s+/ : qr/\s+/;
-#     $oseparator = $config->{"colon"} ? ":\t" : "\t";
-# }
-
+my ($symbol, $config, @rest) = ycp::ParseTerm ($_);
+if ($symbol ne "Fetchmail")
+{
+    y2error ("The first command must be the configuration.(Seen '$_')");
+    exit;
+}
+else
+{
+    $filename = $config->{"filename"};
+}
 parse_file ();
 
 while ( <STDIN> )
@@ -279,4 +275,5 @@ while ( <STDIN> )
 	ycp::Return ("false");
     }
 
+    print "\n";
 }

@@ -16,7 +16,7 @@
  *  that is, comments have the leading '#' stripped but not the newline.
  *
  * Example:
- *   Read (.mail.sendmail.aliases.map)
+ *   Read (.mail.sendmail.aliases.table)
  */
 .mail.sendmail.aliases
 

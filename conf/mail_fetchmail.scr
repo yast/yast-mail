@@ -1,0 +1,21 @@
+/**
+ * $Id$
+ * Summary:
+ *   SCR Agent for reading/writing the Fetchmail configuration file
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * Access:
+ *   read/write
+ * See:
+ *   yast2-config-mail/fetchmailrc.txt
+ *
+ * Example:
+ *   Read (.mail.fetchmail.accounts)
+ */
+.mail.fetchmail
+
+`ag_fetchmailrc (
+  Fetchmail ($[
+    "filename": "/etc/fetchmailrc";
+  ])
+)

@@ -16,7 +16,7 @@
  *  that is, comments have the leading '#' stripped but not the newline.
  *
  * Example:
- *   Read (.mail.postfix.virtual.map)
+ *   Read (.mail.postfix.virtual.table)
  */
 .mail.postfix.virtual
 

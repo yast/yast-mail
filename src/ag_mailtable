@@ -167,6 +167,8 @@ sub write_file ()
 # MAIN cycle
 #
 
+y2milestone ("ag_mailtable started");
+
 # read the agent arguments
 $_ = <STDIN>;
 # no input at all - simply exit
@@ -265,5 +267,6 @@ while ( <STDIN> )
 	y2error ("Unknown instruction $command or argument: ", ref ($argument));
 	ycp::Return ("false");
     }
-
+    # should go into Return, Return0
+    print "\n";
 }
