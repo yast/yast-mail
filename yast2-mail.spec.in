@@ -42,12 +42,9 @@ Summary:	Configuration of mail
 @scrconfdir@/cfg_postfix.scr
 @scrconfdir@/cfg_sendmail.scr
 @scrconfdir@/mail_fetchmail.scr
-@scrconfdir@/mail_p_aliases.scr
 @scrconfdir@/mail_p_canonical.scr
 @scrconfdir@/mail_p_virtual.scr
-@scrconfdir@/mail_s_aliases.scr
 @scrconfdir@/mail_s_generics.scr
 @scrconfdir@/mail_s_virtuser.scr
 @agentdir@/ag_fetchmailrc
-@agentdir@/ag_mailtable
 %doc @docdir@

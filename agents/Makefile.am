@@ -4,7 +4,7 @@
 # $Id$
 #
 
-agent_SCRIPTS = ag_mailtable ag_fetchmailrc
+agent_SCRIPTS = ag_fetchmailrc
 
 scrconf_DATA = \
 	cfg_amavis.scr		\
@@ -12,17 +12,14 @@ scrconf_DATA = \
 	cfg_postfix.scr		\
 	cfg_sendmail.scr	\
 	mail_fetchmail.scr	\
-	mail_aliases.scr	\
 	mail_p_canonical.scr	\
 	mail_p_virtual.scr	\
 	mail_s_generics.scr	\
 	mail_s_virtuser.scr
 
-TESTS = test-fetchmailrc test-mailtable
+TESTS = test-fetchmailrc
 testdata = test-fetchmailrc.in \
 	test-fetchmailrc-i.out \
-	test-fetchmailrc-o.out \
-	test-mailtable-1.in test-mailtable-1.out \
-	test-mailtable-2.in test-mailtable-2.out
+	test-fetchmailrc-o.out
 
 EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata)
