@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Aug  4 17:12:47 CEST 2003 - mvidner@suse.de
+
+- Added desktop file (supersedes y2cc file).
+- 2.8.4
+
+-------------------------------------------------------------------
 Fri Aug  1 13:30:47 CEST 2003 - mvidner@suse.cz
 
 - Testsuite: don't expose perl-internal hash ordering (fixes build).
