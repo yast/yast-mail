@@ -1,0 +1,282 @@
+#!/usr/bin/perl -w
+#
+# $Id$
+# Author: Martin Vidner <mvidner@suse.cz>
+#
+# An agent for parsing and writing fetchmailrc files.
+# See fetchmailrc.txt for the format restrictions.
+
+#use lib "/usr/lib/YaST2/agents_non_y2";
+use lib "/home/mvidner/yast2/source/y2scr/agents_perl/lib"; #TODO
+use ycp;
+use strict;
+
+# Data model:
+# all comments are joined: "# foo\n# bar\n"
+my $comment;
+# global options. strings.
+my @globals;
+# entries are maps with these keys, values are strings:
+# enabled (boolean), server, protocol, remote_user, local_user, password,
+# other_server_options, other_user_options
+my @accounts;
+# numbers of statements that did not parse - TODO - what to do with them?
+my @parse_errors;
+
+my $filename = "/etc/fetchmailrc";
+
+sub parse_file ()
+{
+    my $whole_file = "";
+    $comment = "";
+    @globals = ();
+    @accounts = ();
+    @parse_errors = ();
+
+    open (FILE, $filename) or return y2error ("$filename: $!"), 0;
+    while (<FILE>)
+    {
+	chomp;
+	# we want to match a comment, but not a '#' in a string
+	m{
+	    ^( (?: [^\'\"\#]* | \'[^\']*\' | \"[^\"]*\" )* ) #"
+	     ( \# .* )?
+	 }x;
+	$whole_file .= "$1\n";
+	$comment .= "$2\n" if defined $2;
+    }
+    close (FILE);
+    # Now split it into server entries and global options at the semicolons.
+    # Comments can have semicolons but we've already removed them.
+    # Semicolons in strings must be escaped numerically.
+
+    my $stringre = "(?:\'[^\']*\'|\"[^\"]*\")";
+    my $i = 0;
+    my @statements = split /;/, $whole_file;
+    foreach my $statement (@statements)
+    {
+	++$i;
+	if ($statement =~ /^\s*$/s)
+	{
+	    # empty statements are ok.
+	}
+	elsif ($statement =~ /^\s*(set\s+.*)\s*$/s)
+	{
+	    push @globals, $1;
+	}
+	elsif ($statement =~ m{^\s*
+				(poll|server|skip) \s* ($stringre) \s* # $1 $2
+				protocol \s+ ([[:alnum:]]+) \s* # $3
+				( # anything except a colon, except in a string
+				 (?: [^:\'\"]* | \'[^\']*\' | \"[^\"]*\" )* #"
+				) # $4
+				: \s*
+				user \s* ($stringre) \s* there \s+ # $5
+				with \s+ password \s* ($stringre) \s* # $6
+				is \s* ($stringre) \s* here \s* # $7
+				(.*) # $8
+			       }xso) # whitespace, dot matches \n, compile once
+	{
+	    my $entry = {};
+	    $entry->{enabled} = ($1 eq "skip") ? "false" : "true";
+	    $entry->{sever} = read_string ($2);
+	    # we leave checking the validity to the ycp code
+	    # to keep the list of protocols in one place.
+	    # but it may prove to be a bad idea.
+	    $entry->{protocol} = $3;
+	    $entry->{other_server_options} = $4;
+	    $entry->{remote_user} = read_string ($5);
+	    $entry->{password} = read_string ($6);
+	    $entry->{local_user} = read_string ($7);
+	    $entry->{other_user_options} = $8;
+	    push @accounts, $entry;
+	}
+	else
+	{
+	    #Unrecognized statement.
+	    #Note that we cannot log it because that could disclose a password.
+	    y2warning "ag_fetchmailrc: Parse error in statement $i";
+	    push @parse_errors, $i;
+	}
+    }
+# TODO return?
+}
+
+sub read_string ($)
+{
+    $_ = shift;
+    s/^[\'\"](.*)[\'\"]$/$1/ or return undef; #"
+
+    my $output = "";
+    for (;;)
+    {
+	# m/\G.../cg
+	# see perlop, Regexp Quote-Like Operators
+	# g:match multiple times,
+	# \G, start where last match left off,
+	# c: don't reset last match if this one failed
+	if    (/\G\\\\/cg)			{ $output .= "\\"; }
+	elsif (/\G\\n/cg)			{ $output .= "\n"; }
+	elsif (/\G\\t/cg)			{ $output .= "\t"; }
+	elsif (/\G\\b/cg)			{ $output .= "\b"; }
+	elsif (/\G\\r/cg)			{ $output .= "\r"; }
+	elsif (/\G\\[xX]([[:xdigit:]]{1,2})/cg)	{ $output .= chr (hex $1); }
+	elsif (/\G\\0([0-7]{0,2})/cg)		{ $output .= chr (oct $1); }
+	elsif (/\G\\([0-9]{1,3})/cg)		{ $output .= chr ($1); }
+	elsif (/\G\\(.)/cg)			{ $output .= $1; }
+	elsif (/\G([^\\]+)/cg)			{ $output .= $1; }
+	else { last; }
+    }
+    return $output;
+}
+
+sub test_read_string ()
+{
+my $foo = <<'END';
+"normal foo"
+""
+'a hex semicolon\x3B a tab\tbackslash\\ octal newline\012decimal newline\10'
+END
+foreach my $s (split /\n/, $foo)
+{
+    print $s." '".read_string ($s)."'\n";
+}
+}
+
+test_read_string;
+
+sub write_file ()
+{
+    open (FILE, ">$filename.YaST2.new");
+
+    #TODO: "edit with caution, see foo.doc"
+    print FILE $comment;
+    foreach (@globals)
+    {
+	print FILE "$_;\n";
+    }
+    foreach my $entry (@accounts)
+    {
+	print FILE ($entry->{enabled} ? "poll ": "skip ");
+	print FILE write_string ($entry->{sever});
+	print FILE " protocol ", $entry->{protocol};
+	print FILE " ", $entry->{other_server_options};
+	print FILE ":";
+	print FILE " user ", write_string ($entry->{remote_user}), " there";
+	print FILE " with password ", write_string ($entry->{password});
+	print FILE " is ", write_string ($entry->{local_user}), " here ";
+	print FILE $entry->{other_user_options};
+	print FILE ";\n"
+    }
+    close (FILE);
+
+    rename $filename, "$filename.YaST2.save" or return y2error ("Creating backup"), 0;
+    rename "$filename.YaST2.new", $filename or return y2error ("Moving temp file"), 0;
+    return 1;
+}
+
+
+#
+# MAIN cycle
+#
+
+# # read the agent arguments
+# $_ = <STDIN>;
+# # reply to the client (this actually gets eaten by the ScriptingAgent)
+# ycp::Return (undef);
+
+# my ($symbol, $config, @rest) = ycp::ParseTerm ($_);
+# if ($symbol ne "Mailtable")
+# {
+#     y2error ("The first command must be the configuration.(Seen '$_')");
+#     exit;
+# }
+# else
+# {
+#     $filename = $config->{"filename"};
+#     $continue_escaped_newline = $config->{"continue_escaped_newline"};
+#     $continue_leading_blanks = $config->{"continue_leading_blanks"};
+#     $separator = $config->{"colon"} ? qr/:\s+/ : qr/\s+/;
+#     $oseparator = $config->{"colon"} ? ":\t" : "\t";
+# }
+
+parse_file ();
+
+while ( <STDIN> )
+{
+    my ($command, $path, $argument) = ycp::ParseCommand ($_);
+
+    if ($command eq "Dir")
+    {
+	if ($path eq ".")
+	{
+	    ycp::Return (["comment", "globals", "accounts"]);
+	}
+	else
+	{
+	    ycp::Return ([]);
+	}
+    }
+
+    elsif ($command eq "Write")
+    {
+	my $result = "true";
+	if ($path eq ".comment" && ! ref ($argument))
+	{
+	    $comment = $argument;
+	}
+	elsif ($path eq ".globals" && ref ($argument) eq "ARRAY")
+	{
+	    @globals = @{$argument};
+	}
+	elsif ($path eq ".accounts" && ref ($argument) eq "ARRAY")
+	{
+	    @accounts = @{$argument};
+	}
+	elsif ($path eq "." && !defined ($argument))
+	{
+	    $result = write_file () ? "true":"false";
+	}
+	else
+	{
+	    y2error ("Wrong path $path or argument: ", ref ($argument));
+	    $result = "false";
+	}
+
+	ycp::Return ($result);
+    }
+
+    elsif ($command eq "Read")
+    {
+	if ($path eq ".comment")
+	{
+	    ycp::Return ($comment);
+	}
+	elsif ($path eq ".globals")
+	{
+	    ycp::Return (\@globals);
+	}
+	elsif ($path eq ".accounts")
+	{
+	    ycp::Return (\@accounts);
+	}
+	else
+	{
+	    y2error ("Unrecognized path! '$path'");
+	    ycp::Return ("");
+	}
+    }
+
+    elsif ($command eq "result")
+    {
+	exit;
+    }
+
+    # Unknown command
+    else
+    {
+	y2error ("Unknown instruction $command or argument: ", ref ($argument));
+	ycp::Return ("false");
+    }
+
+}

@@ -1,0 +1,20 @@
+$Id$
+
+Restrictions of the content of fetchmailrc with respect to YaST2:
+
+A detailed description of the fetchmailrc file as understood by
+fetchmail itself is in the fetchmail(1) manual page, section "THE RUN
+CONTROL FILE". The syntax is very liberal. In order for the file to be
+parsable by YaST2, these limitations must be applied:
+
+- Each global option or server entry must be terminated by a semicolon (;).
+  A semicolon in a string must be written numerically, that is,
+  as "\073", "\59" or "\x3b".
+
+- Each server entry must refer to only one remote user and one local
+  user.
+- Strings such as user names must be always quoted.
+- A server entry must have this format: (white space is not significant)
+
+poll "my.server" protocol foo [other server options] : 
+user "clark" there with password "S" is "superman" here [other user options] ;
