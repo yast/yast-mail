@@ -284,7 +284,7 @@ define symbol ConnectionTypeDialog () ``{
 	if (ct == `permanent || ct == `dialup)
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, true);
-	    UI::ChangeWidget (`id (`next), `Label, Label::NextButton());
+	    Wizard::RestoreNextButton();
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
 	}
