@@ -62,6 +62,7 @@
 		// TODO: check for a new default in the installed system?
 		// (evade the dummy agent, neededforbuild sendmail)
 		"SENDMAIL_ARGS": "-L sendmail -Am -bd -q30m -om",
+		"SMTP_AUTH_MECHANISMS": "",
 		],
 	    ],
 	"mail": $[
@@ -72,6 +73,12 @@
 		    ],
 		"virtuser": $[
 		    "table": [
+			],
+		    ],
+		"auth": $[
+		    "accounts": [
+			$["server": "s", "user": "u", "password": "p",
+			  "more": 1],
 			],
 		    ],
 		],

@@ -126,10 +126,26 @@
      * list of maps:
      * The ui only handles the first list item, the rest is for autoyast
      * $[server: string, user: string, password: string(plain text)]
+     * There are other map keys that must be preserved on editing.
      */
     global list(map) smtp_auth = [];
 
+    /**
+     * Sysconfig setting that enables the feature.
+     * For postfix, it is a simple yes/no which we set to (size(smtp_auth)>0)
+     * For sendmail, it is a list of methods which we set to empty or all
+     * but we don't touch it if it was something in between, marked as nil.
+     * Must default to non-nil.
+     */
+    boolean enable_smtp_auth = false;
+
     /* ---------------------------------------------------------------- */
+    // constants
+
+    /**
+     * The full set of authentication mechanisms for sendmail
+     */
+    string sendmail_all_mechanisms = "plain gssapi digest-md5 cram-md5";//const
 
     /**
      * Fetchmail protocols, as defined in rcfile_l.l
@@ -260,6 +276,9 @@
 			   _("Reading downloading settings"),
 			   // Translators: progress label
 			   _("Reading alias tables"),
+			   // Translators: progress label
+			   // smtp-auth
+			   _("Reading authentication settings"),
 			   ],
 		       [], "");
 
@@ -460,6 +479,32 @@ a fixed format to be readable by YaST2.  For details, see
 					 "destinations"	: e["value"]: "",
 					 ]));
 
+	// announce 6
+	Progress::NextStage ();
+	if (eval (abort))
+	{
+	    return false;
+	}
+	// read 6
+	if (mta == `sendmail)
+	{
+	    smtp_auth = SCR::Read (.mail.sendmail.auth.accounts);
+	    string mechanisms = SCR::Read (.sysconfig.sendmail.SMTP_AUTH_MECHANISMS);
+	    if (mechanisms != sendmail_all_mechanisms && mechanisms != "")
+	    {
+		enable_smtp_auth = nil;
+	    }
+	}
+	else if (mta == `postfix)
+	{
+	    smtp_auth = SCR::Read (.mail.postfix.auth.accounts);
+	}
+	else
+	{
+	    return false;
+	}
+
+
 	// complete
 	Progress::NextStage ();
 	return true;
@@ -505,7 +550,8 @@ a fixed format to be readable by YaST2.  For details, see
 	    // enter them also in the Permanent mode. Bug #17417.
 	    // Translators: progress label
 	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
-
+	    // Translators: progress label
+	    stages = add (stages, [ _("Writing authentication settings"), ``(WriteSmtpAuth ()) ]);
 	}
 	// Translators: progress label
 	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
@@ -758,6 +804,40 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
+    define boolean WriteSmtpAuth () ``{
+	// TODO how to remove the only entry?
+	// filter it out in the dialog?
+	if (enable_smtp_auth != nil)
+	{
+	    enable_smtp_auth = size (smtp_auth) > 0;
+	}
+
+	if (mta == `sendmail)
+	{
+	    SCR::Write (.mail.sendmail.auth.accounts, smtp_auth);
+	    if (enable_smtp_auth != nil)
+	    {
+		SCR::Write (.sysconfig.sendmail.SMTP_AUTH_MECHANISMS,
+			    enable_smtp_auth? sendmail_all_mechanisms: "");
+	    }
+	}
+	else if (mta == `postfix)
+	{
+	    SCR::Write (.mail.postfix.auth.accounts, smtp_auth);
+	    SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_AUTH,
+			enable_smtp_auth? "yes": "no");
+	}
+	else
+	{
+	    return false;
+	}
+	return true;
+    }
+
+    /**
+     * Part of Write.
+     * @return success
+     */
     define boolean WriteFlush () ``{
 	//flush the agents
 	if (!SCR::Write (.sysconfig.mail, nil))
@@ -785,6 +865,7 @@ a fixed format to be readable by YaST2.  For details, see
 		.mail.sendmail.generics,
 		.mail.aliases,
 		.mail.sendmail.virtuser,
+		.mail.sendmail.auth,
 		];
 	}
 	else if (mta == `postfix)
@@ -799,6 +880,7 @@ a fixed format to be readable by YaST2.  For details, see
 		.mail.postfix.sendercanonical,
 		.mail.aliases,
 		.mail.postfix.virtual,
+		.mail.postfix.auith,
 		];
 	}
 	else
@@ -973,6 +1055,7 @@ a fixed format to be readable by YaST2.  For details, see
 	MailAliases::FilterRootAlias ();
 //	MailAliases::merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
+	smtp_auth = settings["smtp_auth"]: [];
 	y2debug ("after %1", settings); // may contain passwords
     }
 
@@ -997,6 +1080,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    "aliases": MailAliases::MergeRootAlias (MailAliases::aliases),
 //	    "merge_aliases": MailAliases::merge_aliases,
 	    "virtual_users": virtual_users,
+	    "smtp_auth": smtp_auth,
 	    ];
     }
 
@@ -1062,6 +1146,8 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = summary + ListItem (_("Aliases"), MailAliases::MergeRootAlias (MailAliases::aliases), "alias");
 	// summary item
 	summary = summary + ListItem (_("Virtual Users"), virtual_users, "alias");
+	// summary item
+	summary = summary + ListItem (_("Authentication"), smtp_auth, "server");
 	return summary;
     }
 

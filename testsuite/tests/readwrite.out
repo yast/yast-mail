@@ -13,6 +13,8 @@ Read	.mail.sendmail.generics.table []
 Read	.mail.fetchmail.accounts []
 Read	.mail.aliases.table []
 Read	.mail.sendmail.virtuser.table []
+Read	.mail.sendmail.auth.accounts [$["more":1, "password":"p", "server":"s", "user":"u"]]
+Read	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS ""
 Return	true
 Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
 Write	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes" true
@@ -33,12 +35,15 @@ Write	.mail.aliases.table [] true
 Write	.mail.sendmail.virtuser.table [] true
 Write	.mail.fetchmail.accounts [] true
 Write	.mail.fetchmail nil true
+Write	.mail.sendmail.auth.accounts [$["more":1, "password":"p", "server":"s", "user":"u"]] true
+Write	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS "plain gssapi digest-md5 cram-md5" true
 Write	.sysconfig.mail nil true
 Write	.sysconfig.amavis nil true
 Write	.sysconfig.sendmail nil true
 Write	.mail.sendmail.generics nil true
 Write	.mail.aliases nil true
 Write	.mail.sendmail.virtuser nil true
+Write	.mail.sendmail.auth nil true
 Execute	.target.bash "/sbin/SuSEconfig --module sendmail" 0
 Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0
 Execute	.target.bash "/etc/init.d/amavis start" $["TERM":"raw"] 0

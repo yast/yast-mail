@@ -315,6 +315,7 @@ global define void Set_fm_server (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "server", val);
 }
 
+// also used for smtp_auth server
 global define boolean Validate_fm_server (symbol id) ``{
     string val = UI::QueryWidget (`id (id), `Value);
     if (!check_domainname (val))
@@ -350,6 +351,7 @@ global define void Set_fm_remote_user (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "remote_user", val);
 }
 
+// also used for smtp_auth user
 global define boolean Validate_fm_remote_user (symbol id) ``{
     string val = UI::QueryWidget (`id (id), `Value);
     if (val == "")
