@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Sep  3 16:28:55 CEST 2004 - mvidner@suse.cz
+
+- Added GetModified, SetModified for autoyast (#43904, nashif).
+- 2.10.4
+
+-------------------------------------------------------------------
 Tue Aug 24 09:34:11 CEST 2004 - mvidner@suse.cz
 
 - Fixed UI that was broken because of stricter type checking.

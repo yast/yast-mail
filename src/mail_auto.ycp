@@ -93,7 +93,7 @@ else if (func == "Export") {
  * return boolean
  */
 else if (func == "GetModified") {
-    ret = Maile::touched;
+    ret = Mail::touched;
 }
 /**
  * Set modified flag
