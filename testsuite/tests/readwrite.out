@@ -1,5 +1,6 @@
 Read	.targetpkg.installed "sendmail" true
 Read	.sysconfig.mail.MAIL_CREATE_CONFIG "yes"
+Read	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes"
 Read	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no"
 Read	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no"
 Read	.targetpkg.installed "amavis-sendmail" true
@@ -14,6 +15,7 @@ Read	.mail.sendmail.aliases.table []
 Read	.mail.sendmail.virtuser.table []
 Return	true
 Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
+Write	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes" true
 Write	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no" true
 Write	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no" true
 Read	.init.scripts.exists "sendmail" true

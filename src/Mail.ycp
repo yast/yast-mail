@@ -31,26 +31,18 @@
 
     /**
      * For use by the Users package.
-     * Does not use the internal state, just calls the agent.
+     * Does not rely on the internal state, first calls the agent.
      * @return eg. "joe, \\root", "" if not defined
      */
     global define string GetRootAlias () ``{
 	ReadMta ();
-	if (mta == `other)
-	{
-	    return "";
-	}
 	if (!ReadAliases ())
 	{
 	    return "";
 	}
-	map root = find (map e, aliases, ``( e["alias"]:"" == "root" ));
-	if (root == nil)
-	{
-	    return "";
-	}
-	return root["destinations"]:"";
+	return root_alias;
     }
+
 
     /**
      * For use by the Users package.
@@ -62,39 +54,33 @@
      * @return true on success
      */
     global define boolean SetRootAlias (string destinations) ``{
-	map root_raw = $[
-	    "key": "root",
-	    "value": destinations,
-	    // TODO: "created by the ... yast2 module"?
-	    "comment": "",
-	    ];
 	ReadMta ();
-	path alias_path = nil;
+	if (!ReadAliases ())
+	{
+	    return false;
+	}
+
+	root_alias = destinations;
+	root_alias_comment = ""; // TODO: "created by the ... yast2 module"?
+
+	if (!WriteAliases ())
+	{
+	    return false;
+	}
+
 	path flush_path = nil;
 	if (mta == `sendmail)
 	{
-	    alias_path = .mail.sendmail.aliases.table;
 	    flush_path = .mail.sendmail.aliases;
 	}
 	else if (mta == `postfix)
 	{
-	    alias_path = .mail.postfix.aliases.table;
 	    flush_path = .mail.postfix.aliases;
 	}
 	else
 	{
 	    return false;
 	}
-	list(map) new = SCR::Read (alias_path);
-	if (destinations == "")
-	{
-	    new = filter (map e, new, ``( e["key"]:"" != "root" ));
-	}
-	else
-	{
-	    new = mergeTables ([root_raw], new);
-	}
-	SCR::Write (alias_path, new);
 	if (! SCR::Write (flush_path, nil))
 	{
 	    return false;
@@ -125,6 +111,11 @@
      * `permanent, `dialup or `none
      */
     global symbol connection_type = `permanent;
+
+    /**
+     * If false, port 25 will listen only for localhost
+     */
+    global boolean listen_remote = false;
 
     /**
      * Use a virus scanner (AMaViS).
@@ -174,20 +165,27 @@
      * $[server:, protocol:, remote_user:, local_user:, password:,
      * enabled:(bool), other_(server|client)_options: ]
      */
-    global list fetchmail = [];
-//bug 13263
-//    global list(map) fetchmail = [];
+    global list(map) fetchmail = [];
 
     /**
      * List of maps: $[comment:, alias:, destinations:] (all are strings)
+     * Except root.
      */
     global list(map) aliases = [];
+    /**
+     * Separated/joined with aliases by read/write/set/export
+     */
+    global string root_alias = "";
+    /**
+     * Separated/joined with aliases by read/write/set/export
+     */
+    string root_alias_comment = "";
 
     /**
      * Useful for autoinstall: the provided aliases will be (with
      * higher priority) merged with existing ones (presumably system defaults).
      */
-    global boolean merge_aliases = false;
+//    global boolean merge_aliases = false;
 
     /**
      * Domain-specific aliases.
@@ -283,6 +281,7 @@
      * Is a package available for installation?
      * This is a bit kludgy, since querying .package would take up
      * a large amount of resources.
+     * @param	package package name, without version or .rpm suffix
      * @return true/false
      */
     define boolean AvailableForInstallation (string package) ``{
@@ -340,7 +339,8 @@
 	}
 	// read 2
 	// create_config
-	create_config = SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG) == "yes";
+	create_config = SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG)== "yes";
+	listen_remote = SCR::Read (.sysconfig.mail.SMTPD_LISTEN_REMOTE)=="yes";
 
 	// connection_type:
 	boolean nc = false;
@@ -495,7 +495,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 	// read 5
-	merge_aliases = false;
+//	merge_aliases = false;
 
 	// aliases
 	if (!ReadAliases ())
@@ -528,6 +528,9 @@ a fixed format to be readable by YaST2.  For details, see
 	return true;
     }
 
+    /**
+     * Detect the MTA installed
+     */
     define void ReadMta () ``{
 	if (SCR::Read (.targetpkg.installed, "sendmail"))
 	{
@@ -544,7 +547,8 @@ a fixed format to be readable by YaST2.  For details, see
     }
 
     /**
-     *
+     * Read the aliases table (and separate the root alias)
+     * @return success?
      */
     define boolean ReadAliases () ``{
 	list(map) a_raw = [];
@@ -566,7 +570,42 @@ a fixed format to be readable by YaST2.  For details, see
 				   "alias"		: e["key"]: "",
 				   "destinations"	: e["value"]: "",
 				   ]));
+	FilterRootAlias ();
 	return true;
+    }
+
+    /**
+     * Separates aliases into aliases, root_alias and root_alias_comment
+     */
+    global define void FilterRootAlias () ``{
+	root_alias = "";
+	root_alias_comment = "";
+	aliases = filter (map e, aliases, ``{
+	    if (e["alias"]:"" == "root" )
+	    {
+		root_alias = e["destinations"]:"";
+		root_alias_comment = e["comment"]:"";
+		return false;
+	    }
+	    return true;
+	});
+    }
+
+    /**
+     * @param	aliases an alias table
+     * @return prepend root alias data to aliases, if set
+     */
+    global define list(map) MergeRootAlias (list(map) aliases) ``{
+	list(map) ret = aliases;
+	if (root_alias != "")
+	{
+	    ret = prepend (ret, $[
+				 "alias": "root",
+				 "destinations": root_alias,
+				 "comment": root_alias_comment,
+				 ]);
+	}
+	return ret;
     }
 
     /* ---------------------------------------------------------------- */
@@ -626,7 +665,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    // Translators: progress label
 	    stages = add (stages, [ _("Writing masquerading settings"), ``(WriteMasquerading ()) ]);
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliases ()) ]);
+	    stages = add (stages, [ _("Writing alias tables"), ``(WriteAliasesAndVirtual ()) ]);
 	    if (connection_type == `dialup)
 	    {
 		// Translators: progress label
@@ -677,6 +716,9 @@ a fixed format to be readable by YaST2.  For details, see
 	// create_config
 	// if the user wanted it false, we did not proceed
 	SCR::Write (.sysconfig.mail.MAIL_CREATE_CONFIG, "yes");
+	// listen_remote
+	SCR::Write (.sysconfig.mail.SMTPD_LISTEN_REMOTE,
+		    listen_remote? "yes":"no");
 
 	// connection_type
 	if (mta == `sendmail)
@@ -860,35 +902,13 @@ a fixed format to be readable by YaST2.  For details, see
     /**
      * Part of Write.
      * @return success
-     * @see SetRootAlias
      */
-    define boolean WriteAliases () ``{
+    define boolean WriteAliasesAndVirtual () ``{
 	// aliases
-	path alias_path = nil;
-	if (mta == `sendmail)
-	{
-	    alias_path = .mail.sendmail.aliases.table;
-	}
-	else if (mta == `postfix)
-	{
-	    alias_path = .mail.postfix.aliases.table;
-	}
-	else
+	if (! WriteAliases ())
 	{
 	    return false;
 	}
-	list(map) a_raw = maplist (map e, aliases,
-				   ``($[
-					  "comment"	: e["comment"]:"",
-					  "key"		: e["alias"]:"",
-					  "value"	: e["destinations"]:"",
-					  ]));
-	if (merge_aliases)
-	{
-	    a_raw = mergeTables (a_raw, SCR::Read (alias_path));
-	}
-	SCR::Write (alias_path, a_raw);
-
 
 	// virtual_users
 	list(map) v_raw = maplist (map e, virtual_users,
@@ -909,6 +929,40 @@ a fixed format to be readable by YaST2.  For details, see
 	{
 	    return false;
 	}
+	return true;
+    }
+
+    /**
+     * Part of Write.
+     * @return success
+     * @see SetRootAlias
+     */
+    define boolean WriteAliases () ``{
+	// aliases
+	path alias_path = nil;
+	if (mta == `sendmail)
+	{
+	    alias_path = .mail.sendmail.aliases.table;
+	}
+	else if (mta == `postfix)
+	{
+	    alias_path = .mail.postfix.aliases.table;
+	}
+	else
+	{
+	    return false;
+	}
+	list(map) a_raw = maplist (map e, MergeRootAlias (aliases),
+				   ``($[
+					  "comment"	: e["comment"]:"",
+					  "key"		: e["alias"]:"",
+					  "value"	: e["destinations"]:"",
+					  ]));
+//	if (merge_aliases)
+//	{
+//	    a_raw = mergeTables (a_raw, SCR::Read (alias_path));
+//	}
+	SCR::Write (alias_path, a_raw);
 	return true;
     }
 
@@ -1079,6 +1133,7 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 
 	boolean missing = false;
+	// don't require listen_remote for compatibility
 	foreach (`k, ["mta", "connection_type",  "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases",  "virtual_users"], ``{
 	    if (! haskey (settings, k))
 	    {
@@ -1097,7 +1152,7 @@ a fixed format to be readable by YaST2.  For details, see
 
     /**
      * Set module data without validity checking as in Import()
-     *
+     * @param settings @ref mail_autoinst
      */
     global define void Set(map settings) ``{
 	y2debug ("before %1", settings); // may contain passwords
@@ -1128,6 +1183,7 @@ a fixed format to be readable by YaST2.  For details, see
 
 	mta = settings["mta"]: `other;
 	connection_type = settings["connection_type"]: `none;
+	listen_remote = settings["listen_remote"]: false;
 	use_amavis = settings["use_amavis"]: false;
 	local_domains = settings["local_domains"]: [];
 	outgoing_mail_server = settings["outgoing_mail_server"]: "";
@@ -1136,7 +1192,8 @@ a fixed format to be readable by YaST2.  For details, see
 	masquerade_users = settings["masquerade_users"]: [];
 	fetchmail = settings["fetchmail"]: [];
 	aliases = settings["aliases"]: [];
-	merge_aliases = settings["merge_aliases"]: false;
+	FilterRootAlias ();
+//	merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
 	y2debug ("after %1", settings); // may contain passwords
     }
@@ -1151,6 +1208,7 @@ a fixed format to be readable by YaST2.  For details, see
 	return $[
 	    "mta": mta,
 	    "connection_type": connection_type,
+	    "listen_remote": listen_remote,
 	    "use_amavis": use_amavis,
 	    "local_domains": local_domains,
 	    "outgoing_mail_server": outgoing_mail_server,
@@ -1158,8 +1216,8 @@ a fixed format to be readable by YaST2.  For details, see
 	    "masquerade_other_domains": masquerade_other_domains,
 	    "masquerade_users": masquerade_users,
 	    "fetchmail": fetchmail,
-	    "aliases": aliases,
-	    "merge_aliases": merge_aliases,
+	    "aliases": MergeRootAlias (aliases),
+//	    "merge_aliases": merge_aliases,
 	    "virtual_users": virtual_users,
 	    ];
     }
@@ -1170,6 +1228,7 @@ a fixed format to be readable by YaST2.  For details, see
      */
     global define string Summary ()
 	``{
+	// TODO: use widget captions, strip sho&rtcuts
 
 	string agent = "";
 	if (mta == `sendmail)
@@ -1188,6 +1247,7 @@ a fixed format to be readable by YaST2.  For details, see
 	else
 	    con_type = "None";
 
+	string nc = Summary::NotConfigured ();
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("MTA"));
 	summary = Summary::AddLine(summary, agent);
@@ -1195,20 +1255,22 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = Summary::AddLine(summary,con_type );
 
 	summary = Summary::AddHeader(summary, _("Outgoing Mail Server"));
-	summary = Summary::AddLine(summary, (outgoing_mail_server != "") ? outgoing_mail_server : Summary::NotConfigured ());
+	summary = Summary::AddLine(summary, (outgoing_mail_server != "") ? outgoing_mail_server : nc);
 
 	summary = Summary::AddHeader(summary, _("From Header"));
-	summary = Summary::AddLine(summary, (from_header != "") ? from_header : Summary::NotConfigured ());
+	summary = Summary::AddLine(summary, (from_header != "") ? from_header : nc);
 
 
-	summary = summary + ListItem( _("Local Domains"),local_domains);
-	summary = summary + ListItem( _("Masquerade other Domains"),masquerade_other_domains);
-	summary = summary + ListItem( _("Masquerade Users"),masquerade_users);
-	summary = summary + ListItem( _("Fetchmail"),fetchmail);
-	summary = summary + ListItem( _("Aliases"),aliases);
-	summary = summary + ListItem( _("Virtual Users"),virtual_users);
+	summary = summary + ListItem (_("Local Domains"), local_domains, nil);
+	summary = summary + ListItem (_("Masquerade other Domains"), masquerade_other_domains, nil);
+	summary = summary + ListItem (_("Masquerade Users"), masquerade_users, "user");
+	summary = Summary::AddHeader(summary, _("Accept remote SMTP connections"));
+	summary = Summary::AddLine(summary, (listen_remote) ? _("Yes") : _("No"));
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
-	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : Summary::NotConfigured ());
+	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : _("No"));
+	summary = summary + ListItem (_("Fetchmail"), fetchmail, "server");
+	summary = summary + ListItem (_("Aliases"), MergeRootAlias (aliases), "alias");
+	summary = summary + ListItem (_("Virtual Users"), virtual_users, "alias");
 	return summary;
     }
 
@@ -1216,9 +1278,11 @@ a fixed format to be readable by YaST2.  For details, see
      * Summarizes a list of data
      * @param title passed to Summary::AddHeader
      * @param value a list (of scalars, lists or maps)
+     * @param index if the entries are not scalars,
+     *   use this index to get a scalar
      * @return Summary-formatted description
      */
-    define string ListItem(string title, any value) ``{
+    define string ListItem(string title, any value, any index) ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, title);
 	if (is(value,list) && size(value)>0) {
@@ -1226,7 +1290,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    foreach (`d, value, ``{
 		string entry = "";
 		if (is(d,map) || is (d,list))
-		    entry = sformat("%1 Entries configured", size(value));
+		    entry = d[index]:"???";
 		else
 		    entry = d;
 

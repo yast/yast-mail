@@ -51,6 +51,7 @@
 	"sysconfig": $[
 	    "mail": $[
 		"MAIL_CREATE_CONFIG": "yes",
+		"SMTPD_LISTEN_REMOTE": "yes",
 		"FROM_HEADER": "foo.test",
 		],
 	    "amavis": $[
