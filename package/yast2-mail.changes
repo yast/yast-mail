@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Feb 13 13:43:33 CET 2003 - mvidner@suse.de
+
+- Check also for the daemon variants of amavis.
+- Use the Network Services group in the control center for the icon.
+- 2.7.5
+
+-------------------------------------------------------------------
 Mon Feb 10 13:15:08 CET 2003 - jsuchome@suse.de
 
 - proofread texts: 3rd round
