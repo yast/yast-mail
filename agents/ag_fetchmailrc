@@ -161,7 +161,7 @@ sub write_string ($)
 	$substring =~ s/;/\\59/g;# escape semicolons
 	$substring =~ s/"/\\"/g;# escape quotes
 	# escape control chars
-	$substring =~ s/([\000-\027])/sprintf "\\%03o",ord($1)/eg;
+	$substring =~ s/([\000-\037])/sprintf "\\%03o",ord($1)/eg;
     }
     return '"'. join ("\\\\", @substrings) .'"';
 }
