@@ -109,9 +109,12 @@ sub parse_file ()
 
 sub write_file ()
 {
+    sysopen (FILE, "$filename.YaST2.new", O_WRONLY | O_TRUNC | O_CREAT, 0600)
+	or return y2error ("Creating file"), 0;
+
     foreach my $entry (@accounts)
     {
-	print FILE $entry->{comment}; # may be empty
+	print FILE $entry->{comment} || ""; # may be empty or undef
 	if ($sendmail)
 	{
 	    print FILE "AuthInfo:$entry->{server}";
@@ -206,7 +209,7 @@ while ( <STDIN> )
 	{
 	    ycp::Return (["accounts", "meta", "trailing_comment"]);
 	}
-	else if ($path eq ".meta")
+	elsif ($path eq ".meta")
 	{
 	    ycp::Return (["filename"]);
 	}
