@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Feb 19 13:58:44 CET 2004 - lslezak@suse.cz
+
+- removed yast2-packager from Requires and neededforbuild
+- version 2.9.4
+
+-------------------------------------------------------------------
 Tue Feb 10 09:52:34 CET 2004 - lslezak@suse.cz
 
 - removed globals
