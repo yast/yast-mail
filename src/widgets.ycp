@@ -181,7 +181,7 @@ for the system administrator and redirect root's mail to this account.</p>"),
 	"opt": `opt (`hstretch),
 	// Translators: combo box label
 	// /etc/sysconfig/postfix: POSTFIX_MDA
-	"label": _("&Delivery mode"),
+	"label": _("&Delivery Mode"),
 	"choices": [
 	    // combo box choice:
 	    // deliver mail normally
@@ -191,7 +191,7 @@ for the system administrator and redirect root's mail to this account.</p>"),
 	    `item (`id (`dm_procmail), _("Through procmail")),
 	    // combo box choice:
 	    // deliver mail to cyrus-imapd using LMTP
-	    `item (`id (`dm_cyrus), _("To Cyrus IMAP server")),
+	    `item (`id (`dm_cyrus), _("To Cyrus IMAP Server")),
 	    /* TODO: should check whether cyrus-imapd is installed.
 	       And show the choice only if it is.
 	       But SuSEconfig.postfix falls back to local if it's not, so OK */
