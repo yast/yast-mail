@@ -67,8 +67,7 @@
 
     /**
      * Use a virus scanner (AMaViS).
-     * amavis-sendmail or amavis-postfix must be installed.
-     * Or its daemon variant, amavisd-...
+     * amavisd-new (mta-independent) must be installed.
      * It will be installed if amavis_allowed and it is not installed.
      */
     global boolean use_amavis = false;
@@ -218,6 +217,8 @@
     /**
      * Of the four available amavis packages, amavis-postfix does not need
      * a service running, others do.
+     * Update: only one package, amavisd-new, but let's keep the variable,
+     * just in case.
      * We query rpm in WriteGeneral (so that it works for autoinst too).
      * This is only used if use_amavis is on, of course.
      */
@@ -235,13 +236,8 @@
 
 	if (use_amavis)
 	{
-	    // use the appropriate MTA variant.
-	    // If neither the daemon nor the original variant is installed,
-	    // install the original variant
-	    string mta_suffix = (mta == `sendmail)? "sendmail":"postfix";
-	    string pkgd = sformat ("amavisd-%1", mta_suffix);
-	    string pkg  = sformat ("amavis-%1", mta_suffix);
-	    if (! Installed (pkg) && ! Installed (pkgd))
+	    string pkg  = "amavisd-new";
+	    if (! Installed (pkg))
 	    {
 		install_packages = add (install_packages, pkg);
 		// Translators: popup message part, ends with a newline
@@ -366,10 +362,8 @@
 	}
 
 	// amavis
-	string amavis_pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
-	string amavis_pkgd = (mta == `sendmail)? "amavisd-sendmail":"amavisd-postfix";
+	string amavis_pkg = "amavisd-new";
 	amavis_allowed = Installed (amavis_pkg) ||
-	    Installed (amavis_pkgd) ||
 	    AvailableForInstallation (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
@@ -752,7 +746,7 @@ a fixed format to be readable by YaST2.  For details, see
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
 	// used also in WriteServices
-	amavis_service = ! Installed ("amavis-postfix");
+	amavis_service = true;
 	if (amavis_service)
 	{
 	    Runlevel::ServiceAdjust ("amavis", use_amavis? "enable":"disable");

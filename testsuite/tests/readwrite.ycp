@@ -123,11 +123,11 @@
     Progress::off ();
     TEST (``(Mail::Read (dont_abort)), [READ, WRITE, [
 					    EXECUTE_0, //rpm sendmail
-					    EXECUTE_0, //rpm amavis-sendmail
+					    EXECUTE_0, //rpm amavisd-new
 					    ]], nil);
     Mail::write_only = false;
     TEST (``(Mail::Write (dont_abort)), [READ, WRITE, [
-					     EXECUTE_1, //rpm amavis-postfix
+					     //EXECUTE_1, //rpm amavis-postfix
 					     EXECUTE_0, //SuSEconfig
 					     EXECUTE_0, //amavis stop
 					     EXECUTE_0, //amavis start

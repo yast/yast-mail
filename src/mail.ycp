@@ -24,7 +24,7 @@
  *  <dt>dialup<dd>preselects dial-up connnection
  *  <dt>screenshots
  *   <dd>uses faked data (see Mail::Fake), enables running the module
- *    as non-root.
+ *    as non-root. (Uses Mode::screen_shot.)
  *  </dl>
  */
 {
