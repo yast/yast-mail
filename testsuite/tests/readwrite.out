@@ -1,0 +1,46 @@
+Read	.targetpkg.installed "sendmail" true
+Read	.sysconfig.mail.MAIL_CREATE_CONFIG "yes"
+Read	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no"
+Read	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no"
+Read	.targetpkg.installed "amavis-sendmail" true
+Read	.sysconfig.amavis.USE_AMAVIS "yes"
+Read	.sysconfig.sendmail.SENDMAIL_LOCALHOST ""
+Read	.sysconfig.sendmail.SENDMAIL_SMARTHOST ""
+Read	.sysconfig.mail.FROM_HEADER "foo.test"
+Read	.sysconfig.sendmail.MASQUERADE_DOMAINS ""
+Read	.mail.sendmail.generics.table []
+Read	.mail.fetchmail.accounts []
+Read	.mail.sendmail.aliases.table []
+Read	.mail.sendmail.virtuser.table []
+Return	true
+Write	.sysconfig.mail.MAIL_CREATE_CONFIG "yes" true
+Write	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no" true
+Write	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no" true
+Read	.init.scripts.exists "sendmail" true
+Read	.init.scripts.exists "sendmail" true
+Read	.init.scripts.runlevel "sendmail" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
+Read	.init.scripts.comment "sendmail" $["amavis":$[], "postfix":$[], "sendmail":$[]]
+Write	.sysconfig.amavis.USE_AMAVIS "yes" true
+Read	.sysconfig.sendmail.SENDMAIL_ARGS "-L sendmail -Am -bd -q30m -om"
+Write	.sysconfig.sendmail.SENDMAIL_LOCALHOST "" true
+Write	.sysconfig.sendmail.SENDMAIL_SMARTHOST "" true
+Write	.sysconfig.mail.FROM_HEADER "foo.test" true
+Write	.sysconfig.sendmail.MASQUERADE_DOMAINS "" true
+Write	.mail.sendmail.generics.table [] true
+Write	.mail.sendmail.aliases.table [] true
+Write	.mail.sendmail.virtuser.table [] true
+Write	.sysconfig.mail nil true
+Write	.sysconfig.amavis nil true
+Write	.sysconfig.sendmail nil true
+Write	.mail.sendmail.generics nil true
+Write	.mail.sendmail.aliases nil true
+Write	.mail.sendmail.virtuser nil true
+Execute	.target.bash "/sbin/SuSEconfig --module sendmail" 0
+Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/amavis start" $["TERM":"raw"] 0
+Read	.init.scripts.exists "amavis" true
+Read	.init.scripts.exists "amavis" true
+Read	.init.scripts.runlevel "amavis" $["amavis":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
+Read	.init.scripts.comment "amavis" $["amavis":$[], "postfix":$[], "sendmail":$[]]
+Execute	.target.bash "/etc/init.d/sendmail restart" $["TERM":"raw"] 0
+Return	true

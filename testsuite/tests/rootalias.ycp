@@ -1,0 +1,83 @@
+/**
+ * Module:
+ *   NIS client configuration
+ *
+ * Summary:
+ *   Testsuite
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+{
+    include "testsuite.ycp";
+    import "Mail";
+
+    list(map) aliases = [
+	$["key": "foo", "value": "bar", "comment": "baz",],
+	$["key": "root", "value": "leaf", "comment": "kuk",],
+	$["key": "foo2", "value": "bar2", "comment": "baz2",],
+	];
+
+    map READ_s = $[
+	// targetpkg:
+	"targetpkg": $[
+	    // sendmail
+	    "installed": true,
+	    ],
+	// Mail itself:
+	"mail": $[
+	    "sendmail": $[
+		"aliases": $[
+		    "table": aliases,
+		    ],
+		],
+	    ],
+	];
+
+    map READ_p1 = $[
+	// targetpkg:
+	"targetpkg": $[
+	    // sendmail
+	    "installed": false,
+	    ],
+	// Mail itself:
+	"mail": $[
+	    "postfix": $[
+		"aliases": $[
+		    "table": aliases,
+		    ],
+		],
+	    ],
+	];
+
+    map READ_p2 = $[
+	// targetpkg:
+	"targetpkg": $[
+	    // postfix
+	    "installed": true,
+	    ],
+	// Mail itself:
+	"mail": $[
+	    "postfix": $[
+		"aliases": $[
+		    "table": aliases,
+		    ],
+		],
+	    ],
+	];
+
+    map WRITE = $[
+	];
+
+    DUMP ("sendmail");
+    TEST (``(Mail::GetRootAlias ()), [READ_s], nil);
+    TEST (``(Mail::SetRootAlias ("ruut")), [READ_s], nil);
+
+    DUMP ("postfix");
+    TEST (``(Mail::GetRootAlias ()), [READ_p1], nil);
+    // apparently the dumb^H^H^H^Hdummy aggent reads from the first map
+    // while there's input.
+    TEST (``(Mail::SetRootAlias ("ruut")), [[ READ_p1, READ_p2]], nil);
+}

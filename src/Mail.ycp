@@ -27,10 +27,78 @@
     import "Runlevel";
     import "Summary";
 
+    /* ---------------------------------------------------------------- */
+
+    /**
+     * For use by the Users package.
+     * Does not use the internal state, just calls the agent.
+     * @return eg. "joe, \\root", "" if not defined
+     */
+    global define string GetRootAlias () ``{
+	ReadMta ();
+	if (mta == `other)
+	{
+	    return "";
+	}
+	if (!ReadAliases ())
+	{
+	    return "";
+	}
+	map root = find (map e, aliases, ``( e["alias"]:"" == "root" ));
+	if (root == nil)
+	{
+	    return "";
+	}
+	return root["destinations"]:"";
+    }
+
+    /**
+     * For use by the Users package.
+     * Does not use the internal state, just calls the agent.
+     * (TODO: what if it is called while the main module is running?)
+     * Errors are reported via Report::Error.
+     * @return true on success
+     */
+    global define boolean SetRootAlias (string destinations) ``{
+	map root_raw = $[
+	    "key": "root",
+	    "value": destinations,
+	    // TODO: "created by the ... yast2 module"?
+	    //"comment": "",
+	    ];
+	ReadMta ();
+	path alias_path = nil;
+	path flush_path = nil;
+	if (mta == `sendmail)
+	{
+	    alias_path = .mail.sendmail.aliases.table;
+	    flush_path = .mail.sendmail.aliases;
+	}
+	else if (mta == `postfix)
+	{
+	    alias_path = .mail.postfix.aliases.table;
+	    flush_path = .mail.postfix.aliases;
+	}
+	else
+	{
+	    return false;
+	}
+	list(map) new = mergeTables ([root_raw], SCR::Read (alias_path));
+	SCR::Write (alias_path, new);
+	if (! SCR::Write (flush_path, nil))
+	{
+	    return false;
+	}
+	return true;
+    }
+
+    /* ---------------------------------------------------------------- */
+
     /**
      * `sendmail, `postfix or `other
+     * Initialized by ReadMta
      */
-    global symbol mta = `sendmail;
+    global symbol mta = nil;
 
     boolean create_config = false;
     /**
@@ -247,19 +315,7 @@
 	    return false;
 	}
 	// read 1
-	if (SCR::Read (.targetpkg.installed, "sendmail"))
-	{
-	    mta = `sendmail;
-	}
-	else if (SCR::Read (.targetpkg.installed, "postfix"))
-	{
-	    mta = `postfix;
-	}
-	else
-	{
-	    mta = `other;
-	}
-
+	ReadMta ();
 	if (mta == `other)
 	{
 	    // TODO: adapt workflow to say sorry and bye.
@@ -432,26 +488,10 @@ a fixed format to be readable by YaST2.  For details, see
 	merge_aliases = false;
 
 	// aliases
-	list(map) a_raw = [];
-	if (mta == `sendmail)
-	{
-	    a_raw = SCR::Read (.mail.sendmail.aliases.table);
-	}
-	else if (mta == `postfix)
-	{
-	    a_raw = SCR::Read (.mail.postfix.aliases.table);
-	}
-	else
+	if (!ReadAliases ())
 	{
 	    return false;
 	}
-	aliases =  maplist (map e, a_raw,
-			    ``($[
-				   "comment"		: e["comment"]: "",
-				   "alias"		: e["key"]: "",
-				   "destinations"	: e["value"]: "",
-				   ]));
-
 	// virtual_users
 	list(map) v_raw = [];
 	if (mta == `sendmail)
@@ -478,7 +518,49 @@ a fixed format to be readable by YaST2.  For details, see
 	return true;
     }
 
-    // document and TEST
+    define void ReadMta () ``{
+	if (SCR::Read (.targetpkg.installed, "sendmail"))
+	{
+	    mta = `sendmail;
+	}
+	else if (SCR::Read (.targetpkg.installed, "postfix"))
+	{
+	    mta = `postfix;
+	}
+	else
+	{
+	    mta = `other;
+	}
+    }
+
+    /**
+     *
+     */
+    define boolean ReadAliases () ``{
+	list(map) a_raw = [];
+	if (mta == `sendmail)
+	{
+	    a_raw = SCR::Read (.mail.sendmail.aliases.table);
+	}
+	else if (mta == `postfix)
+	{
+	    a_raw = SCR::Read (.mail.postfix.aliases.table);
+	}
+	else
+	{
+	    return false;
+	}
+	aliases =  maplist (map e, a_raw,
+			    ``($[
+				   "comment"		: e["comment"]: "",
+				   "alias"		: e["key"]: "",
+				   "destinations"	: e["value"]: "",
+				   ]));
+	return true;
+    }
+
+    /* ---------------------------------------------------------------- */
+
     /**
      * Merges mail tables, which are order-preserving maps.
      * First are the entries of the old map, with values updated
@@ -768,6 +850,7 @@ a fixed format to be readable by YaST2.  For details, see
     /**
      * Part of Write.
      * @return success
+     * @see SetRootAlias
      */
     define boolean WriteAliases () ``{
 	// aliases

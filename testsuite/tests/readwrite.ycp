@@ -1,0 +1,109 @@
+/**
+ * Module:
+ *   NIS client configuration
+ *
+ * Summary:
+ *   Testsuite
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+{
+    include "testsuite.ycp";
+    import "Progress";
+    import "Mail";
+
+    map READ = $[
+	// Runlevel:
+	"init": $[
+	    "scripts": $[
+		"exists": true,
+		"runlevel": $[
+		    "sendmail": $[
+			"start": [ "3", "5"],
+			"stop":	 [ "3", "5"],
+			],
+		    "postfix": $[
+			"start": [ "3", "5"],
+			"stop":	 [ "3", "5"],
+			],
+		    "amavis": $[
+			"start": [ "3", "5"],
+			"stop":	 [ "3", "5"],
+			],
+		    ],
+		// their contents is not important for ServiceAdjust
+		"comment": $[
+		    "sendmail": $[],
+		    "postfix": $[],
+		    "amavis": $[],
+		    ],
+		],
+	    ],
+	// targetpkg:
+	"targetpkg": $[
+	    // sendmail
+	    "installed": true,
+	    ],
+	// Mail itself:
+	"sysconfig": $[
+	    "mail": $[
+		"MAIL_CREATE_CONFIG": "yes",
+		"FROM_HEADER": "foo.test",
+		],
+	    "amavis": $[
+		"USE_AMAVIS": "yes",
+		],
+	    "sendmail": $[
+		"SENDMAIL_NOCANONIFY": "no",
+		"SENDMAIL_EXPENSIVE": "no",
+		"SENDMAIL_LOCALHOST": "",
+		"SENDMAIL_SMARTHOST": "",
+		"MASQUERADE_DOMAINS": "",
+		// TODO: check for a new default in the installed system?
+		// (evade the dummy agent, neededforbuild sendmail)
+		"SENDMAIL_ARGS": "-L sendmail -Am -bd -q30m -om",
+		],
+	    ],
+	"mail": $[
+	    "sendmail": $[
+		"generics": $[
+		    "table": [
+			],
+		    ],
+		"aliases": $[
+		    "table": [
+			],
+		    ],
+		"virtuser": $[
+		    "table": [
+			],
+		    ],
+		],
+	    "fetchmail": $[
+		"accounts": [
+		    ],
+		],
+	    ],
+	];
+
+    map WRITE = $[
+	];
+
+    map EXECUTE = $[
+	"target": $[
+	    "bash_output": $[
+		"exit": 0,
+		"stdout": "",
+		"stderr": "",
+		],
+	    ],
+	];
+
+    block dont_abort = ``{return false;};
+    Progress::off ();
+    TEST (``(Mail::Read (dont_abort)), [READ, WRITE, EXECUTE], nil);
+    TEST (``(Mail::Write (dont_abort, false)), [READ, WRITE, EXECUTE], nil);
+}

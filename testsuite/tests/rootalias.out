@@ -1,0 +1,19 @@
+Dump	sendmail
+Read	.targetpkg.installed "sendmail" true
+Read	.mail.sendmail.aliases.table [$["comment":"baz", "key":"foo", "value":"bar"], $["comment":"kuk", "key":"root", "value":"leaf"], $["comment":"baz2", "key":"foo2", "value":"bar2"]]
+Return	leaf
+Read	.targetpkg.installed "sendmail" true
+Read	.mail.sendmail.aliases.table [$["comment":"baz", "key":"foo", "value":"bar"], $["comment":"kuk", "key":"root", "value":"leaf"], $["comment":"baz2", "key":"foo2", "value":"bar2"]]
+Write	.mail.sendmail.aliases.table [$["comment":"baz", "key":"foo", "value":"bar"], $["comment":"", "key":"root", "value":"ruut"], $["comment":"baz2", "key":"foo2", "value":"bar2"]] true
+Write	.mail.sendmail.aliases nil true
+Return	true
+Dump	postfix
+Read	.targetpkg.installed "sendmail" false
+Read	.targetpkg.installed "postfix" false
+Return	
+Read	.targetpkg.installed "sendmail" false
+Read	.targetpkg.installed "postfix" true
+Read	.mail.postfix.aliases.table [$["comment":"baz", "key":"foo", "value":"bar"], $["comment":"kuk", "key":"root", "value":"leaf"], $["comment":"baz2", "key":"foo2", "value":"bar2"]]
+Write	.mail.postfix.aliases.table [$["comment":"baz", "key":"foo", "value":"bar"], $["comment":"", "key":"root", "value":"ruut"], $["comment":"baz2", "key":"foo2", "value":"bar2"]] true
+Write	.mail.postfix.aliases nil true
+Return	true
