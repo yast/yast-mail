@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep  4 10:30:47 CEST 2002 - mvidner@suse.cz
+
+- Fixed SetFocus if the 'Outgoing mail server' field is invalid.
+- Build fix: Synced the test suite with the package manager.
+- 2.5.16
+
+-------------------------------------------------------------------
 Fri Aug 30 18:31:02 CEST 2002 - mvidner@suse.cz
 
 - Amavis checkbox moved to the first dialog so that
