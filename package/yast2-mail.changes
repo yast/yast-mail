@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr  2 15:06:07 CEST 2004 - mvidner@suse.cz
+
+- changed license to GPL
+- 2.9.13
+
+-------------------------------------------------------------------
 Thu Apr  1 17:10:09 CEST 2004 - mvidner@suse.cz
 
 - removed final confirmation popup, "Finish" is enough (#37554).
