@@ -199,8 +199,7 @@ global define symbol ReadDialog () ``{
 	    string setting = "MAIL_CREATE_CONFIG";
 	    // Translators: continue/cancel dialog
 	    // %1 is a sysconfig variable name
-	    was_ok = UI::ContinueCancelPopup (sformat (_(
-"The setting %1 is turned off so you have
+	    was_ok = UI::ContinueCancelPopup (sformat (_("The setting %1 is turned off so you have
 probably modified the configuration files directly.
 If you continue, it will be turned on and
 SuSEconfig will overwrite your changes."), setting));
@@ -560,14 +559,14 @@ global define symbol MasqueradingDialog () ``{
 		`id (`tab),
 		`opt (`notify, `immediate),
 		// Translators: table column headings
-		`header (_("Local user"), _("Present as")),
+		`header (_("Local user"), _("Display as")),
 		makeItems (mu, ["user", "address"])
 		),
 /*
 	    `HBox (
 		`HWeight (1, `ComboBox (`id (`user), `opt (`editable), _("Local user"),
 					["holly", "jane", "tarzan"])),
-		`HWeight (2, `TextEntry (`id (`address), _("Present as"), "holly@red.dwarf"))
+		`HWeight (2, `TextEntry (`id (`address), _("Display as"), "holly@red.dwarf"))
 		),
 */
 	    `HBox(
@@ -656,7 +655,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`user), _("&Local user"), user)),
 		// Translators: text entry label
-		`Left (`TextEntry (`id (`address), _("&Present as"), address)),
+		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 		      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -725,7 +724,7 @@ global define symbol DownloadingDialog () ``{
 	    `HBox (
 		`HWeight (1, `ComboBox (`id (`user), `opt (`editable), _("Local user"),
 					["holly", "jane", "tarzan"])),
-		`HWeight (2, `TextEntry (`id (`address), _("Present as"), "holly@red.dwarf"))
+		`HWeight (2, `TextEntry (`id (`address), _("Display as"), "holly@red.dwarf"))
 		),
 */
 	    `HBox(
@@ -802,7 +801,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`Password (`id (`password1), _("P&assword"), password)),
 		// Translators: text entry label
-		`Left (`Password (`id (`password2), _("Pass&word once more"), password)),
+		`Left (`Password (`id (`password2), _("Reenter pass&word"), password)),
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`luser), _("&Local user"), luser)),
 //TODO combo

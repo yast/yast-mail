@@ -29,13 +29,15 @@
 	return
 	    // For translators: mail read dialog help, part 1 of 2
 _("<P><B><BIG>Initializing mail</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
+Please wait...
+<BR></P>
+") +
 	    // For translators: mail read dialog help, part 2 of 2
 _("<P><B><BIG>Aborting the initialization:</BIG></B><BR>
-You can safely abort the configuration utility by pressing the <B>Abort</B>
-button now.
-</P>");
+Safely abort the configuration utility by pressing <B>Abort</B>
+now.
+</P>
+");
     }
 
     /**
@@ -47,13 +49,15 @@ button now.
 	return
 	    // For translators: mail write dialog help, part 1 of 2
 _("<P><B><BIG>Saving mail configuration</BIG></B><BR>
-Please wait for a while...
-<BR></P>") +
+Please wait...
+<BR></P>
+") +
 	    // For translators: mail write dialog help, part 2 of 2
-_("<P><B><BIG>Aborting the saving:</BIG></B><BR>
-You can abort the saving by pressing the <B>Abort</B> button.
-An additional dialog will inform you whether it is safe to do so or not.
-</P>");
+_("<P><B><BIG>Aborting saving:</BIG></B><BR>
+Abort saving by pressing <B>Abort</B>.
+An additional dialog will inform you whether it is safe to do so.
+</P>
+");
     }
 
     /**
@@ -77,21 +81,21 @@ automatically.</p>
     //TODO: sformat with hostname.
 	// Translators: outgoing mail dialog help, part 1 of 3
 	return _("
-<p>Here you can specify the domains for which the mail
+<p>Here, specify the domains for which the mail
 will be delivered locally. If you enter nothing,
 the local host name is assumed.</p>
 ") +
 	    // Translators: outgoing mail dialog help, part 2 of 3
 	    _("
-<p>The Outgoing mail server is generally useful for dial-up connections.
+<p>The outgoing mail server is generally intended for dial-up connections.
 Enter the Internet service provider's SMTP server, such as
 <b>smtp.provider.com</b>.</p>
 ") +
 	    // Translators: outgoing mail dialog help, part 3 of 3
 	    _("
-<p>You may want that the mail sent by you appear to come from
+<p>You may want the mail you sent to appear as if it originated from
 <b>company.com</b> instead of <b>pc-042.company.com</b>.
-Use the provided text field or a more detailed dialog.</p>
+Use the text box provided or a more detailed dialog.</p>
 ");
     }
 
@@ -101,8 +105,7 @@ Use the provided text field or a more detailed dialog.</p>
     global define string MasqueradingDialogHelp () ``{
 	// Translators: masquerading dialog help, part 1 of 1
 	return _("
-<p>Here you can specify rewriting of the sender address for
-each individual user.</p>
+<p>Specify the rewriting of the sender's address here for each user.</p>
 ");
     }
 
@@ -112,17 +115,17 @@ each individual user.</p>
     global define string DownloadingDialogHelp () ``{
 	// Translators: downloading dialog help, part 1 of 1
 	return _("
-<p>These are parameters for mail downloading from
-a POP or IMAP server, using <b>fetchmail</b>.</p>
+<p>These are parameters for downloading mail from
+a POP or an IMAP server using <b>fetchmail</b>.</p>
 ");
     }
 
     global define string AliasesDialogHelp () ``{
 	// Translators: aliases dialog help, part 1 of 2
 	return _("
-<p>This table redirects mail that is delivered locally.
-You can redirect it to another local user (useful for system accounts,
-especially <b>root</b>), a remote address, or a list of addresses.</p>
+<p>This table redirects mail delivered locally.
+Redirect it to another local user (useful for system accounts, 
+especially for <b>root</b>), to a remote address, or to a list of addresses.</p>
 ") +
 	    // Translators: aliases dialog help, part 2 of 2
 	    _("
@@ -137,13 +140,13 @@ for a description of advanced features.</p>
     global define string VirtualDialogHelp () ``{
 	// Translators: virtual domains dialog help, part 1 of 2
 	return _("
-<p>This table performs redirections for incoming mail
-taking into consideration also the domain part
-of the address (unlike the alias table).</p>
+<p>This table redirects incoming mail. Unlike the alias table, 
+it also considers the domain 
+part of the address.</p>
 ") +
 	    // Translators: virtual domains dialog help, part 2 of 2
 	    _("
-<p>It allows you to host multiple \"virtual domains\"
+<p>It allows hosting multiple \"virtual domains\"
 on a single machine.</p>
 ");
     }

@@ -636,7 +636,7 @@
 	if (! SCR::Write (.mail.fetchmail, nil))
 	{
 	    // Translators: error message
-	    Report::Error (_("Error writing Fetchmail configuration."));
+	    Report::Error (_("Error writing the fetchmail configuration."));
 	    return false;
 	}
 	return true;
