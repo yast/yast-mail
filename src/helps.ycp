@@ -124,7 +124,7 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>
 	// Translators: aliases dialog help, part 1 of 2
 	return _("
 <p>This table redirects mail delivered locally.
-Redirect it to another local user (useful for system accounts, 
+Redirect it to another local user (useful for system accounts,
 especially for <b>root</b>), to a remote address, or to a list of addresses.</p>
 ") +
 	    // Translators: aliases dialog help, part 2 of 2
@@ -140,8 +140,8 @@ for a description of advanced features.</p>
     global define string VirtualDialogHelp () ``{
 	// Translators: virtual domains dialog help, part 1 of 2
 	return _("
-<p>This table redirects incoming mail. Unlike the alias table, 
-it also considers the domain 
+<p>This table redirects incoming mail. Unlike the alias table,
+it also considers the domain
 part of the address.</p>
 ") +
 	    // Translators: virtual domains dialog help, part 2 of 2
