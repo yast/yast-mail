@@ -1,23 +1,19 @@
-## yast2-config-mail.spec.in, processed by y2tool create-spec,
-## invoked automatically from Makefile.am
 @HEADER-COMMENT@
-
-# neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools yast2 yast2-lib-wizard yast2-config-runlevel
+# neededforbuild yast2-devel-packages yast2-runlevel
 
 @HEADER@
+Requires:	yast2 yast2-network yast2-runlevel
+#Requires:	yast2-agent-targetpkg
 
-Summary:	Configuration of mail
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
-Requires:	yast2
-Requires:	yast2-lib-sequencer
-Requires:	yast2-lib-wizard >= 2.5.12
-Requires:	yast2-lib-network
-Requires:	yast2-config-runlevel >= 2.5.5
-Requires:	yast2-agent-targetpkg
-Requires:	yast2-agent-ini >= 2.5.8
+Provides:	yast2-config-mail
+Obsoletes:	yast2-config-mail
+
 BuildArchitectures:	noarch
+
+Summary:	Configuration of mail
 
 %description
 -

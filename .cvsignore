@@ -17,6 +17,7 @@ install-sh
 libtool
 ltconfig
 ltmain.sh
+mail.pot
 missing
 mkinstalldirs
 stamp-h*
