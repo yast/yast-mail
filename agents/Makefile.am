@@ -4,7 +4,10 @@
 # $Id$
 #
 
+agentsdir = $(YAST2DIR)/servers_non_y2
 scrconfdir = $(YAST2DIR)/scrconf
+
+agents_SCRIPTS = ag_mailtable ag_fetchmailrc
 
 scrconf_DATA = \
 	cfg_amavis.scr		\
@@ -19,4 +22,4 @@ scrconf_DATA = \
 	mail_s_generics.scr	\
 	mail_s_virtuser.scr
 
-EXTRA_DIST = $(scrconf_DATA)
+EXTRA_DIST = $(agents_SCRIPTS) $(scrconf_DATA)

@@ -4,13 +4,10 @@
 # $Id$
 #
 
-agentsdir = $(YAST2DIR)/servers_non_y2
 clientsdir = $(YAST2DIR)/clients
 includedir = $(YAST2DIR)/include/mail
 menudir = $(YAST2DIR)/menuentries
 modulesdir = $(YAST2DIR)/modules
-
-agents_SCRIPTS = ag_mailtable ag_fetchmailrc
 
 clients_DATA =			\
 	mail.ycp		\
@@ -27,4 +24,4 @@ menu_DATA =			\
 modules_DATA =			\
 	Mail.ycp
 
-EXTRA_DIST = $(agents_SCRIPTS) $(clients_DATA) $(include_DATA) $(menu_DATA) $(modules_DATA)
+EXTRA_DIST = $(clients_DATA) $(include_DATA) $(menu_DATA) $(modules_DATA)
