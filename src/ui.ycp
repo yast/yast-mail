@@ -616,7 +616,7 @@ global define symbol MasqueradingDialog () ``{
 	if (rb == `masqothers)
 	{
 	    mod = UI::QueryWidget (`id (`masqdomains), `Value);
-	    lmod = listToString (mod);
+	    lmod = stringToList (mod);
 	}
 	Mail::Touch (Mail::masquerade_other_domains != lmod);
 	Mail::masquerade_other_domains = lmod;
