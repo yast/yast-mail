@@ -9,8 +9,7 @@
 #  makemap(8) and postmap(1)
 #
 
-#use lib "/usr/lib/YaST2/agents_non_y2";
-use lib "/home/mvidner/yast2/source/y2scr/agents_perl/lib"; #TODO
+use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
 
@@ -20,6 +19,9 @@ use strict;
 # list entries:
 #  { "comment" => " foo\n bar\n", "key" => "root", "value" => "joe, \\root" }
 #  that is, comments have the leading '#' stripped but not the newline.
+# Before the first entry, there can be a leading comment, separated by
+# a blank line.
+my $leading_comment;
 my @table;
 my $trailing_comment;
 
@@ -70,7 +72,9 @@ sub parse_file ()
     $linenum = 0;
     my $line = "";
     $line_comment = "";
+    my $leading_comment_allowed = 1;
 
+    $leading_comment = "";
     @table = ();
     $trailing_comment = "";
 
@@ -79,17 +83,23 @@ sub parse_file ()
     {
 	++$linenum;
 
-	# Discard empty lines
-	next if (/^\n$/);
-
 	# Accept comments
 	if (/^\#(.*)/)
 	{
 #	    print STDERR "$linenum:comment\n";
 	    $trailing_comment .= "$1\n";
 	}
+	elsif (/^\n$/)
+	{
+	    if ($leading_comment_allowed)
+	    {
+		$leading_comment = $trailing_comment;
+		$trailing_comment = "";
+	    }
+	}
 	else
 	{
+	    $leading_comment_allowed = 0;
 	    # $line is the previous line, $_ is the current one
 	    if (/^\s+(.*)/)
 	    {
@@ -137,6 +147,7 @@ sub parse_file ()
     close (FILE);
 }
 
+# take a multiline string and write it to FILE with a hash before each line
 sub write_comment ($)
 {
     my $comment = shift;
@@ -149,6 +160,7 @@ sub write_comment ($)
 sub write_file ()
 {
     open (FILE, ">$filename.YaST2.new");
+    write_comment ($leading_comment);
     foreach my $entry (@table)
     {
 	write_comment ($entry->{"comment"});
@@ -203,7 +215,7 @@ while ( <STDIN> )
     {
 	if ($path eq ".")
 	{
-	    ycp::Return (["table", "trailing_comment"]);
+	    ycp::Return (["leading_comment", "table", "trailing_comment"]);
 	}
 	else
 	{
@@ -218,6 +230,10 @@ while ( <STDIN> )
 	if ($path eq ".trailing_comment" && ! ref ($argument))
 	{
 	    $trailing_comment = $argument;
+	}
+	elsif ($path eq ".leading_comment" && ! ref ($argument))
+	{
+	    $leading_comment = $argument;
 	}
 	elsif ($path eq ".table" && ref ($argument) eq "ARRAY")
 	{
@@ -247,6 +263,10 @@ while ( <STDIN> )
 	{
 	    ycp::Return ($trailing_comment);
 	}
+	elsif ($path eq ".leading_comment")
+	{
+	    ycp::Return ($leading_comment);
+	}
 	else
 	{
 	    y2error ("Unrecognized path! '$path'");
@@ -267,6 +287,4 @@ while ( <STDIN> )
 	y2error ("Unknown instruction $command or argument: ", ref ($argument));
 	ycp::Return ("false");
     }
-    # should go into Return, Return0
-    print "\n";
 }
