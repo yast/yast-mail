@@ -1085,7 +1085,7 @@ a fixed format to be readable by YaST2.  For details, see
      * @return Dumped settings (later acceptable by Import ())
      */
     global define map Export () ``{
-	return $[
+	map settings = $[
 	    "mta": mta,
 	    "connection_type": connection_type,
 	    "listen_remote": listen_remote,
@@ -1101,6 +1101,14 @@ a fixed format to be readable by YaST2.  For details, see
 	    "virtual_users": virtual_users,
 	    "smtp_auth": smtp_auth,
 	    ];
+	// Dont export empty fields
+	foreach (`k, `v, settings, ``{
+	    if (size(v) == 0 )
+	    {
+		settings = remove(settings, k);
+	    }
+	});
+	return settings;
     }
 
     /**
