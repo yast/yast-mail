@@ -25,6 +25,7 @@ import "Wizard";
 import "Progress";
 import "Mode";
 import "Mail";
+import "MailAliases";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
@@ -53,7 +54,8 @@ global map dialogs = $[
     "mta":		``( MtaSelectionDialog () ),
 
     "connection_type":	``( ConnectionTypeDialog () ),
-    "basic":		``( BasicDialog () ),
+    "outgoing":		``( OutgoingDialog () ),
+    "incoming":		``( IncomingDialog () ),
     "outgoing-details":	``( OutgoingDetailsDialog () ),
     "outgoing-auth":	``( OutgoingAuthOptions () ),
     "downloading":	``( DownloadingDialog () ),
@@ -67,14 +69,19 @@ global map common_sequence = $[
     "connection_type" :
     $[
 	`abort	: `abort,
-	`next	: "basic",
+	`next	: "outgoing",
 	`none	: "common-next",
 	],
-    "basic" :
+    "outgoing" :
     $[
 	`abort	: `abort,
 	`outgoing_details	: "outgoing-details",
 	`outgoing_auth_opts	: "outgoing-auth",
+	`next			: "incoming",
+	],
+    "incoming" :
+    $[
+	`abort	: `abort,
 	`downloading		: "downloading",
 	`aliases		: "aliases",
 	`virtual		: "virtual",
@@ -83,27 +90,27 @@ global map common_sequence = $[
     "outgoing-details" :
     $[
 	`abort	: `abort,
-	`next	: "basic",
+	`next	: "outgoing",
 	],
     "outgoing-auth" :
     $[
 	`abort : `abort,
-	`next  : "basic",
+	`next  : "outgoing",
 	],
     "downloading" :
     $[
 	`abort	: `abort,
-	`next	: "basic",
+	`next	: "incoming",
 	],
     "aliases" :
     $[
 	`abort	: `abort,
-	`next	: "basic",
+	`next	: "incoming",
 	],
     "virtual" :
     $[
 	`abort	: `abort,
-	`next	: "basic",
+	`next	: "incoming",
 	],
     "common-next" :
     $[
@@ -320,7 +327,7 @@ global define symbol MtaSelectionDialog () ``{
     // for now. TODO: disable Next if none selected
     if (mta != `sendmail && mta != `postfix)
     {
-	mta = `sendmail;
+	mta = `postfix;
     }
 
     // Translators: dialog caption
@@ -501,44 +508,106 @@ global define symbol ConnectionTypeDialog () ``{
  * D2
  * @return `back, `abort, `next or `outgoing_details
  */
-global define symbol BasicDialog () ``{
-    boolean dialup = (Mail::connection_type == `dialup);
-    Wizard::SetScreenShotName (dialup ? "mail-2b-dialup" : "mail-2a-permanent");
+global define symbol OutgoingDialog () ``{
+    Wizard::SetScreenShotName ("mail-21-outgoing");
 
+    // what buttons can be used to leave this dialog
+    //(except the std wizarding ones)
     list(symbol) buttons = [];
-    // watch out, fm_widgets are not part of widgets
-    // because of special validation requirements
     list(symbol) widgets = [
 	`outgoing_mail_server,
-	`listen_remote,
 	];
 
-    string caption = dialup ?
-	// Translators: dialog caption
-	_("Dial-up connection settings") :
-	// Translators: dialog caption
-	_("Permanent connection settings");
+    // Translators: dialog caption
+    string caption = _("Outgoing Mail");
 
     term o_contents =
 	`VSquash (
-	    `HBox (
+	    `VBox (
 		WJ_MakeWidget (`outgoing_mail_server),
-		`HSpacing (1),
 		// Translators: button
-		//`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details...")))
-		`Bottom (`MenuButton (_("&Outgoing details..."), [
-		    `item(`id(`outgoing_details), _("Masquerading")),
-		    `item(`id(`outgoing_auth_opts), _("Authentication"))
-		    ]))
+		// TODO ...
+		`PushButton (`id(`outgoing_details), _("&Masquerading")),
+		// Translators: button
+		// TODO ...
+		`PushButton (`id(`outgoing_auth_opts), _("&Authentication"))
 		)
 	    );
     buttons = add (buttons, `outgoing_details);
     buttons = add (buttons, `outgoing_auth_opts);
 
+    // frame label
+    term o_frame = `Frame (_("Outgoing Mail"), o_contents);
+    term contents = `HSquash ( `VBox (
+	`VStretch (),
+	o_frame,
+	`VStretch ()
+	));
+
+    string help = ""; //TODO
+    Wizard::SetContentsButtons (
+	caption, contents, WJ_MakeHelp (widgets),
+	BackButtonLabel (),
+	NextButtonLabel ());
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    ret = `abort;
+	}
+
+	if (ret == `back ||
+	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
+	{
+	    break;
+	}
+	else if (ret == `next || contains (buttons, ret))
+	{
+	    // input validation
+	    // For consistency, all querywidgets are done here
+
+	    if (WJ_Validate (widgets))
+	    {
+		// all checks OK, break the input loop
+		break;
+	    }
+	}
+    }
+
+    if (ret == `next || contains (buttons, ret))
+    {
+	WJ_Set (widgets);
+    }
+    Wizard::RestoreScreenShotName ();
+    return ret;
+}
+
+/**
+ * D2
+ * @return `back, `abort, `next or `outgoing_details
+ */
+global define symbol IncomingDialog () ``{
+    Wizard::SetScreenShotName ("mail-22-incoming");
+
+    list(symbol) buttons = [];
+    // watch out, fm_widgets are not part of widgets
+    // because of special validation requirements
+    list(symbol) widgets = [
+	`listen_remote,
+	];
+
+    // Translators: dialog caption
+    string caption = _("Incoming Mail");
+
     term i_contents = `VBox ();
 
+    i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
+
     list(symbol) fm_widgets = [];
-    if (dialup)
+    if (true) // always embed the first account
     {
 	// Edit the first fetchmail item here.
 	// Copy it into the edit buffer.
@@ -551,7 +620,6 @@ global define symbol BasicDialog () ``{
 	    `fm_password,
 	    `fm_local_user,
 	    ];
-//	widgets = flatten ([widgets, fm_widgets]);
 
 	term fm_contents = `VBox (
 	    `HSpacing (40), // prevent fm_password being squashed in curses
@@ -565,7 +633,9 @@ global define symbol BasicDialog () ``{
 		`HSpacing (1),
 		WJ_MakeWidget (`fm_password)
 		),
-	    WJ_MakeWidget (`fm_local_user)
+	    WJ_MakeWidget (`fm_local_user),
+	    // pushbutton
+	    `PushButton (`id (`downloading), `opt (`key_F7), _("&Details..."))
 	    );
 	// frame label: mail downloading (fetchmail)
 	term fm_frame = `Frame (_("&Downloading"), fm_contents);
@@ -577,32 +647,29 @@ global define symbol BasicDialog () ``{
 			      )
 	    );
     }
-    i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
 
     i_contents = add (i_contents, WJ_MakeWidget (`root_alias));
     widgets = add (widgets, `root_alias);
 
+    // TODO combo box, postfix only!
+    i_contents = add (i_contents, WJ_MakeWidget (`delivery_mode));
+    widgets = add (widgets, `delivery_mode);
+
     i_contents = add (
 	i_contents,
 	// menu button: details of incoming mail
-	`MenuButton (`id (`incoming_details), _("&Incoming details..."), [
-			 // menu button: mail downloading (fetchmail)
-			 `item (`id (`downloading), _("&Downloading...")),
-			 // menu button
-			 `item (`id (`aliases), _("&Aliases...")),
-			 // menu button
-			 `item (`id (`virtual), _("&Virtual domains...")),
-			 ])
+	`HBox (
+	    // pushbutton
+	    `PushButton (`id (`aliases), _("&Aliases...")),
+	    // pushbutton
+	    `PushButton (`id (`virtual), _("&Virtual domains..."))
+	    )
 	);
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
 
     // frame label
-    term o_frame = `Frame (_("Outgoing mail"), o_contents);
-    // frame label
-    term i_frame = `Frame (_("Incoming mail"), i_contents);
+    term i_frame = `Frame (_("Incoming Mail"), i_contents);
     term contents = `HSquash ( `VBox (
-	`VStretch (),
-	o_frame,
 	`VStretch (),
 	i_frame,
 	`VStretch ()
@@ -614,11 +681,8 @@ global define symbol BasicDialog () ``{
 	BackButtonLabel (),
 	FinishButtonLabel ());
 
-    if (dialup)
-    {
-	WJ_GetWidget (`fm_protocol);
-	WJ_GetWidget (`fm_local_user);
-    }
+    WJ_GetWidget (`fm_protocol);
+    WJ_GetWidget (`fm_local_user);
 
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
@@ -645,7 +709,6 @@ global define symbol BasicDialog () ``{
 	    if (WJ_Validate (widgets))
 	    {
 		fm_empty =
-		    !dialup ||
 		    UI::QueryWidget(`id (`fm_server), `Value) == "" &&
 		    UI::QueryWidget(`id (`fm_remote_user), `Value) == "" &&
 		    UI::QueryWidget(`id (`fm_password), `Value) == "" &&
@@ -1127,6 +1190,24 @@ global define symbol DownloadingDialog () ``{
     term contents =
 	`VBox (
 	    `VSpacing (0.2),
+	    `Frame (
+		// Translators: frame label
+		// When should Fetchmail run
+		// Fetchmail is a program name, do not translate
+		_("Run Fetchmail"),
+		RadioButtonVBox (
+		    `run_fm_g,
+		    [
+			// Translators: radio button label
+			`RadioButton (`id (`run_fm_man), _("&Manually"), true), // TODO fake
+			// Translators: radio button label
+			`RadioButton (`id (`run_fm_ppp), _("For &dial-up network connections"), false),
+			// Translators: radio button label
+			`RadioButton (`id (`run_fm_net), _("For &all network connections"), false),
+			]
+		    )
+		),
+	    `VSpacing (0.5),
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
@@ -1140,13 +1221,6 @@ global define symbol DownloadingDialog () ``{
 			 _("Local user")),
 		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
 		),
-/*
-	    `HBox (
-		`HWeight (1, `ComboBox (`id (`user), `opt (`editable), _("Local user"),
-					["holly", "jane", "tarzan"])),
-		`HWeight (2, `TextEntry (`id (`address), _("Display as"), "holly@red.dwarf"))
-		),
-*/
 	    `HBox(
 		// Translators: button
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),

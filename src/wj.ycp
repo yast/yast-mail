@@ -167,7 +167,7 @@ global define list(string) stringToList (string astring) ``{
  */
 global define term WJ_MakeWidget (symbol id) ``{
     map w_def = Widgets[id]:$[];
-    term widget = w_def["widget"]:nil;
+    term widget = w_def["widget"]:`CheckBox ();
     if (widget == nil)
     {
 	return nil;

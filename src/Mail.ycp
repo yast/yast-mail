@@ -27,7 +27,7 @@
     import "Report";
     import "Runlevel";
     import "Summary";
-
+    import "Progress";
     import "Require";
 
     /* ---------------------------------------------------------------- */
@@ -108,6 +108,24 @@
      * List of maps: $[comment:, user:, address:] (all are strings)
      */
     global list(map) masquerade_users = [];
+
+    /**
+     * sysconfig/postfix:POSTFIX_MDA
+     * #26052
+     */
+    global symbol postfix_mda = `local;
+
+    /**
+     * When should fetchmail run:
+     * <dl>
+     * <dt> `manual  <dd>
+     * <dt> `ppp     <dd> for a ppp conection, /etc/ppp/ip-{up,down}.d
+     * <dt> `network <dd> for any network connection,
+     *                    /etc/sysconfig/network/if-{up,down}.d
+     * </dl>
+     * #22903
+     */
+    global symbol fetchmail_mode = `manual;
 
     /**
      *List of maps:
@@ -385,6 +403,28 @@
 	    return false;
 	}
 
+	// postfix_mda
+	if (mta == `postfix)
+	{
+	    string postfix_mda_s = SCR::Read (.sysconfig.postfix.POSTFIX_MDA);
+	    if (postfix_mda_s == "local")
+	    {
+		postfix_mda = `local;
+	    }
+	    else if (postfix_mda_s == "procmail")
+	    {
+		postfix_mda = `procmail;
+	    }
+	    else if (postfix_mda_s == "cyrus")
+	    {
+		postfix_mda = `cyrus;
+	    }
+	    else
+	    {
+		postfix_mda = nil;
+	    }
+	}
+
 	// announce 3
 	Progress::NextStage ();
 	if (eval (abort))
@@ -444,6 +484,9 @@
 	    return false;
 	}
 	// read 4
+	// TODO
+	fetchmail_mode = `manual;
+
 	fetchmail = SCR::Read (.mail.fetchmail.accounts);
 	if (fetchmail == nil)
 	{

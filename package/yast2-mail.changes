@@ -1,4 +1,20 @@
 -------------------------------------------------------------------
+Fri Jun 20 10:13:23 CEST 2003 - mvidner@suse.cz
+
+TODO bug #s
+- Split the general dialog into outgoing and incoming again.
+- Added postfix delivery mode and fetchmail run mode,
+  TODO only dummy widgets for now.
+- Default MTA for autoinstallation is postfix.
+- ag_fetchmail: preserve unparsed items (TODO tell the user)
+
+-------------------------------------------------------------------
+Mon Apr  7 13:34:11 CEST 2003 - mvidner@suse.cz
+
+- Added screenshot mode.
+- 2.8.0
+
+-------------------------------------------------------------------
 Mon Mar  3 13:52:53 CET 2003 - mvidner@suse.de
 
 - Don't squash frame title in the MTA selection dialog (#23979).

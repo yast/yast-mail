@@ -19,6 +19,7 @@
 textdomain "mail";
 
 import "Mail";
+import "MailAliases";
 
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
@@ -172,6 +173,26 @@ automatically.</p>
 	"get": ``(Get_root_alias ()),
 	"set": ``(Set_root_alias ()),
 	"validate": ``(Validate_root_alias ()),
+	],
+    `delivery_mode: $[
+	"widget": `ComboBox (),
+	"opt": `opt (`hstretch),
+	// Translators: combo box label
+	"label": _("&Delivery mode"),
+	"choices": [
+	    // TODO explain
+	    `item (`id (`dm_direct), _("Direct")),
+	    // TODO explain
+	    `item (`id (`dm_procmail), _("Procmail")),
+	    // TODO explain
+	    `item (`id (`dm_cyrus), _("Cyrus")),
+	    ],
+	// TODO
+	"help": "",
+	// TODO, dummy now
+	"get": `dm_direct,
+	// TODO, _set_, this is a dummy
+	"set": ``(WJ_Validate_True ()),
 	],
     ];
 
