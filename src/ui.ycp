@@ -103,10 +103,14 @@ but neither of them is installed."));
  * @return `back or `next
  */
 define symbol ConfirmDialog () ``{
+    // not to be displayed, #37554.
+    // but ProbePackages still has to be called.
+
     // continue-cancel popup
     string message1 = _("The configuration will be written now.\n");
     string message2 = Mail::ProbePackages ();
-    return Popup::ContinueCancel (message1 + message2) ? `next : `back;
+//    return Popup::ContinueCancel (message1 + message2) ? `next : `back;
+    return `next;
 }
 
 /**

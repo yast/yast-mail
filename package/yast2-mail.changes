@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr  1 17:10:09 CEST 2004 - mvidner@suse.cz
+
+- removed final confirmation popup, "Finish" is enough (#37554).
+- 2.9.12
+
+-------------------------------------------------------------------
 Mon Mar 29 15:15:44 CEST 2004 - mvidner@suse.cz
 
 - enable/disable rcfetchmail (#37139)
