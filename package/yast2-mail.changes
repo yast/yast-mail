@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Jul 31 19:03:19 CEST 2002 - mvidner@suse.cz
+
+- Added comments for translators
+- 2.6.10
+
+-------------------------------------------------------------------
 Mon Jul 29 14:44:26 CEST 2002 - mvidner@suse.cz
 
 - yast2-runlevel is no longer required.
