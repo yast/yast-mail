@@ -4,25 +4,22 @@
 # $Id$
 #
 
-clientsdir = $(YAST2DIR)/clients
-yincludedir = $(YAST2DIR)/include/mail
-menudir = $(YAST2DIR)/menuentries
-modulesdir = $(YAST2DIR)/modules
+myyncludedir = $(yncludedir)/mail
 
-clients_DATA =			\
+client_DATA =			\
 	mail.ycp		\
 	mail_auto.ycp	\
 	mail_write.ycp
 
-yinclude_DATA =			\
+myynclude_DATA =		\
 	helps.ycp		\
 	ui.ycp
 
-menu_DATA =			\
-	menuentry_mail.y2cc
+config_DATA =			\
+	mail.y2cc
 
-modules_DATA =			\
+module_DATA =			\
 	Mail.ycp
 
 
-EXTRA_DIST = $(clients_DATA) $(yinclude_DATA) $(menu_DATA) $(modules_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(config_DATA) $(module_DATA)

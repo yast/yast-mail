@@ -30,23 +30,23 @@ BuildArchitectures:	noarch
 
 %files
 %defattr(-,root,root)
-%dir @YAST2DIR@/include/mail
-@YAST2DIR@/include/mail/*
-@YAST2DIR@/clients/mail.ycp
-@YAST2DIR@/clients/mail_*.ycp
-@YAST2DIR@/modules/Mail.ycp
-@YAST2DIR@/menuentries/menuentry_mail.y2cc
-@YAST2DIR@/scrconf/cfg_amavis.scr
-@YAST2DIR@/scrconf/cfg_mail.scr
-@YAST2DIR@/scrconf/cfg_postfix.scr
-@YAST2DIR@/scrconf/cfg_sendmail.scr
-@YAST2DIR@/scrconf/mail_fetchmail.scr
-@YAST2DIR@/scrconf/mail_p_aliases.scr
-@YAST2DIR@/scrconf/mail_p_canonical.scr
-@YAST2DIR@/scrconf/mail_p_virtual.scr
-@YAST2DIR@/scrconf/mail_s_aliases.scr
-@YAST2DIR@/scrconf/mail_s_generics.scr
-@YAST2DIR@/scrconf/mail_s_virtuser.scr
-@YAST2DIR@/servers_non_y2/ag_fetchmailrc
-@YAST2DIR@/servers_non_y2/ag_mailtable
-%doc @DOCDIR@
+%dir @yncludedir@/mail
+@yncludedir@/mail/*
+@clientdir@/mail.ycp
+@clientdir@/mail_*.ycp
+@moduledir@/Mail.ycp
+@configdir@/mail.y2cc
+@scrconfdir@/cfg_amavis.scr
+@scrconfdir@/cfg_mail.scr
+@scrconfdir@/cfg_postfix.scr
+@scrconfdir@/cfg_sendmail.scr
+@scrconfdir@/mail_fetchmail.scr
+@scrconfdir@/mail_p_aliases.scr
+@scrconfdir@/mail_p_canonical.scr
+@scrconfdir@/mail_p_virtual.scr
+@scrconfdir@/mail_s_aliases.scr
+@scrconfdir@/mail_s_generics.scr
+@scrconfdir@/mail_s_virtuser.scr
+@agentdir@/ag_fetchmailrc
+@agentdir@/ag_mailtable
+%doc @docdir@
