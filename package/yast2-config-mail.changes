@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Jan 14 17:16:56 CET 2002 - mvidner@suse.cz
+
+- /etc/fetchmailrc: use permissions 0600, refer to file format docs.
+- Control center group changed to Network/Basic.
+- 2.5.3
+
+-------------------------------------------------------------------
 Fri Jan 11 16:55:26 CET 2002 - mvidner@suse.cz
 
 - Using /etc/sysconfig/* instead of  /etc/rc.config* .
