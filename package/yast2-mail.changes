@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep  6 17:52:49 CEST 2004 - mvidner@suse.cz
+
+- Adjusted testsuite to changes in yast2-firewall (#44650).
+- 2.10.5
+
+-------------------------------------------------------------------
 Fri Sep  3 16:28:55 CEST 2004 - mvidner@suse.cz
 
 - Added GetModified, SetModified for autoyast (#43904, nashif).
