@@ -753,7 +753,7 @@ a fixed format to be readable by YaST2.  For details, see
 	if (mta == `postfix)
 	{
 	    string s_mda = "local";		// default to local
-	    if (postfix_mda == `procmail;
+	    if (postfix_mda == `procmail)
 	    {
 		s_mda = "procmail";
 	    }
