@@ -38,11 +38,6 @@ include "mail/widgets.ycp";
 include "mail/wj.ycp";
 
 /**
- * A replacement for the Next button: "Finish", `next
- */
-global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
-
-/**
  * A Wizard Sequencer helper
  * @return	`next
  */
@@ -712,11 +707,11 @@ global define symbol OutgoingDetailsDialog () ``{
 */
 	    `HBox(
 		// Translators: button
-		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
-		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
-		`PushButton(`id(`delete), _("Dele&te"))
+		`PushButton(`id(`delete), `opt (`key_F5), _("Dele&te"))
 		),
 	    `VSpacing (1)
 	    );
@@ -925,8 +920,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1019,11 +1014,11 @@ global define symbol DownloadingDialog () ``{
 */
 	    `HBox(
 		// Translators: button
-		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
-		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
-		`PushButton(`id(`delete), _("De&lete"))
+		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );
@@ -1104,8 +1099,8 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		`Left (WJ_MakeWidget (`fm_password)),
 		`Left (WJ_MakeWidget (`fm_local_user)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1165,11 +1160,11 @@ global define symbol AliasesDialog () ``{
 		),
 	    `HBox(
 		// Translators: button
-		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
-		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
-		`PushButton(`id(`delete), _("De&lete"))
+		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );
@@ -1244,8 +1239,8 @@ global define map AliasPopup (map default, list(map) existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`destinations), _("&Destinations"), destinations)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
-		      `PushButton(`id(`cancel), CancelButtonLabel())),
+		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), OKButtonLabel()),
+		      `PushButton(`id(`cancel), `opt (`key_F9), CancelButtonLabel())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1323,11 +1318,11 @@ global define symbol VirtualDialog () ``{
 		),
 	    `HBox(
 		// Translators: button
-		`PushButton(`id(`add), _("A&dd")),
+		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
-		`PushButton(`id(`edit), _("&Edit")),
+		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
-		`PushButton(`id(`delete), _("De&lete"))
+		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		),
 	    `VSpacing (0.2)
 	    );

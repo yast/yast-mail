@@ -1,6 +1,6 @@
 /**
  * File:
- *   includefm_local_userssword/widgets.ycp
+ *   include/mail/widgets.ycp
  *
  * Package:
  *   Configuration of mail
@@ -28,7 +28,9 @@ include "network/ip.ycp";
 /**
  * A replacement for the Next button: "Finish", `next
  */
-global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
+global term finish_button = `PushButton (`id (`next),
+					 `opt (`default, `key_F10),
+					 FinishButtonLabel());
 
 /**
  * @ref widget_def
