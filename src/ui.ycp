@@ -68,6 +68,7 @@ global define symbol MailSequence () ``{
 	]
     ];
 
+    // Translators: dialog caption
     string caption = _("Mail configuration");
     term contents = `Label (_("Initializing ..."));
 
@@ -90,6 +91,7 @@ global define symbol MailSequence () ``{
  * @return `back, `abort or `next
  */
 global define symbol MailAutoSequence () ``{
+    // Translators: dialog caption
     string caption = _("Mail configuration");
     term contents = `Label (_("Initializing ..."));
 
@@ -331,17 +333,22 @@ global define symbol ConnectionTypeDialog () ``{
     symbol ct = Mail::connection_type;
     boolean amavis = Mail::use_amavis;
 
+    // Translators: dialog caption
     string caption = _("Connection type");
     term contents =
 	`Frame (
+	    // Translators: frame label
 	    _("Connection type"),
 	    `RadioButtonGroup (
 		`id (`ctg),
 		`HSquash (
 		    `VBox (
 			`VSpacing (0.2),
+			// Translators: radio button label
 			`Left (`RadioButton (`id (`permanent), `opt (`notify), _("&Permanent"), ct == `permanent)),
+			// Translators: radio button label
 			`Left (`RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup)),
+			// Translators: radio button label
 			`Left (`RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none)),
 /*
 			`VSpacing (0.5),
@@ -356,6 +363,7 @@ global define symbol ConnectionTypeDialog () ``{
     contents = `VBox (
 	contents,
 	`VSpacing (1),
+	// Translators: check box label
 	`CheckBox (`id (`amavis), _("Enable &virus scanning (AMaViS)"), amavis)
 	);
 
@@ -434,15 +442,20 @@ global define symbol OutgoingDialog () ``{
     string oms = Mail::outgoing_mail_server;
     string fh = Mail::from_header;
 
+    // Translators: dialog caption
     string caption = _("Outgoing mail");
     term contents =
 	`VBox (
 	    `VSpacing (0.2),
+	    // Translators: text entry label
 	    `TextEntry (`id (`local), _("&Domains for locally delivered mail"), ld),
 	    `VSpacing (0.5),
+	    // Translators: text entry label
 	    `TextEntry (`id (`relay), _("&Outgoing mail server"), oms),
 	    `VSpacing (0.5),
+	    // Translators: text entry label
 	    `TextEntry (`id (`from), _("Domain for the '&From' header"), fh),
+	    // Translators: button
 	    `PushButton (`id (`masqdetail), _("Detailed &address rewriting ...")),
 	    `VSpacing (0.2)
 	    );
@@ -490,6 +503,7 @@ global define symbol MasqueradingDialog () ``{
     string mod = listToString (Mail::masquerade_other_domains);
     list(map) mu = Mail::masquerade_users;
 
+    // Translators: dialog caption
     string caption = _("Detailed masquerading");
     term contents =
 	`VBox (
@@ -500,6 +514,7 @@ global define symbol MasqueradingDialog () ``{
 		    `VSpacing (0.2),
 		    `Left (`RadioButton (
 			       `id (`masqlocal),
+			       // Translators: radio button label
 			       sformat (_("Masquerade &local domains (%1)"), ld),
 			       mod == "")),
 //		    `HBox (
@@ -507,9 +522,11 @@ global define symbol MasqueradingDialog () ``{
 //			`TextEntry (`id (`masqdomains), `opt (`disabled), _("That is"), ld)
 ////			`Left (`Label (`opt (`outputField, `hstretch), ld))
 //			),
+		    // Translators: radio button label
 		    `Left (`RadioButton (`id (`masqothers), _("Ma&squerade other domains"), mod != "")),
 		    `HBox (
 			`HSpacing (2),
+			// Translators: text entry label
 			`TextEntry (`id (`masqdomains), `opt (`notify), _("Do&mains to masquerade"), mod)
 			)
 		    )
@@ -520,6 +537,7 @@ global define symbol MasqueradingDialog () ``{
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
+		// Translators: table column headings
 		`header (_("Local user"), _("Present as")),
 		makeItems (mu, ["user", "address"])
 		),
@@ -531,8 +549,11 @@ global define symbol MasqueradingDialog () ``{
 		),
 */
 	    `HBox(
+		// Translators: button
 		`PushButton(`id(`add), _("A&dd")),
+		// Translators: button
 		`PushButton(`id(`edit), _("&Edit")),
+		// Translators: button
 		`PushButton(`id(`delete), _("Dele&te"))
 		),
 	    `VSpacing (1)
@@ -612,7 +633,9 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		// TODO: combo
 //		`Left (`ComboBox (`id (`user), /*`opt (`editable),*/ _("Local user"),
 //			   ["holly", "jane", "tarzan"])),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`user), _("&Local user"), user)),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Present as"), address)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
@@ -641,6 +664,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	    {
 		break;
 	    }
+	    // Translators: error message
 	    UI::MessagePopup (_("The address for this user is already defined."));
 	}
     }
@@ -665,6 +689,7 @@ global define symbol DownloadingDialog () ``{
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
     list(map) fm = Mail::fetchmail;
 
+    // Translators: dialog caption
     string caption = _("Mail downloading");
     term contents =
 	`VBox (
@@ -672,6 +697,7 @@ global define symbol DownloadingDialog () ``{
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
+		// Translators: table column headings
 		`header (_("Server"), _("Protocol"), _("User"), _("Local user")),
 		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
 		),
@@ -683,8 +709,11 @@ global define symbol DownloadingDialog () ``{
 		),
 */
 	    `HBox(
+		// Translators: button
 		`PushButton(`id(`add), _("A&dd")),
+		// Translators: button
 		`PushButton(`id(`edit), _("&Edit")),
+		// Translators: button
 		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
@@ -744,11 +773,17 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`server), _("&Server"), server)),
+		// Translators: combo box label
 		`Left (`ComboBox (`id (`protocol), _("&Protocol"), Mail::protocol_choices)),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`ruser), _("&Remote user name"), ruser)),
+		// Translators: text entry label
 		`Left (`Password (`id (`password1), _("P&assword"), password)),
+		// Translators: text entry label
 		`Left (`Password (`id (`password2), _("Pass&word once more"), password)),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`luser), _("&Local user"), luser)),
 //TODO combo
 //		`Left (`ComboBox (`id (`luser), _("Local user"), ["jane", "holly", "tarzan"])),
@@ -785,6 +820,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	    {
 		break;
 	    }
+	    // Translators: error message
 	    UI::MessagePopup (_("The passwords do not match."));
 	}
     }
@@ -801,6 +837,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 global define symbol AliasesDialog () ``{
     list(map) aliases = Mail::aliases;
 
+    // Translators: dialog caption
     string caption = _("Aliases");
     term contents =
 	`VBox (
@@ -808,12 +845,16 @@ global define symbol AliasesDialog () ``{
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
+		// Translators: table column headings
 		`header (_("Alias"), _("Destinations")),
 		makeItems (aliases, ["alias", "destinations"])
 		),
 	    `HBox(
+		// Translators: button
 		`PushButton(`id(`add), _("A&dd")),
+		// Translators: button
 		`PushButton(`id(`edit), _("&Edit")),
+		// Translators: button
 		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
@@ -879,7 +920,9 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`alias), _("&Alias"), alias)),
+		// Translators: text entry label
 		`Left (`TextEntry (`id (`destinations), _("&Destinations"), destinations)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
@@ -908,6 +951,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	    {
 		break;
 	    }
+	    // Translators: error message
 	    UI::MessagePopup (_("The destinations for this alias are already defined."));
 	}
     }
@@ -926,6 +970,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 global define symbol VirtualDialog () ``{
     list(map) vu = Mail::virtual_users;
 
+    // Translators: dialog caption
     string caption = _("Virtual domains");
     term contents =
 	`VBox (
@@ -933,12 +978,16 @@ global define symbol VirtualDialog () ``{
 	    `Table (
 		`id (`tab),
 		`opt (`notify, `immediate),
+		// Translators: table column headings
 		`header (_("Alias"), _("Destinations")),
 		makeItems (vu, ["alias", "destinations"])
 		),
 	    `HBox(
+		// Translators: button
 		`PushButton(`id(`add), _("A&dd")),
+		// Translators: button
 		`PushButton(`id(`edit), _("&Edit")),
+		// Translators: button
 		`PushButton(`id(`delete), _("De&lete"))
 		),
 	    `VSpacing (0.2)
