@@ -470,6 +470,7 @@ global define list(string) stringToList (string astring) ``{
  */
 global define symbol OutgoingDialog () ``{
     string ld = listToString (Mail::local_domains);
+    // when validating: may be enclosed in brackets (prevents mx lookups)
     string oms = Mail::outgoing_mail_server;
     string fh = Mail::from_header;
 
@@ -662,6 +663,8 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
+		// Translators: popup dialog heading
+		`Heading (_("Sender address rewriting")),
 		// TODO: combo
 //		`Left (`ComboBox (`id (`user), /*`opt (`editable),*/ _("Local user"),
 //			   ["holly", "jane", "tarzan"])),
@@ -678,6 +681,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
+    UI::SetFocus (`id (`user));
 
     any ret = nil;
     while (true)
@@ -805,6 +809,8 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
+		// Translators: popup dialog heading
+		`Heading (_("Mail downloading")),
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`server), _("&Server"), server)),
 		// Translators: combo box label
@@ -829,6 +835,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 
     UI::OpenDialog (`opt(`decorated), contents);
     UI::ChangeWidget (`id (`protocol), `Value, protocol);
+    UI::SetFocus (`id (`server));
 
     any ret = nil;
     while (true)
@@ -952,6 +959,8 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	    `HSpacing(1),
 	    `VBox(
 		`VSpacing(0.2),
+		// Translators: popup dialog heading
+		`Heading (_("Incoming mail redirection")),
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`alias), _("&Alias"), alias)),
 		// Translators: text entry label
@@ -965,6 +974,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
+    UI::SetFocus (`id (`alias));
 
     any ret = nil;
     while (true)
