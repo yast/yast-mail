@@ -1,0 +1,30 @@
+/**
+ * $Id$
+ * Summary:
+ *   SCR Agent for reading/writing the Postfix sender_canonical table
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * Access:
+ *   read/write
+ * See:
+ *   yast2-config-mail/ag_mailtable.html
+ *
+ * The file specifies a map, but we represent it as a list to preserve
+ * preceding comments and the order of entries.
+ * list entries are"
+ *  $[ "comment": " foo\n bar\n", "key": "root", "value": "joe, \\root" ]
+ *  that is, comments have the leading '#' stripped but not the newline.
+ *
+ * Example:
+ *   Read (.mail.postfix.sendercanonical.map)
+ */
+.mail.postfix.sendercanonical
+
+`ag_mailtable (
+  Mailtable ($[
+    "filename": "/etc/postfix/sender_canonical",
+    "continue_escaped_newline": false,
+    "continue_leading_blanks": true,
+    "colon": false,
+  ])
+)
