@@ -42,6 +42,15 @@ any ret = nil;
 string func = "";
 map param = $[];
 
+/* Fallback for the old calling convention:
+   Do nothing instead of looping endlessly */
+if (size (Args ()) > 0 &&
+    (is (Args(0), map) || is (Args(0), list)))
+{
+    y2error ("This new-style module won't work with the old autoyast");
+    return [UI::UserInput (), Args (0)];
+}
+
 /* Check arguments */
 if(size(Args()) > 0 && is(Args(0), string)) {
     func = WFM::Args(0);
