@@ -5,6 +5,7 @@
 @HEADER@
 Requires:	yast2 yast2-network
 Requires:	yast2-packager
+Requires:	yast2-mail-aliases
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
@@ -21,6 +22,13 @@ BuildArchitectures:	noarch
 Summary:	Configuration of mail
 
 %description
+-
+
+%package aliases
+Summary:	Configuration of mail, alias handling
+Group:		System/YaST
+
+%description aliases
 -
 
 @PREP@
@@ -58,3 +66,12 @@ Summary:	Configuration of mail
 @agentdir@/ag_fetchmailrc
 @agentdir@/ag_smtp_auth
 %doc @docdir@
+
+%files aliases
+%defattr(-,root,root)
+%dir @moduledir@
+@moduledir@/MailAliases.ycp
+%dir @scrconfdir@
+@scrconfdir@/mail_aliases.scr
+%dir @agentdir@
+@agentdir@/ag_mailtable
