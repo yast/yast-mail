@@ -278,7 +278,7 @@
 			   _("Reading alias tables"),
 			   // Translators: progress label
 			   // smtp-auth
-			   _("Reading authentication settings"),
+			   _("Reading authentication settings..."),
 			   ],
 		       [], "");
 
@@ -551,7 +551,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    // Translators: progress label
 	    stages = add (stages, [ _("Writing downloading settings"), ``(WriteDownloading ()) ]);
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing authentication settings"), ``(WriteSmtpAuth ()) ]);
+	    stages = add (stages, [ _("Writing authentication settings..."), ``(WriteSmtpAuth ()) ]);
 	}
 	// Translators: progress label
 	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);

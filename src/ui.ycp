@@ -837,7 +837,7 @@ global define symbol OutgoingAuthOptions() ``{
     //list(map) mu = Mail::masquerade_users;
 
     // Translators: dialog caption
-    string caption = _("Outgoing server authentication");
+    string caption = _("Outgoing Server Authentication");
     term contents =
 	`VBox(
 	    `HBox(
@@ -846,7 +846,7 @@ global define symbol OutgoingAuthOptions() ``{
 		),
 		`HWeight(3,
 		    `VBox(
-			`TextEntry(`id(`server), _("Outgoing &server")),
+			`TextEntry(`id(`server), _("Outgoing &Server")),
 			`TextEntry(`id(`user),   _("&User name")),
 			`Password( `id(`passw),  _("&Password"))
 		    )
