@@ -24,7 +24,7 @@
     textdomain "mail";
 
     import "MailAliases";
-
+    import "Mode";
     import "Report";
     import "Service";
     import "Summary";
@@ -383,6 +383,7 @@
 	// amavis
 	string amavis_pkg = "amavisd-new";
 	amavis_allowed = PackageSystem::Installed (amavis_pkg) ||
+	    Mode::commandline () ||
 	    PackageSystem::Available (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
@@ -1237,7 +1238,7 @@ a fixed format to be readable by YaST2.  For details, see
     define string ListItem(string title, any value, any index) ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, title);
-	if (is(value,list) && value != []) {
+	if (is(value,list) && value != nil && value != []) {
 	    summary = Summary::OpenList(summary);
 	    foreach (any d, (list) value, ``{
 		string entry = "";

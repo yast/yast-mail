@@ -34,7 +34,10 @@
 
     textdomain "mail";
 
+    import "CommandLine";
     import "Mail";
+    import "RichText";
+
     include "mail/ui.ycp";
 
     /* The main () */
@@ -53,8 +56,44 @@
 	preselect_connection_type = `dialup;
     }
 
+    // print summary in command line
+    define boolean MailSummaryHandler (map options) {
+
+	CommandLine::Print (RichText::Rich2Plain (Mail::Summary ()));
+	return false;
+    }
+
+    define boolean MailRead () {
+
+	block<boolean> callback	= ``{
+	    return false;
+	};
+	return Mail::Read (callback);
+    }
+
+    map cmdline_description = $[
+	"id"		: "mail",
+	/* Command line help text for the mail module */
+	"help"		: _("Configuration of mail"),
+	"guihandler"	: MailSequence,
+	"initialize"    : MailRead,
+	"finish"        : Mail::Write,
+	"actions"       : $[
+	    "summary"	: $[
+		"handler"	: MailSummaryHandler,
+		// command line action help
+		"help"		: _("Mail configuration summary"),
+	    ],
+	],
+	"mappings"		: $[
+	    "summary"	: [],
+	]
+    ];
+
     /* main ui function */
-    any ret = MailSequence ();
+    any ret = (preselect_connection_type == nil) ?
+	CommandLine::Run (cmdline_description) : MailSequence ();
+
     y2debug ("ret == %1", ret);
 
     /* Finish */
