@@ -238,7 +238,6 @@
      * @return true/false
      */
     define boolean AvailableForInstallation (string package) ``{
-	// require.ycp
 	return Require::IsPackageAvailable (package);
     }
 
@@ -248,7 +247,6 @@
      * @return true/false
      */
     define boolean Installed (string package) ``{
-	// require.ycp
 	return Require::AreAllPackagesInstalled ([package]);
     }
 

@@ -61,16 +61,17 @@ global boolean edit_touched = false;
 global define list<map> EditTable (symbol action,
 				   list<map> data,
 				   list<string> keys,
-				   term editEntry,
+				   map (map,list<map>) editEntryP,
 				   any table_widget) ``{
     list<map> new_data = nil;
     integer entryno = (integer)UI::QueryWidget(`id (table_widget),`CurrentItem);
     boolean touched = false;
+
+    map (map, list<map>) editEntry = editEntryP;//FIXME
+
     if (action == `add)
     {
-	editEntry = add (editEntry, $[]);
-	editEntry = add (editEntry, data);
-	map entry = (map) eval (editEntry);
+	map entry = editEntry ($[], data);
 	if (size (entry) > 0)
 	{
 	    new_data = add (data, entry);
@@ -85,9 +86,7 @@ global define list<map> EditTable (symbol action,
     {
 	// edit known fields, preserve unknown fields
 	map old_entry = select (data, entryno, $[]);
-	editEntry = add (editEntry, old_entry);
-	editEntry = add (editEntry, remove (data, entryno));
-	map entry = (map) eval (editEntry);
+	map entry = editEntry (old_entry, remove (data, entryno));
 	if (size (entry) > 0)
 	{
 	    integer i = 0;
@@ -124,6 +123,14 @@ global define list<map> EditTable (symbol action,
 /* ---------------------------------------------------------------- */
 
 /**
+ * Function that could be used as a default in lookups for Get_* functions
+ * @return nil
+ */
+define any fake_nil () ``{
+    return nil;
+}
+
+/**
  * Constructs a widget term.
  * Uses a global Widgets map.
  * Keys are symbols (ids), values are
@@ -154,14 +161,17 @@ global define term WJ_MakeWidget (symbol id) ``{
     widget = add (widget, `id (id));
     if (haskey (w_def, "opt"))
     {
-	widget = add (widget, w_def["opt"]:nil);
+	widget = add (widget, w_def["opt"]:`Empty());
     }
     widget = add (widget, w_def["label"]:"LABEL");
     // if choices are defined (combo boxes ...), use them
     // otherwise set the value directly
     // TODO: verified only for TextEntry. Password, CheckBox, ComboBox
-    any init = w_def["choices"]:w_def["get"]:nil;
-    widget = add (widget, eval (init));
+
+    // "choices" returns list, "get" returns string or boolean
+    any () init = w_def["choices"]:w_def["get"]:fake_nil;
+    widget = add (widget, init ());
+
     return widget;
 }
 
@@ -171,8 +181,9 @@ global define term WJ_MakeWidget (symbol id) ``{
  * @param id which widget
  */
 global define void WJ_GetWidget (symbol id) ``{
-    term e = Widgets[id, "get"]:nil;
-    UI::ChangeWidget (`id (id), `Value, eval (e));
+    // "get" returns string or boolean:
+    any () e = Widgets[id, "get"]:fake_nil;
+    UI::ChangeWidget (`id (id), `Value, e ());
 }
 
 /**
@@ -217,7 +228,7 @@ global define boolean WJ_Validate (list<symbol> widgets) ``{
     foreach (symbol id, widgets, ``{
 	if (ok)
 	{
-	    map w_def = Widgets[id]:nil;
+	    map w_def = (map) lookup (Widgets, id, nil);
 	    if (w_def== nil)
 	    {
 		// report as the caller
@@ -226,19 +237,8 @@ global define boolean WJ_Validate (list<symbol> widgets) ``{
 	    }
 	    else
 	    {
-		/*
-		term validate = w_def["validate"]:``(WJ_Validate_True());
-		validate = add (validate, id);
-		ok = (boolean) eval (validate);
-		*/
-		term validate = w_def["validate"]:nil;
-		if (validate == nil)
-		    ok = true;
-		else
-		{
-		    validate = add (validate, id);
-		    ok = (boolean) eval (validate);
-		}
+		boolean (symbol) validate = w_def["validate"]:WJ_Validate_True;
+		ok = validate (id);
 	    }
 	}
 	else
@@ -249,6 +249,11 @@ global define boolean WJ_Validate (list<symbol> widgets) ``{
     return ok;
 }
 
+global define void WJ_Set_Missing (symbol id) ``{
+    // report as the caller
+    y2error (1, "WJ: Missing Set definition for %1", id);
+}
+
 /**
  * Call the "set" functions for a list of widgets
  * to commit the UI values to a module.
@@ -257,17 +262,9 @@ global define boolean WJ_Validate (list<symbol> widgets) ``{
  */
 global define void WJ_Set (list<symbol> widgets) ``{
     foreach (symbol id, widgets, ``{
-	term set_it = Widgets[id, "set"]:nil;
-	if (set_it == nil)
-	{
-	    // report as the caller
-	    y2error (1, "WJ: Missing Set definition for %1", id);
-	}
-	else
-	{
-	    set_it = add (set_it, id);
-	    eval (set_it);
-	}
+
+	void (symbol) set_it = Widgets[id, "set"]:WJ_Set_Missing;
+	set_it (id);
     });
 }
 
