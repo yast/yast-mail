@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Fri Aug 23 16:34:51 CEST 2002 - mvidner@suse.cz
+
+- Adapt to the new packagemanager interface (#18253).
+- If neither postfix nor sendmail is found, terminate (#18253).
+- Outgoing mail server must not be empty in dialup mode (#18146).
+- Instead of "The {host,domain} name is incorrect", show a standard
+  description of a valid address/name. (no new text)
+- 2.6.13
+
+-------------------------------------------------------------------
 Sun Aug 11 22:59:09 CEST 2002 - mvidner@suse.cz
 
 - Let the tables keep the keyboard focus (#16116 workaround).
