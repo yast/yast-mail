@@ -1,6 +1,7 @@
 -------------------------------------------------------------------
-Thu Jun 17 13:39:01 CEST 2004 - mvidner@suse.cz
+Thu Jun 17 13:46:44 CEST 2004 - mvidner@suse.cz
 
+- Moved cfg_mail.scr to yast2-mail-aliases to get rid of file conflicts.
 - Added "testedfiles" to test cases to make it work with the new testsuite.
 - 2.10.0
 

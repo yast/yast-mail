@@ -51,7 +51,6 @@ Group:		System/YaST
 @desktopdir@/mail.desktop
 %dir @scrconfdir@
 @scrconfdir@/cfg_amavis.scr
-@scrconfdir@/cfg_mail.scr
 @scrconfdir@/cfg_postfix.scr
 @scrconfdir@/cfg_sendmail.scr
 @scrconfdir@/mail_p_auth.scr
@@ -69,6 +68,7 @@ Group:		System/YaST
 %dir @moduledir@
 @moduledir@/MailAliases.y*
 %dir @scrconfdir@
+@scrconfdir@/cfg_mail.scr
 @scrconfdir@/mail_aliases.scr
 @scrconfdir@/mail_fetchmail.scr
 %dir @agentdir@
