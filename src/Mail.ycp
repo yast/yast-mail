@@ -172,6 +172,7 @@
 	    if (! SCR::Read (.targetpkg.installed, pkg))
 	    {
 		install_packages = add (install_packages, pkg);
+		// Translators: popup message part, ends with a newline
 		message = message + _("AMaViS, a virus scanner, will be installed.\n");
 	    }
 	}
@@ -180,6 +181,7 @@
 	    ! SCR::Read (.targetpkg.installed, "fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
+	    // Translators: popup message part, ends with a newline
 	    message = message + _("Fetchmail, a mail downloading utility, will be installed.\n");
 	}
 
@@ -311,9 +313,7 @@
 	}
 	else if (mta == `postfix)
 	{
-	    string oms = SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
-	    // strip brackets, if any
-	    outgoing_mail_server = select (regexptokenize (oms, "\\[(.*)\\]"), 0, oms);
+	    outgoing_mail_server = SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	}
 	else
 	{
@@ -657,8 +657,7 @@
 	}
 	else if (mta == `postfix)
 	{
-	    string oms = sformat ("[%1]", outgoing_mail_server);
-	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, oms);
+	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, outgoing_mail_server);
 	}
 	else
 	{
