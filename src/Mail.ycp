@@ -208,30 +208,38 @@
 	create_config = SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG) == "yes";
 
 	// connection_type:
-	boolean nc = false;
+//	boolean nc = false;
 	boolean ex = false;
+	boolean service = false;
 	if (mta == `sendmail)
 	{
-	    nc = SCR::Read (.sysconfig.sendmail.SENDMAIL_NOCANONIFY) == "yes";
+//	    nc = SCR::Read (.sysconfig.sendmail.SENDMAIL_NOCANONIFY) == "yes";
 	    ex = SCR::Read (.sysconfig.sendmail.SENDMAIL_EXPENSIVE) == "yes";
+	    service = Runlevel::ServiceEnabled ("sendmail");
 	}
 	else if (mta == `postfix)
 	{
-	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS) == "yes";
+//	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS) == "yes";
 	    ex = SCR::Read (.sysconfig.postfix.POSTFIX_DIALUP) == "yes";
+	    service = Runlevel::ServiceEnabled ("postfix");
 	}
 	else
 	{
 	    return false;
 	}
 
-	if (nc)
+//formerly we did not take 'service' into account
+//	if (nc)
+//	    connection_type = (ex)? `dialup : `none;
+//	else
+//	    connection_type = `permanent;
+	if (service)
 	{
-	    connection_type = (ex)? `dialup : `none;
+	    connection_type = (ex)? `dialup : `permanent;
 	}
 	else
 	{
-	    connection_type = `permanent;
+	    connection_type = `none;
 	}
 
 	// amavis
@@ -432,9 +440,11 @@
      * @param abort A block that can be called by Write to find
      *	      out whether abort is requested. Returns true if abort
      *	      was pressed.
+     * @param writeonly	If true, don't run SuSEconfig or restart the services.
+     *			Autoinstall uses this to do in all in one place.
      * @return True on success
      */
-    global define boolean Write (block abort) ``{
+    global define boolean Write (block abort, boolean writeonly) ``{
 	list stages = [
 	    // Translators: progress label
 	    [ _("Write general settings"), ``(WriteGeneral ())],
@@ -452,7 +462,16 @@
 	    }
 	}
 	// Translators: progress label
-	stages = add (stages, [ _("Run SuSEconfig"), ``(WriteFinish ()) ]);
+	stages = add (stages, [ _("Finish writing configuration files"), ``(WriteFlush ()) ]);
+	// autoinstallation does it all together later
+	if (! writeonly)
+	{
+	    // Translators: progress label
+	    stages = add (stages, [ _("Run SuSEconfig"), ``(WriteSuSEconfig ()) ]);
+
+	    // Translators: progress label
+	    stages = add (stages, [ _("Restart services"), ``(WriteServices ()) ]);
+	}
 
 	// Translators: dialog caption
 	string caption = _("Saving mail configuration");
@@ -496,16 +515,19 @@
 	    {
 		SCR::Write (nc, "no");
 		SCR::Write (ex, "no");
+		Runlevel::ServiceAdjust ("sendmail", "enable");
 	    }
 	    else if (connection_type == `dialup)
 	    {
 		SCR::Write (nc, "yes");
 		SCR::Write (ex, "yes");
+		Runlevel::ServiceAdjust ("sendmail", "enable");
 	    }
 	    else if (connection_type == `none)
 	    {
 		SCR::Write (nc, "yes");
 		SCR::Write (ex, "no");
+		Runlevel::ServiceAdjust ("sendmail", "disable");
 	    }
 	    else
 	    {
@@ -521,16 +543,19 @@
 	    {
 		SCR::Write (nd, "no");
 		SCR::Write (di, "no");
+		Runlevel::ServiceAdjust ("postfix", "enable");
 	    }
 	    else if (connection_type == `dialup)
 	    {
 		SCR::Write (nd, "yes");
 		SCR::Write (di, "yes");
+		Runlevel::ServiceAdjust ("postfix", "enable");
 	    }
 	    else if (connection_type == `none)
 	    {
 		SCR::Write (nd, "yes");
 		SCR::Write (di, "no");
+		Runlevel::ServiceAdjust ("postfix", "disable");
 	    }
 	    else
 	    {
@@ -720,7 +745,7 @@
      * Part of Write.
      * @return success
      */
-    define boolean WriteFinish () ``{
+    define boolean WriteFlush () ``{
 	//flush the agents
 	if (!SCR::Write (.sysconfig.mail, nil))
 	{
@@ -777,32 +802,24 @@
 		return false;
 	    }
 	});
+	return true;
+    }
 
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteSuSEconfig () ``{
 	//run SuSEconfig with the necessary modules
 	// TODO other modules using FROM_HEADER?
 	integer ret = 0;
 	if (mta == `sendmail)
 	{
 	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module sendmail");
-
-	    Runlevel::RunInitScript ("amavis", "stop");
-	    if (use_amavis)
-	    {
-		Runlevel::RunInitScript ("amavis", "start");
-		Runlevel::ServiceAdjust ("amavis", "enable");
-	    }
-	    else
-	    {
-		Runlevel::ServiceAdjust ("amavis", "disable");
-	    }
-	    // sendmail
-	    Runlevel::RunInitScript ("sendmail", "restart");
 	}
 	else if (mta == `postfix)
 	{
 	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module postfix");
-	    // There's no separate amavis init script.
-	    // rcpostfix reload is included in SuSEconfig.
 	}
 	else
 	{
@@ -815,6 +832,57 @@
 	    Report::Error (_("Error running SuSEconfig."));
 	    return false;
 	}
+	return true;
+    }
+
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteServices () ``{
+	string service = "";
+	if (mta == `sendmail)
+	{
+	    service = "sendmail";
+	    // amavis
+	    Runlevel::RunInitScript ("amavis", "stop");
+	    if (use_amavis)
+	    {
+		if (Runlevel::RunInitScript ("amavis", "start") != 0)
+		{
+		    // Translators: error message
+		    Report::Error (sformat (_("Error starting service %1."), "amavis"));
+		    return false;
+		}
+		Runlevel::ServiceAdjust ("amavis", "enable");
+	    }
+	    else
+	    {
+		Runlevel::ServiceAdjust ("amavis", "disable");
+	    }
+	}
+	else if (mta == `postfix)
+	{
+	    service = "postfix";
+	    // There's no separate amavis init script.
+	}
+	else
+	{
+	    return false;
+	}
+
+	Runlevel::RunInitScript (service, "stop");
+	if (connection_type != `none)
+	{
+	    if (Runlevel::RunInitScript (service, "start") != 0)
+	    {
+		// Translators: error message
+		Report::Error (sformat (_("Error starting service %1."), service));
+		return false;
+	    }
+	}
+	// ServiceAdjust enable/disable is done in WriteGeneral
+
 	return true;
     }
 
