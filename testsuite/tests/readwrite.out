@@ -1,9 +1,9 @@
-Log	Pkg::`IsProvided (sendmail): true
+Execute	.target.bash "/bin/rpm -q sendmail" 0
 Read	.sysconfig.mail.MAIL_CREATE_CONFIG "yes"
 Read	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes"
 Read	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no"
 Read	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no"
-Log	Pkg::`IsProvided (amavis-sendmail): true
+Execute	.target.bash "/bin/rpm -q amavis-sendmail" 0
 Read	.sysconfig.amavis.USE_AMAVIS "yes"
 Read	.sysconfig.sendmail.SENDMAIL_LOCALHOST ""
 Read	.sysconfig.sendmail.SENDMAIL_SMARTHOST ""
