@@ -104,5 +104,6 @@
     block dont_abort = ``{return false;};
     Progress::off ();
     TEST (``(Mail::Read (dont_abort)), [READ, WRITE, EXECUTE], nil);
-    TEST (``(Mail::Write (dont_abort, false)), [READ, WRITE, EXECUTE], nil);
+    Mail::write_only = false;
+    TEST (``(Mail::Write (dont_abort)), [READ, WRITE, EXECUTE], nil);
 }
