@@ -1,10 +1,8 @@
 /**
  * Module:
- *   NIS client configuration
- *
+ *   Mail configuration
  * Summary:
  *   Testsuite
- *
  * Authors:
  *   Martin Vidner <mvidner@suse.cz>
  *
@@ -96,8 +94,9 @@
     map WRITE = $[
 	];
 
-    map EXECUTE = $[
+    map EXECUTE_0 = $[
 	"target": $[
+	    "bash": 0,
 	    "bash_output": $[
 		"exit": 0,
 		"stdout": "",
@@ -106,12 +105,32 @@
 	    ],
 	];
 
-    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,
-			      "amavis-postfix": false]);
+    map EXECUTE_1 = $[
+	"target": $[
+	    "bash": 1,
+	    "bash_output": $[
+		"exit": 0,
+		"stdout": "",
+		"stderr": "",
+		],
+	    ],
+	];
+
+//    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,
+//			      "amavis-postfix": false]);
 
     block dont_abort = ``{return false;};
     Progress::off ();
-    TEST (``(Mail::Read (dont_abort)), [READ, WRITE, EXECUTE], nil);
+    TEST (``(Mail::Read (dont_abort)), [READ, WRITE, [
+					    EXECUTE_0, //rpm sendmail
+					    EXECUTE_0, //rpm amavis-sendmail
+					    ]], nil);
     Mail::write_only = false;
-    TEST (``(Mail::Write (dont_abort)), [READ, WRITE, EXECUTE], nil);
+    TEST (``(Mail::Write (dont_abort)), [READ, WRITE, [
+					     EXECUTE_1, //rpm amavis-postfix
+					     EXECUTE_0, //SuSEconfig
+					     EXECUTE_0, //amavis stop
+					     EXECUTE_0, //amavis start
+					     EXECUTE_0, //sendmail restart
+					     ]], nil);
 }

@@ -31,7 +31,7 @@ include "ui/common_messages.ycp";
 include "wizard/sequencer.ycp";
 include "network/dns.ycp";
 include "network/ip.ycp";
-include "require.ycp";
+import "Require";
 
 include "mail/helps.ycp";
 include "mail/widgets.ycp";
@@ -272,7 +272,7 @@ global define symbol WriteDialog () ``{
     if (size (Mail::install_packages) > 0 || size (Mail::remove_packages) > 0)
     {
 	// require.ycp
-	DoInstallAndRemove (Mail::install_packages, Mail::remove_packages);
+	Require::DoInstallAndRemove (Mail::install_packages, Mail::remove_packages);
     }
 
     // Set help text

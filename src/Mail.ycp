@@ -28,7 +28,7 @@
     import "Runlevel";
     import "Summary";
 
-    include "require.ycp";
+    import "Require";
 
     /* ---------------------------------------------------------------- */
 
@@ -188,12 +188,12 @@
 
     /**
      * Read only, set by ProbePackages.
-     * Use as an argument to require.ycp/DoInstallAndRemove
+     * Use as an argument to Require::DoInstallAndRemove
      */
     global list(string) install_packages = [];
     /**
      * Read only, set by ProbePackages.
-     * Use as an argument to require.ycp/DoInstallAndRemove
+     * Use as an argument to Require::DoInstallAndRemove
      */
     global list(string) remove_packages = [];
 
@@ -252,7 +252,7 @@
      */
     define boolean AvailableForInstallation (string package) ``{
 	// require.ycp
-	return IsPackageAvailable (package);
+	return Require::IsPackageAvailable (package);
     }
 
     /**
@@ -262,7 +262,7 @@
      */
     define boolean Installed (string package) ``{
 	// require.ycp
-	return IsPackageInstalled (package);
+	return Require::AreAllPackagesInstalled ([package]);
     }
 
     /* ---------------------------------------------------------------- */
