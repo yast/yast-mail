@@ -9,6 +9,7 @@
 use lib "/usr/lib/YaST2/agents_non_y2";
 use ycp;
 use strict;
+use Fcntl; # O_* for sysopen
 
 # Data model:
 # all comments are joined: "# foo\n# bar\n"
@@ -98,7 +99,7 @@ sub parse_file ()
 	    push @parse_errors, $i;
 	}
     }
-# TODO return?
+    return 1;
 }
 
 sub read_string ($)
@@ -172,8 +173,11 @@ sub write_file ()
     }
     close (FILE);
 
-    rename $filename, "$filename.YaST2.save" or return y2error ("Creating backup"), 0;
-    rename "$filename.YaST2.new", $filename or return y2error ("Moving temp file"), 0;
+    if (-f $filename)
+    {
+	rename $filename, "$filename.YaST2.save" or return y2error ("Creating backup: $!"), 0;
+    }
+    rename "$filename.YaST2.new", $filename or return y2error ("Moving temp file: $!"), 0;
     return 1;
 }
 
