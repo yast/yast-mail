@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Aug  1 13:30:47 CEST 2003 - mvidner@suse.cz
+
+- Testsuite: don't expose perl-internal hash ordering (fixes build).
+- 2.8.3
+
+-------------------------------------------------------------------
 Wed Jul 23 11:31:42 CEST 2003 - mvidner@suse.cz
 
 - Implemented postfix delivery mode (#26052).
