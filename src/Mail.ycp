@@ -231,13 +231,13 @@
 	boolean ex = false;
 	if (mta == `sendmail)
 	{
-	    nc = SCR::Read (.rc.sendmail.SENDMAIL_NOCANONIFY) == "yes";
-	    ex = SCR::Read (.rc.sendmail.SENDMAIL_EXPENSIVE) == "yes";
+	    nc = SCR::Read (.sysconfig.sendmail.SENDMAIL_NOCANONIFY) == "yes";
+	    ex = SCR::Read (.sysconfig.sendmail.SENDMAIL_EXPENSIVE) == "yes";
 	}
 	else if (mta == `postfix)
 	{
-	    nc = SCR::Read (.rc.postfix.POSTFIX_NODNS) == "yes";
-	    ex = SCR::Read (.rc.postfix.DIALUP) == "yes";
+	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS) == "yes";
+	    ex = SCR::Read (.sysconfig.postfix.DIALUP) == "yes";
 	}
 	else
 	{
@@ -257,11 +257,11 @@
 	string ld_s = "";
 	if (mta == `sendmail)
 	{
-	    ld_s = SCR::Read (.rc.sendmail.SENDMAIL_LOCALHOST);
+	    ld_s = SCR::Read (.sysconfig.sendmail.SENDMAIL_LOCALHOST);
 	}
 	else if (mta == `postfix)
 	{
-	    ld_s = SCR::Read (.rc.postfix.POSTFIX_LOCALDOMAINS);
+	    ld_s = SCR::Read (.sysconfig.postfix.POSTFIX_LOCALDOMAINS);
 	}
 	else
 	{
@@ -272,11 +272,11 @@
 	// outgoing_mail_server
 	if (mta == `sendmail)
 	{
-	    outgoing_mail_server = SCR::Read (.rc.sendmail.SENDMAIL_SMARTHOST);
+	    outgoing_mail_server = SCR::Read (.sysconfig.sendmail.SENDMAIL_SMARTHOST);
 	}
 	else if (mta == `postfix)
 	{
-	    string oms = SCR::Read (.rc.postfix.POSTFIX_RELAYHOST);
+	    string oms = SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	    // strip brackets, if any
 	    outgoing_mail_server = select (regexptokenize (oms, "\\[(.*)\\]"), 0, oms);
 	}
@@ -293,17 +293,22 @@
 	}
 	// read 3
 	// from_header
-	from_header = SCR::Read (.rc.mail.FROM_HEADER);
+	from_header = SCR::Read (.sysconfig.mail.FROM_HEADER);
+	// handle nonexistent file
+	if (from_header == nil)
+	{
+	    from_header = "";
+	}
 
 	// masquerade_other_domains
 	string mod_s = "";
 	if (mta == `sendmail)
 	{
-	    mod_s = SCR::Read (.rc.sendmail.MASQUERADE_DOMAINS);
+	    mod_s = SCR::Read (.sysconfig.sendmail.MASQUERADE_DOMAINS);
 	}
 	else if (mta == `postfix)
 	{
-	    mod_s = SCR::Read (.rc.postfix.POSTFIX_MASQUERADE_DOMAIN);
+	    mod_s = SCR::Read (.sysconfig.postfix.POSTFIX_MASQUERADE_DOMAIN);
 	}
 	else
 	{
@@ -491,8 +496,8 @@
 	// connection_type
 	if (mta == `sendmail)
 	{
-	    path nc = .rc.sendmail.SENDMAIL_NOCANONIFY;
-	    path ex = .rc.sendmail.SENDMAIL_EXPENSIVE;
+	    path nc = .sysconfig.sendmail.SENDMAIL_NOCANONIFY;
+	    path ex = .sysconfig.sendmail.SENDMAIL_EXPENSIVE;
 	    if (connection_type == `permanent)
 	    {
 		SCR::Write (nc, "no");
@@ -516,8 +521,8 @@
 	}
 	else if (mta == `postfix)
 	{
-	    path nd = .rc.postfix.POSTFIX_NODNS;
-	    path di = .rc.postfix.POSTFIX_DIALUP;
+	    path nd = .sysconfig.postfix.POSTFIX_NODNS;
+	    path di = .sysconfig.postfix.POSTFIX_DIALUP;
 	    if (connection_type == `permanent)
 	    {
 		SCR::Write (nd, "no");
@@ -548,12 +553,12 @@
 	if (mta == `sendmail)
 	{
 	    string ld_s = mergestring (local_domains, " ");
-	    SCR::Write (.rc.sendmail.SENDMAIL_LOCALHOST, ld_s);
+	    SCR::Write (.sysconfig.sendmail.SENDMAIL_LOCALHOST, ld_s);
 	}
 	else if (mta == `postfix)
 	{
 	    string ld_s = mergestring (local_domains, ","); // noted in #12672
-	    SCR::Write (.rc.postfix.POSTFIX_LOCALDOMAINS, ld_s);
+	    SCR::Write (.sysconfig.postfix.POSTFIX_LOCALDOMAINS, ld_s);
 	}
 	else
 	{
@@ -563,12 +568,12 @@
 	// outgoing_mail_server
 	if (mta == `sendmail)
 	{
-	    SCR::Write (.rc.sendmail.SENDMAIL_SMARTHOST, outgoing_mail_server);
+	    SCR::Write (.sysconfig.sendmail.SENDMAIL_SMARTHOST, outgoing_mail_server);
 	}
 	else if (mta == `postfix)
 	{
 	    string oms = sformat ("[%1]", outgoing_mail_server);
-	    SCR::Write (.rc.postfix.POSTFIX_RELAYHOST, oms);
+	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, oms);
 	}
 	else
 	{
@@ -583,16 +588,17 @@
      */
     define boolean WriteMasquerading () ``{
 	// from_header
-	SCR::Write (.rc.mail.FROM_HEADER, from_header);
+	SCR::Write (.sysconfig.mail.FROM_HEADER, from_header);
 	// masquerade_other_domains
-	string mod = mergestring (masquerade_other_domains, " ");
 	if (mta == `sendmail)
 	{
-	    SCR::Write (.rc.sendmail.MASQUERADE_DOMAINS, mod);
+	    string mod = mergestring (masquerade_other_domains, " ");
+	    SCR::Write (.sysconfig.sendmail.MASQUERADE_DOMAINS, mod);
 	}
 	else if (mta == `postfix)
 	{
-	    SCR::Write (.rc.postfix.POSTFIX_MASQUERADE_DOMAIN, mod);
+	    string mod = mergestring (masquerade_other_domains, ",");
+	    SCR::Write (.sysconfig.postfix.POSTFIX_MASQUERADE_DOMAIN, mod);
 	}
 	else
 	{
@@ -698,7 +704,7 @@
      */
     define boolean WriteFinish () ``{
 	//flush the agents
-	if (!SCR::Write (.rc.mail, nil))
+	if (!SCR::Write (.sysconfig.mail, nil))
 	{
 	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/mail"));
 	    return false;
@@ -706,9 +712,9 @@
 	list(path) tables = nil;
 	if (mta == `sendmail)
 	{
-	    if (!SCR::Write (.rc.sendmail, nil))
+	    if (!SCR::Write (.sysconfig.sendmail, nil))
 	    {
-		Report::Error (_("Error writing Sendmail configuration file."));
+		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/sendmail"));
 		return false;
 	    }
 	    tables = [
@@ -719,9 +725,9 @@
 	}
 	else if (mta == `postfix)
 	{
-	    if (!SCR::Write (.rc.postfix, nil))
+	    if (!SCR::Write (.sysconfig.postfix, nil))
 	    {
-		Report::Error (_("Error writing Postfix configuration file."));
+		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/postfix"));
 		return false;
 	    }
 	    tables = [
@@ -738,7 +744,7 @@
 	foreach (path p, tables, ``{
 	    if (!SCR::Write (p, nil))
 	    {
-		string filename = SCR::Read (p + ".meta.filename");
+		string filename = SCR::Read (p + topath (".meta.filename"));
 		Report::Error (sformat (_("Error writing file %1"), filename));
 		return false;
 	    }
