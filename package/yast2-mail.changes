@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jul 05 12:33:24 CEST 2002 - arvin@suse.de
+
+- moved non binary files to /usr/share/YaST2
+
+-------------------------------------------------------------------
 Fri Jun 28 19:31:27 CEST 2002 - msvec@suse.cz
 
 - package renamed
