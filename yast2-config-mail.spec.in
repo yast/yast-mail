@@ -45,4 +45,6 @@ BuildArchitectures:	noarch
 @YAST2DIR@/scrconf/mail_s_aliases.scr
 @YAST2DIR@/scrconf/mail_s_generics.scr
 @YAST2DIR@/scrconf/mail_s_virtuser.scr
+@YAST2DIR@/servers_non_y2/ag_fetchmailrc
+@YAST2DIR@/servers_non_y2/ag_mailtable
 %doc @DOCDIR@
