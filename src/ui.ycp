@@ -30,7 +30,7 @@ import "Hostname";
 
 import "Popup";
 import "Label";
-include "wizard/sequencer.ycp";
+import "Sequencer";
 import "Require";
 
 include "mail/helps.ycp";
@@ -233,7 +233,7 @@ define symbol ConnectionTypeDialog () ``{
     }
 
     // Translators: dialog caption
-    string caption = _("Connection type");
+    string caption = _("General Settings");
     term contents =
 	`Frame (
 	    // Translators: frame label
@@ -1534,7 +1534,7 @@ define symbol MailSequence () ``{
     
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
-    any ret = WizardSequencer (dialogs, sequence);
+    any ret = Sequencer::Run (dialogs, sequence);
 
     UI::CloseDialog ();
     return (symbol) ret;
@@ -1573,7 +1573,7 @@ define symbol MailAutoSequence () ``{
 
     // the second map must override the first!
     sequence = union (common_sequence, sequence);
-    any ret = WizardSequencer (dialogs, sequence);
+    any ret = Sequencer::Run (dialogs, sequence);
 
     UI::CloseDialog ();
     return (symbol) ret;

@@ -506,6 +506,11 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>"),
 	"label": _("&Enable virus scanning (AMaViS)"),
 	// help text
 	"help": _("
+<p>Enabling virus scanning will verify incoming and outgoing mail
+via AMaViS.</p>
+")
+	// help text
++ _("
 <p>If AMaViS is not installed and you want to use it, it will be installed
 automatically.</p>
 "),
