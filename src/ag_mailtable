@@ -43,7 +43,7 @@ my $continue_leading_blanks;
 #
 sub log_error ( $ ) {
     my ($err_msg) = @_;
-    y2error ("Error in ag_mailtable: ", $err_msg);
+    y2error ($err_msg);
     return "false";
 }
 
@@ -80,7 +80,7 @@ sub parse_file ()
     @table = ();
     $trailing_comment = "";
 
-    open (FILE, "<$filename") || return log_error ("Opening file $filename");
+    open (FILE, "<$filename") || return log_error ("Opening $filename: $!");
     while (<FILE>)
     {
 	++$linenum;
@@ -163,7 +163,7 @@ sub write_file ()
 {
     return "true" if (! $modified);
 
-    open (FILE, ">$filename.YaST2.new") or return log_error ("Creating file");
+    open (FILE, ">$filename.YaST2.new") or return log_error ("Creating file: $!");
     write_comment ($leading_comment);
     foreach my $entry (@table)
     {
@@ -173,8 +173,11 @@ sub write_file ()
     write_comment ($trailing_comment);
     close (FILE);
 
-    rename $filename, "$filename.YaST2.save" or return log_error ("Creating backup");
-    rename "$filename.YaST2.new", $filename or return log_error ("Moving temp file");
+    if (-f $filename)
+    {
+	rename $filename, "$filename.YaST2.save" or return log_error ("Creating backup: $!");
+    }
+    rename "$filename.YaST2.new", $filename or return log_error ("Moving temp file: $!");
 
     $modified = 0;
     return "true";
