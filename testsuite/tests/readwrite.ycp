@@ -37,6 +37,15 @@
 			"start": [ "3", "5"],
 			"stop":	 [ "3", "5"],
 			],
+		    "SuSEfirewall2_init": $[
+			"start": [ "2", "3", "4", "5"],
+			],
+		    "SuSEfirewall2_setup": $[
+			"start": [ "3", "4", "5"],
+			],
+		    "SuSEfirewall2_final": $[
+			"start": [ "3", "4", "5"],
+			],
 		    ],
 		// their contents is not important for ServiceAdjust
 		"comment": $[
