@@ -869,12 +869,11 @@ global define symbol OutgoingAuthOptions() ``{
 	}
     });
     if (config == nil) {
+	config = $[];
 	config = add(config, "server",   Mail::outgoing_mail_server);
 	config = add(config, "user",     "");
 	config = add(config, "password", "");
     }
-    
-    y2milestone("%1; %2", Mail::outgoing_mail_server, config);
     
     UI::ChangeWidget(`id(`server), `Value, config["server"]:"");
     UI::ChangeWidget(`id(`user),   `Value, config["user"]:"");
@@ -904,9 +903,12 @@ global define symbol OutgoingAuthOptions() ``{
 	}
 	else if (ret == `next)
 	{
-	    Mail::smtp_auth = add(Mail::smtp_auth, "server",   UI::QueryWidget(`id(`server), `Value));
-	    Mail::smtp_auth = add(Mail::smtp_auth, "user",     UI::QueryWidget(`id(`user),   `Value));
-	    Mail::smtp_auth = add(Mail::smtp_auth, "password", UI::QueryWidget(`id(`pass),   `Value));
+	    config = add(config, "server",   UI::QueryWidget(`id(`server), `Value));
+	    config = add(config, "user",     UI::QueryWidget(`id(`user),   `Value));
+	    config = add(config, "password", UI::QueryWidget(`id(`passw),  `Value));
+	    Mail::smtp_auth = [];
+	    Mail::smtp_auth = add(Mail::smtp_auth, config);
+	    break;
 	}
     }
 
