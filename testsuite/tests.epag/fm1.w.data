@@ -1,4 +1,4 @@
-# Edit carefully, see /usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt
+# Edit carefully, see /usr/share/doc/packages/yast2-mail/fetchmailrc.txt
 poll "pop3.foo.com" protocol AUTO : user "barbar" there with password "xxxxxx" is "bar" here ;
 poll "pop3.foo.com" protocol POP3 envelope "X-Envelope-To:" : user "barbar" there with password "xxxxxx" is "bar" here ;
 skip "pop3.foo.com" protocol AUTO : user "bar#bar" there with password "xxx#xxx" is "qux" here ;

@@ -1,0 +1,4 @@
+cat << END
+Fetchmail (\$["filename": "$IN"])
+Read (.accounts)
+END

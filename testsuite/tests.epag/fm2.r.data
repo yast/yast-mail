@@ -1,0 +1,3 @@
+# strings looking as numbers/booleans, #21804
+poll "pop3.foo.com" protocol AUTO:
+     user "31337" there with password "true" is "eleet" here;

@@ -85,7 +85,7 @@ sub parse_file ()
 			       }xso) # whitespace, dot matches \n, compile once
 	{
 	    my $entry = {};
-	    $entry->{enabled} = ($1 eq "skip") ? "false" : "true";
+	    $entry->{enabled} = ($1 eq "skip") ? \ "false" : \ "true";
 	    $entry->{server} = read_string ($2);
 	    # we leave checking the validity to the ycp code
 	    # to keep the list of protocols in one place.
@@ -281,15 +281,15 @@ while ( <STDIN> )
 	}
 	elsif ($path eq ".comment")
 	{
-	    ycp::Return ($comment);
+	    ycp::Return ($comment, 1);
 	}
 	elsif ($path eq ".globals")
 	{
-	    ycp::Return (\@globals);
+	    ycp::Return (\@globals, 1);
 	}
 	elsif ($path eq ".accounts")
 	{
-	    ycp::Return (\@accounts);
+	    ycp::Return (\@accounts, 1);
 	}
 	else
 	{
