@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Fri Apr 16 15:51:32 CEST 2004 - mvidner@suse.cz
+
+- Mail::Import returns boolean (nashif)
+- 2.9.14
+
+-------------------------------------------------------------------
 Fri Apr  2 15:06:07 CEST 2004 - mvidner@suse.cz
 
 - changed license to GPL
