@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Mon Mar  3 13:52:53 CET 2003 - mvidner@suse.de
+
+- Don't squash frame title in the MTA selection dialog (#23979).
+- Install fetchmail if some entries are configured, regardless
+  of the connection type.
+- Enhanced package installation for autoyast.
+- Don't set Mode::config to true in _auto clients. (nashif)
+- Don't export empty map values (nashif).
+- Texts from final proofreading.
+- 2.7.6
+
+-------------------------------------------------------------------
 Thu Feb 13 13:43:33 CET 2003 - mvidner@suse.de
 
 - Check also for the daemon variants of amavis.
