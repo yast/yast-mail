@@ -34,11 +34,30 @@ include "network/ip.ycp";
 include "require.ycp";
 
 include "mail/helps.ycp";
+include "mail/widgets.ycp";
+include "mail/wj.ycp";
 
 /**
  * A replacement for the Next button: "Finish", `next
  */
 global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
+
+/**
+ * Declare a name for the current dialog
+ * to ease making screenshots.
+ * @param s eg. "mail-1-conntype"
+ */
+global define void SetScreenShotName (string s) ``{
+    UI::SetModulename (s);
+}
+
+/**
+ * Restore the screenshot name
+ * (currently sets fixed default name)
+ */
+global define void RestoreScreenShotName () ``{
+    UI::SetModulename ("yast2");
+}
 
 /**
  * A Wizard Sequencer helper
@@ -56,9 +75,8 @@ global map dialogs = $[
     "mta":		``( MtaSelectionDialog () ),
 
     "connection_type":	``( ConnectionTypeDialog () ),
-    "outgoing":		``( OutgoingDialog () ),
-    "masquerading":	``( MasqueradingDialog () ),
-    "dialup?":		[ ``( DialupOnly () ), true ],
+    "basic":		``( BasicDialog () ),
+    "outgoing-details":	``( OutgoingDetailsDialog () ),
     "downloading":	``( DownloadingDialog () ),
     "aliases":		``( AliasesDialog () ),
     "virtual":		``( VirtualDialog () ),
@@ -70,41 +88,37 @@ global map common_sequence = $[
     "connection_type" :
     $[
 	`abort	: `abort,
-	`next	: "outgoing",
-	`aliases	: "aliases",
-	`virtual	: "virtual",
+	`next	: "basic",
 	`none	: "common-next",
 	],
-    "aliases" :
+    "basic" :
     $[
 	`abort	: `abort,
-	`next	: "connection_type",
+	`outgoing_details : "outgoing-details",
+	`downloading : "downloading",
+	`aliases	: "aliases",
+	`virtual	: "virtual",
+	`next	: "common-next",
 	],
-    "virtual" :
+    "outgoing-details" :
     $[
 	`abort	: `abort,
-	`next	: "connection_type",
-	],
-    "outgoing" :
-    $[
-	`abort	: `abort,
-	`next	: "dialup?",
-	`masqdetail : "masquerading",
-	],
-    "masquerading" :
-    $[
-	`abort	: `abort,
-	`next	: "outgoing",
-	],
-    "dialup?" :
-    $[
-	`yes	: "downloading",
-	`no	: "common-next",
+	`next	: "basic",
 	],
     "downloading" :
     $[
 	`abort	: `abort,
-	`next	: "common-next",
+	`next	: "basic",
+	],
+    "aliases" :
+    $[
+	`abort	: `abort,
+	`next	: "basic",
+	],
+    "virtual" :
+    $[
+	`abort	: `abort,
+	`next	: "basic",
 	],
     "common-next" :
     $[
@@ -204,6 +218,7 @@ global define symbol MailAutoSequence () ``{
  * @return `abort or `next
  */
 global define symbol ReadDialog () ``{
+    SetScreenShotName ("mail-0-read");
     // Set help text
     Wizard::RestoreHelp (ReadDialogHelp ());
 
@@ -230,7 +245,7 @@ SuSEconfig will overwrite manual changes.
 "), setting));
 	}
     }
-
+    RestoreScreenShotName ();
     return ( was_ok? `next : `abort );
 }
 
@@ -279,6 +294,8 @@ global define symbol WriteDialog () ``{
  * @return `abort or `next
  */
 global define symbol MtaSelectionDialog () ``{
+    SetScreenShotName ("mail-0-mta");
+
     symbol mta = Mail::mta;
     // for now. TODO: disable Next if none selected
     if (mta != `sendmail && mta != `postfix)
@@ -333,118 +350,21 @@ global define symbol MtaSelectionDialog () ``{
 	Mail::Touch (Mail::mta != mta);
 	Mail::mta = mta;
     }
+    RestoreScreenShotName ();
     return ret;
 }
-
-/* ---------------------------------------------------------------- */
-
-/**
- * @param data	a list of structs
- * @param keys	which members to put in the table
- * @return	an item list
- */
-global define list(term) makeItems (list(map) data, list(string) keys) ``{
-    integer i = 0;
-    return maplist (`d, data, ``{
-	term t = `item (`id (i));
-	i = i + 1;
-	foreach (`k, keys, ``{
-	    t = add (t, lookup (d, k, ""));
-	});
-	return t;
-    });
-}
-
-global boolean edit_touched = false;
-
-/**
- * A generic handler for editing tables.
- * The current item of table_widget
- * makeItems (new_data, keys) is used to fill table_widget
- * @param action	`add, `edit or `delete
- * @param data		the data edited using the table
- * @param keys		keys of respective columns
- * @param editEntry	a function to edit an entry:
- *			gets the current entry and list of othe entries as parameters
- * @param table_widget	id of the table (usually a symbol)
- * @return		the edited data
- */
-global define list(map) EditTable (symbol action,
-				   list(map) data,
-				   list(string) keys,
-				   term editEntry,
-				   any table_widget) ``{
-    list(map) new_data = nil;
-    integer entryno = UI::QueryWidget (`id (table_widget), `CurrentItem);
-    boolean touched = false;
-    if (action == `add)
-    {
-	editEntry = add (editEntry, $[]);
-	editEntry = add (editEntry, data);
-	map entry = eval (editEntry);
-	if (size (entry) > 0)
-	{
-	    new_data = add (data, entry);
-	    touched = true;
-	}
-	else
-	{
-	    new_data = data;
-	}
-    }
-    else if (action == `edit)
-    {
-	// edit known fields, preserve unknown fields
-	map old_entry = select (data, entryno, $[]);
-	editEntry = add (editEntry, old_entry);
-	editEntry = add (editEntry, remove (data, entryno));
-	map entry = eval (editEntry);
-	if (size (entry) > 0)
-	{
-	    integer i = 0;
-	    new_data = maplist (`e, data, ``{
-		i = i + 1;
-		return (i - 1 == entryno)? union (old_entry, entry): e;
-	    });
-	    touched = true;
-	}
-	else
-	{
-	    new_data = data;
-	}
-    }
-    else if (action == `delete)
-    {
-	new_data = remove (data, entryno);
-	touched = true;
-    }
-    else
-    {
-	y2error ("Unknown EditTable action %1.", action);
-	new_data = data; // be nice
-    }
-
-    if (touched)
-    {
-	UI::ChangeWidget (`id (table_widget), `Items, makeItems (new_data, keys));
-	edit_touched = true;
-    }
-    return new_data;
-}
-
-/* ---------------------------------------------------------------- */
 
 /**
  * D1
  * @return `back, `abort, `next or `none
  */
 global define symbol ConnectionTypeDialog () ``{
+    SetScreenShotName ("mail-1-conntype");
+
     symbol ct = Mail::connection_type;
-    boolean amavis_allowed = Mail::amavis_allowed;
-    boolean amavis = Mail::use_amavis;
 
     // Translators: dialog caption
-    string caption = _("General mail settings");
+    string caption = _("Connection type");
     term contents =
 	`Frame (
 	    // Translators: frame label
@@ -470,28 +390,8 @@ global define symbol ConnectionTypeDialog () ``{
 		)
 	    );
 
-    contents = `VBox (
-	contents,
-	`VSpacing (1),
-	// Translators: button
-	`PushButton (`id (`aliases), _("&Aliases ...")),
-	// Translators: button
-	`PushButton (`id (`virtual), _("&Virtual domains ..."))
-	);
-
-    if (amavis_allowed)
-    {
-	contents = add (contents, `VSpacing (1));
-	// Translators: check box label
-	contents = add (contents, `CheckBox (`id (`amavis), _("&Enable virus scanning (AMaViS)"), amavis));
-    }
-    else
-    {
-	contents = add (contents, `Empty (`id (`amavis)));
-    }
-
-    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (amavis_allowed), BackButtonLabel (), NextButtonLabel ());
-
+    Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (),
+				BackButtonLabel (), NextButtonLabel ());
     any ret = nil;
     while (true)
     {
@@ -501,19 +401,12 @@ global define symbol ConnectionTypeDialog () ``{
 	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel());
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
-	    UI::ChangeWidget (`id (`amavis), `Enabled, true);
-	    UI::ChangeWidget (`id (`aliases), `Enabled, true);
-	    UI::ChangeWidget (`id (`virtual), `Enabled, true);
 	}
 	else if (ct == `none)
 	{
 	    UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
 	    //argh, slow
 	    //Wizard::ReplaceNextButton (finish_button);
-	    UI::ChangeWidget (`id (`amavis), `Value, false);
-	    UI::ChangeWidget (`id (`amavis), `Enabled, false);
-	    UI::ChangeWidget (`id (`aliases), `Enabled, false);
-	    UI::ChangeWidget (`id (`virtual), `Enabled, false);
 	}
 
 	ret = UI::UserInput ();
@@ -522,82 +415,153 @@ global define symbol ConnectionTypeDialog () ``{
 	    ret = `abort;
 	}
 
-	if (ret == `back || ret == `next || ret == `aliases || ret == `virtual ||
+	if (ret == `back || ret == `next ||
 	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
 	{
 	    break;
 	}
     }
 
-    if (ret == `next || ret == `aliases || ret == `virtual)
+    if (ret == `next)
     {
 	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 	Mail::Touch (Mail::connection_type != ct);
 	Mail::connection_type = ct;
 
-	amavis = amavis_allowed && UI::QueryWidget (`id (`amavis), `Value);
-	Mail::Touch (Mail::use_amavis != amavis);
-	Mail::use_amavis = amavis;
-
 	ret = (ct == `none)? `none: ret;
     }
+    RestoreScreenShotName ();
     return ret;
 }
 
 /**
- * Formats a list for a TextEntry, separating the elements by ", "
- * @param alist	a list
- * @return	a string
- */
-global define string listToString (list(string) alist) ``{
-    return mergestring (alist, ", ");
-}
-
-/**
- * Splits a TextEntry string into a list of strings
- * separated by spaces, commas or semicolons.
- * Empty strings are removed.
- * @param astring	a string
- * @return		a list of strings
- */
-global define list(string) stringToList (string astring) ``{
-    list(string) alist = splitstring (astring, " ,;");
-    return filter (`s, alist, ``(s != ""));
-}
-
-/**
  * D2
- * @return `back, `abort, `next or `masqdetail
+ * @return `back, `abort, `next or `outgoing_details
  */
-global define symbol OutgoingDialog () ``{
-    string ld = listToString (Mail::local_domains);
-    list(string) lld = [];
-    // when validating: may be enclosed in brackets (prevents mx lookups)
-    string oms = Mail::outgoing_mail_server;
-    string fh = Mail::from_header;
+global define symbol BasicDialog () ``{
+    boolean dialup = (Mail::connection_type == `dialup);
+    SetScreenShotName (dialup ? "mail-2b-dialup" : "mail-2a-permanent");
 
-    // Translators: dialog caption
-    string caption = _("Outgoing mail");
-    term contents =
-	`VBox (
-	    `VSpacing (0.2),
-	    // Translators: text entry label
-	    `TextEntry (`id (`local), _("&Domains for locally delivered mail"), ld),
-	    `VSpacing (0.5),
-	    // Translators: text entry label
-	    `TextEntry (`id (`relay), _("&Outgoing mail server"), oms),
-	    `VSpacing (0.5),
-	    // Translators: text entry label
-	    `TextEntry (`id (`from), _("Do&main for the 'From' header"), fh),
-	    // Translators: button
-	    `PushButton (`id (`masqdetail), _("Detailed &address rewriting ...")),
-	    `VSpacing (0.2)
+    list(symbol) buttons = [];
+    // watch out, fm_widgets are not part of widgets
+    // because of special validation requirements
+    list(symbol) widgets = [
+	`outgoing_mail_server,
+	`listen_remote,
+	];
+
+    string caption = dialup ?
+	// Translators: dialog caption
+	_("Dial-up connection settings") :
+	// Translators: dialog caption
+	_("Permanent connection settings");
+
+    term o_contents =
+	`VSquash (
+	    `HBox (
+		WJ_MakeWidget (`outgoing_mail_server),
+		`HSpacing (1),
+		// Translators: button
+		`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details ...")))
+		)
 	    );
+    buttons = add (buttons, `outgoing_details);
 
+    boolean amavis_allowed = Mail::amavis_allowed;
+    term i_contents = `VBox ();
+
+    list(symbol) fm_widgets = [];
+    if (dialup)
+    {
+	// Edit the first fetchmail item here.
+	// Copy it into the edit buffer.
+	fetchmail_item = Mail::fetchmail[0]:$[];
+
+	fm_widgets = [
+	    `fm_server,
+	    `fm_protocol,
+	    `fm_remote_user,
+	    `fm_password,
+	    `fm_local_user,
+	    ];
+//	widgets = flatten ([widgets, fm_widgets]);
+
+	term fm_contents = `VBox (
+	    `HSpacing (40), // prevent fm_password being squashed in curses
+	    `HBox (
+		WJ_MakeWidget (`fm_server),
+		`HSpacing (1),
+		WJ_MakeWidget (`fm_protocol)
+		),
+	    `HBox (
+		WJ_MakeWidget (`fm_remote_user),
+		`HSpacing (1),
+		WJ_MakeWidget (`fm_password)
+		),
+	    WJ_MakeWidget (`fm_local_user)
+	    );
+	term fm_frame = `Frame (_("&Downloading"), fm_contents);
+	i_contents = add (i_contents,
+			  `HBox (
+			      `HSpacing (1),
+			      fm_frame,
+			      `HSpacing (1)
+			      )
+	    );
+    }
+    i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
+
+
+    if (amavis_allowed)
+    {
+//	i_contents = add (i_contents, `VSpacing (1));
+	// Translators: check box label
+	i_contents = add (i_contents, `Left (WJ_MakeWidget (`use_amavis)));
+	widgets = add (widgets, `use_amavis);
+    }
+    else
+    {
+	contents = add (contents, `Empty (`id (`use_amavis)));
+    }
+
+    i_contents = add (i_contents, WJ_MakeWidget (`root_alias));
+    widgets = add (widgets, `root_alias);
+
+    i_contents = add (
+	i_contents,
+	`MenuButton (`id (`incoming_details), _("&Incoming details ..."), [
+			 `item (`id (`downloading), _("&Downloading ...")),
+			 `item (`id (`aliases), _("&Aliases ...")),
+			 `item (`id (`virtual), _("&Virtual domains ...")),
+			 ])
+	);
+    buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
+
+    term o_frame = `Frame (_("Outgoing mail"), `HSquash (o_contents));
+    term i_frame = `Frame (_("Incoming mail"), `HSquash (i_contents));
+    term contents = `VBox (
+	`VStretch (),
+	o_frame,
+	`VStretch (),
+//	`VSpacing (0.2),
+	i_frame,
+	`VStretch ()
+	);
+
+    string help = ""; //TODO
     Wizard::SetContentsButtons (
-	caption, contents, OutgoingDialogHelp (), BackButtonLabel (),
-	(Mail::connection_type == `dialup) ?
-	NextButtonLabel () : FinishButtonLabel ());
+	caption, contents, WJ_MakeHelp (widgets),
+	BackButtonLabel (),
+	FinishButtonLabel ());
+
+    if (dialup)
+    {
+	WJ_GetWidget (`fm_protocol);
+	WJ_GetWidget (`fm_local_user);
+    }
+
+    // nothing entered in the dowloading items - don't save them
+    boolean fm_empty = true;
 
     any ret = nil;
     while (true)
@@ -613,69 +577,39 @@ global define symbol OutgoingDialog () ``{
 	{
 	    break;
 	}
-	else if (ret == `next || ret == `masqdetail)
+	else if (ret == `next || contains (buttons, ret))
 	{
 	    // input validation
 	    // For consistency, all querywidgets are done here
 
-	    ld = UI::QueryWidget (`id (`local), `Value);
-	    lld = stringToList(ld);
-	    oms = UI::QueryWidget (`id (`relay), `Value);
-	    // watch this: "[", no brackets, "]"
-	    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
-		regexpsub (oms, ".(.*).", "\\1") : oms;
-	    fh = UI::QueryWidget (`id (`from), `Value);
-
-	    if (find (string s, lld, ``(! check_domainname (s))) != nil)
+	    if (WJ_Validate (widgets))
 	    {
-		UI::SetFocus (`id (`local));
-		// Translators: error popup
-		// Already in Translation Memory
-		string msg = _("The domain name is incorrect");
-		// TODO: describe a valid domain name
-		UI::ErrorPopup (msg);
-	    }
-	    else if (oms_no_brackets != "" &&
-		     ! check_domainname (oms_no_brackets) &&
-		     ! check_ip4 (oms_no_brackets))
-	    {
-		UI::SetFocus (`id (`relay));
-		// Translators: error popup
-		// Already in Translation Memory
-		string msg = _("The host name is incorrect");
-		// TODO: describe a valid host specification
-		// (a host name or IP)
-		UI::ErrorPopup (msg);
-	    }
-	    else if (fh != "" && ! check_domainname (fh))
-	    {
-		UI::SetFocus (`id (`from));
-		// Translators: error popup
-		// Already in Translation Memory
-		string msg = _("The domain name is incorrect");
-		// TODO: describe a valid domain name
-		UI::ErrorPopup (msg);
-	    }
-	    else
-	    {
-		// all checks OK, break the input loop
-		break;
+		fm_empty =
+		    !dialup ||
+		    UI::QueryWidget(`id (`fm_server), `Value) == "" &&
+		    UI::QueryWidget(`id (`fm_remote_user), `Value) == "" &&
+		    UI::QueryWidget(`id (`fm_password), `Value) == "" &&
+		    UI::QueryWidget(`id (`fm_local_user), `Value) == "";
+		if (fm_empty || WJ_Validate (fm_widgets))
+		{
+		    // all checks OK, break the input loop
+		    break;
+		}
 	    }
 	}
     }
 
-    if (ret == `next || ret == `masqdetail)
+    if (ret == `next || contains (buttons, ret))
     {
-	// all querywidgets are already done by the validation part
-	Mail::Touch (Mail::local_domains != lld);
-	Mail::local_domains = lld;
-
-	Mail::Touch (Mail::outgoing_mail_server != oms);
-	Mail::outgoing_mail_server = oms;
-
-	Mail::Touch (Mail::from_header != fh);
-	Mail::from_header = fh;
+	WJ_Set (widgets);
+	if (!fm_empty)
+	{
+	    WJ_Set (fm_widgets);
+	    // CHECK: aliasing is not harmful here
+	    Mail::fetchmail[0] = fetchmail_item;
+	}
     }
+    RestoreScreenShotName ();
     return ret;
 }
 
@@ -683,15 +617,15 @@ global define symbol OutgoingDialog () ``{
  * D2.1
  * @return `back, `abort or `next
  */
-global define symbol MasqueradingDialog () ``{
+global define symbol OutgoingDetailsDialog () ``{
+    SetScreenShotName ("mail-2o-outgoing-details");
 
-    string ld = listToString (Mail::local_domains);
     string mod = listToString (Mail::masquerade_other_domains);
     list(string) lmod = [];
     list(map) mu = Mail::masquerade_users;
 
     // Translators: dialog caption
-    string caption = _("Detailed masquerading");
+    string caption = _("Masquerading");
     term contents =
 	`VBox (
 	    `VSpacing (0.2),
@@ -699,10 +633,14 @@ global define symbol MasqueradingDialog () ``{
 		`id (`mdg),
 		`VBox (
 		    `VSpacing (0.2),
+		    WJ_MakeWidget (`from_header),
+		    `VSpacing (0.2),
+		    WJ_MakeWidget (`local_domains),
+		    `VSpacing (0.2),
 		    `Left (`RadioButton (
 			       `id (`masqlocal),
 			       // Translators: radio button label
-			       sformat (_("Masquerade &local domains (%1)"), ld),
+			       _("Masquerade &local domains"),
 			       mod == "")),
 //		    `HBox (
 //			`HSpacing (2),
@@ -794,7 +732,15 @@ global define symbol MasqueradingDialog () ``{
 		lmod = [];
 	    }
 
-	    if (find (string s, lmod, ``(! check_domainname (s))) != nil)
+	    if (! Validate_from_header (`from_header))
+	    {
+		//nothing
+	    }
+	    else if (! Validate_local_domains (`local_domains))
+	    {
+		// nothing, already done
+	    }
+	    else if (find (string s, lmod, ``(! check_domainname (s))) != nil)
 	    {
 		UI::SetFocus (`id (`masqdomains));
 		// Translators: error popup
@@ -814,12 +760,16 @@ global define symbol MasqueradingDialog () ``{
     if (ret == `next)
     {
 	// all querywidgets are already done by the validation part
+	Set_from_header (`from_header);
+	Set_local_domains (`local_domains);
+
 	Mail::Touch (Mail::masquerade_other_domains != lmod);
 	Mail::masquerade_other_domains = lmod;
 
 	Mail::Touch (Mail::masquerade_users != mu);
 	Mail::masquerade_users = mu;
     }
+    RestoreScreenShotName ();
     return ret;
 }
 
@@ -890,13 +840,19 @@ global list(string) local_users = nil;
 /**
  * Read user names from passwd.
  * It does not get the NIS entries, that's why one combo is editable.
+ * "+" is filtered out.
+ * @return user name list
  */
-global define void InitializeLocalUsers () ``{
-    // initialize the list
-    // CHECK .etc.passwd is in yast2
-    list(map) passwd = SCR::Read (.etc.passwd);
-    local_users = maplist (map entry, passwd, ``(entry["username"]:"") );
-    local_users = sort (filter (string u, local_users, ``(u != "+")));
+global define list(string) GetLocalUsers () ``{
+    if (local_users == nil)
+    {
+	// initialize the list
+	// CHECK .etc.passwd is in yast2
+	list(map) passwd = SCR::Read (.etc.passwd);
+	local_users = maplist (map entry, passwd, ``(entry["username"]:"") );
+	local_users = sort (filter (string u, local_users, ``(u != "+")));
+    }
+    return local_users;
 }
 
 /**
@@ -911,11 +867,6 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
     string address = lookup (default, "address", "");
     list(string) forbidden = maplist (`e, existing, ``( lookup (e, "user", "") ));
 
-    if (!Mode::config && local_users == nil)
-    {
-	InitializeLocalUsers ();
-    }
-
     term contents =
 	`HBox(
 	    `HSpacing(1),
@@ -926,7 +877,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		Mode::config ?
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`user), _("&Local user"), user)) :
-		`Left (`ComboBox (`id (`user), `opt (`editable), _("&Local user"), local_users)),
+		`Left (`ComboBox (`id (`user), `opt (`editable, `hstretch), _("&Local user"), GetLocalUsers ())),
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
@@ -988,17 +939,11 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 }
 
 /**
- * @return `yes if connection_type is `dialup, otherwise `no
- */
-global define symbol DialupOnly () ``{
-    return Mail::connection_type == `dialup ? `yes: `no;
-}
-
-/**
  * D3
  * @return `back, `abort or `next
  */
 global define symbol DownloadingDialog () ``{
+    SetScreenShotName ("mail-2ia-download");
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
     list(map) fm = Mail::fetchmail;
 
@@ -1032,7 +977,7 @@ global define symbol DownloadingDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), FinishButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -1069,6 +1014,7 @@ global define symbol DownloadingDialog () ``{
 	Mail::Touch (Mail::fetchmail != fm);
 	Mail::fetchmail = fm;
     }
+    RestoreScreenShotName ();
     return ret;
 }
 
@@ -1080,16 +1026,16 @@ global define symbol DownloadingDialog () ``{
  * @return edited data (with no other fields) or $[] on cancel
  */
 global define map FetchmailPopup (map default, list(map) existing) ``{
-    string server = lookup (default, "server", "");
-    string protocol = lookup (default, "protocol", "AUTO");
-    string ruser = lookup (default, "remote_user", "");
-    string password = lookup (default, "password", "");
-    string luser = lookup (default, "local_user", "");
+    fetchmail_item = default;
+    fetchmail_item_touched = false;
 
-    if (local_users == nil)
-    {
-	InitializeLocalUsers ();
-    }
+    list(symbol) widgets = [
+	`fm_server,
+	`fm_protocol,
+	`fm_remote_user,
+	`fm_password,
+	`fm_local_user,
+	];
 
     term contents =
 	`HBox(
@@ -1098,19 +1044,11 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		`VSpacing(0.2),
 		// Translators: popup dialog heading
 		`Heading (_("Mail downloading")),
-		// Translators: text entry label
-		`Left (`TextEntry (`id (`server), _("&Server"), server)),
-		// Translators: combo box label
-		`Left (`ComboBox (`id (`protocol), _("&Protocol"), Mail::protocol_choices)),
-		// Translators: text entry label
-		`Left (`TextEntry (`id (`ruser), _("&Remote user name"), ruser)),
-		// Translators: text entry label
-		`Left (`Password (`id (`password1), _("P&assword"), password)),
-		// Translators: text entry label
-		`Left (`Password (`id (`password2), _("Reenter pass&word"), password)),
-		// editable because entering a mail alias makes sense too
-		// Translators: text entry label
-		`Left (`ComboBox (`id (`luser), `opt (`editable), _("&Local user"), local_users)),
+		`Left (WJ_MakeWidget (`fm_server)),
+		`Left (WJ_MakeWidget (`fm_protocol)),
+		`Left (WJ_MakeWidget (`fm_remote_user)),
+		`Left (WJ_MakeWidget (`fm_password)),
+		`Left (WJ_MakeWidget (`fm_local_user)),
 		`VSpacing(0.2),
 		`HBox(`PushButton(`id(`ok), `opt(`default), OKButtonLabel()),
 		      `PushButton(`id(`cancel), CancelButtonLabel())),
@@ -1120,9 +1058,9 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	);
 
     UI::OpenDialog (`opt(`decorated), contents);
-    UI::ChangeWidget (`id (`protocol), `Value, protocol);
-    UI::ChangeWidget (`id (`luser), `Value, luser);
-    UI::SetFocus (`id (`server));
+    WJ_GetWidget (`fm_protocol);
+    WJ_GetWidget (`fm_local_user);
+    UI::SetFocus (`id (`fm_server));
 
     any ret = nil;
     while (true)
@@ -1135,40 +1073,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	else if (ret == `ok)
 	{
 	    // Input validation
-	    server = UI::QueryWidget (`id (`server), `Value);
-	    protocol = UI::QueryWidget (`id (`protocol), `Value);
-	    ruser = UI::QueryWidget (`id (`ruser), `Value);
-	    password = UI::QueryWidget (`id (`password1), `Value);
-	    luser = UI::QueryWidget (`id (`luser), `Value);
-
-	    string password2 = UI::QueryWidget (`id (`password2), `Value);
-
-	    if (!check_domainname (server))
-	    {
-		UI::SetFocus (`id (`server));
-		// Translators: error popup
-		// Already in Translation Memory
-		string msg = _("The host name is incorrect");
-		UI::ErrorPopup (msg);
-	    }
-	    else if (ruser == "")
-	    {
-		UI::SetFocus (`id (`ruser));
-		UI::ErrorPopup (_("The user name format is incorrect."));
-	    }
-	    else if (password != password2)
-	    {
-		UI::SetFocus (`id (`password1));
-		// Translators: error message
-		UI::ErrorPopup (_("The passwords do not match."));
-	    }
-	    else if (!check_mail_local_part (luser))
-		// it may be ok if it is directed to an alias
-	    {
-		UI::SetFocus (`id (`luser));
-		UI::ErrorPopup (_("The user name format is incorrect."));
-	    }
-	    else
+	    if (WJ_Validate (widgets))
 	    {
 		// all checks OK, break the input loop
 		break;
@@ -1176,9 +1081,10 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 	}
     }
 
+    WJ_Set (widgets); // TODO hope it is ok to mess it up
     UI::CloseDialog ();
 
-    return (ret == `ok)? $["server": server, "protocol": protocol, "remote_user": ruser, "password": password, "local_user": luser] : $[];
+    return (ret == `ok)? fetchmail_item : $[];
 }
 
 /**
@@ -1186,7 +1092,8 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
  * @return `back, `abort or `next
  */
 global define symbol AliasesDialog () ``{
-    list(map) aliases = Mail::aliases;
+    SetScreenShotName ("mail-2ib-aliases");
+    list(map) aliases = Mail::MergeRootAlias (Mail::aliases);
 
     // Translators: dialog caption
     string caption = _("Aliases");
@@ -1245,9 +1152,11 @@ global define symbol AliasesDialog () ``{
 
     if (ret == `next)
     {
-	Mail::Touch (Mail::aliases != aliases);
+	Mail::Touch (edit_touched);
 	Mail::aliases = aliases;
+	Mail::FilterRootAlias ();
     }
+    RestoreScreenShotName ();
     return ret;
 
 }
@@ -1336,6 +1245,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
  * @return `back, `abort or `next
  */
 global define symbol VirtualDialog () ``{
+    SetScreenShotName ("mail-2ic-virtdomains");
     list(map) vu = Mail::virtual_users;
 
     // Translators: dialog caption
@@ -1398,6 +1308,7 @@ global define symbol VirtualDialog () ``{
 	Mail::Touch (Mail::virtual_users != vu);
 	Mail::virtual_users = vu;;
     }
+    RestoreScreenShotName ();
     return ret;
 
 }

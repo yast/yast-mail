@@ -1,0 +1,424 @@
+/**
+ * File:
+ *   includefm_local_userssword/widgets.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Widget definitions.
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ */
+
+{
+
+textdomain "mail";
+
+import "Mail";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+include "network/dns.ycp";
+include "network/ip.ycp";
+
+/**
+ * A replacement for the Next button: "Finish", `next
+ */
+global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
+
+/**
+ * @ref widget_def
+ */
+global map Widgets = $[
+    `foo: $[
+	"widget": `TextEntry (),
+	"opt": `opt (`notify), // optional
+	"label": "",
+	// if there are choices, they are used to construct the widget,
+	// otherwise get is used
+	"choices": [1, 2, 3],
+	"help": _("."),
+	"get": ``(Get_foo ()),
+	"set": ``(Set_foo ()),
+	"validate": ``(Validate_foo ()),
+	],
+    `outgoing_mail_server: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("&Outgoing mail server"),
+	"help": _("
+<p>The outgoing mail server is generally intended for dial-up connections.
+Enter the Internet service provider's SMTP server, such as
+<b>smtp.provider.com</b>.</p>
+"),
+	"get": ``(Get_outgoing_mail_server ()),
+	"set": ``(Set_outgoing_mail_server ()),
+	"validate": ``(Validate_outgoing_mail_server ()),
+	],
+    `from_header: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("Do&main for the 'From' header"),
+	"help": _("
+<p>You may want the mail you sent to appear as if it originated from
+<b>company.com</b> instead of <b>pc-042.company.com</b>.
+Use the text box provided or a more detailed dialog.</p>
+"),
+	"get": ``(Get_from_header ()),
+	"set": ``(Set_from_header ()),
+	"validate": ``(Validate_from_header ()),
+	],
+    `local_domains: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("&Domains for locally delivered mail"),
+	"help": _("
+<p>Here, specify the domains for which the mail
+will be delivered locally. If you enter nothing,
+the local host name is assumed.</p>
+"),
+	"get": ``(Get_local_domains ()),
+	"set": ``(Set_local_domains ()),
+	"validate": ``(Validate_local_domains ()),
+	],
+    `listen_remote: $[
+	"widget": `CheckBox (),
+	"label": _("Accept remote &SMTP connections"),
+	"help": _("
+<p>Mail can be received directly via the SMTP protocol
+or it can be downloaded from
+a POP or an IMAP server using <b>fetchmail</b>.</p>"),
+	"get": ``(Get_listen_remote ()),
+	"set": ``(Set_listen_remote ()),
+	],
+    `use_amavis: $[
+	"widget": `CheckBox (),
+	"label": _("&Enable virus scanning (AMaViS)"),
+	"help": _("
+<p>If AMaViS is not installed and you want to use it, it will be installed
+automatically.</p>
+"),
+	"get": ``(Get_use_amavis ()),
+	"set": ``(Set_use_amavis ()),
+	],
+    `fm_server: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("&Server"),
+	"help": "",
+	"get": ``(Get_fm_server ()),
+	"set": ``(Set_fm_server ()),
+	"validate": ``(Validate_fm_server ()),
+	],
+    `fm_protocol: $[
+	"widget": `ComboBox (),
+	"opt": `opt (`hstretch),
+	// Translators: combo box label
+	"label": _("&Protocol"),
+	"choices": ``( Mail::protocol_choices ),
+	"help": "",
+	"get": ``(Get_fm_protocol ()),
+	"set": ``(Set_fm_protocol ()),
+	],
+    `fm_remote_user: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("&Remote user name"),
+	"help": "",
+	"get": ``(Get_fm_remote_user ()),
+	"set": ``(Set_fm_remote_user ()),
+	"validate": ``(Validate_fm_remote_user ()),
+	],
+    `fm_password: $[
+	"widget": `Password (),
+	// Translators: text entry label
+	"label": _("P&assword"),
+	"help": "",
+	"get": ``(Get_fm_password ()),
+	"set": ``(Set_fm_password ()),
+	],
+    `fm_local_user: $[
+	"widget": `ComboBox (),
+	// editable because entering a mail alias makes sense too
+	// and we miss the nis users
+	"opt": `opt (`hstretch, `editable),
+	// Translators: combo box label
+	"label": _("&Local user"),
+	"choices": ``(GetLocalUsers ()),
+	"help": "",
+	"get": ``(Get_fm_local_user ()),
+	"set": ``(Set_fm_local_user ()),
+	"validate": ``(Validate_fm_local_user ()),
+	],
+    `root_alias: $[
+	"widget": `TextEntry (),
+	// Translators: text entry label
+	"label": _("&Forward root's mail to"),
+	"help": "",
+	"get": ``(Get_root_alias ()),
+	"set": ``(Set_root_alias ()),
+	"validate": ``(Validate_root_alias ()),
+	],
+    ];
+
+
+global define string Get_foo () ``{
+    return fetchmail_item["protocol"]:"";
+}
+
+global define void Set_foo (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["protocol"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "protocol", val);
+}
+
+global define boolean Validate_foo (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    if (!check_domainname (val))
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The host name is incorrect");
+	UI::ErrorPopup (msg);
+	return false;
+    }
+    return true;
+}
+
+
+
+global define string Get_outgoing_mail_server () ``{
+     return Mail::outgoing_mail_server;
+}
+
+global define void Set_outgoing_mail_server (symbol id) ``{
+    string oms = UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::outgoing_mail_server != oms);
+    Mail::outgoing_mail_server = oms;
+}
+
+global define boolean Validate_outgoing_mail_server(symbol id) ``{
+    // when validating: may be enclosed in brackets (prevents mx lookups)
+    string oms = UI::QueryWidget (`id (id), `Value);
+    // watch this: "[", no brackets, "]"
+    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
+	regexpsub (oms, ".(.*).", "\\1") : oms;
+
+    if (oms_no_brackets != "" &&
+	! check_domainname (oms_no_brackets) &&
+	! check_ip4 (oms_no_brackets))
+    {
+	UI::SetFocus (`id (`relay));
+	// Translators: error popup
+	string msg = _("The host name is incorrect");
+	// TODO: describe a valid host specification
+	// (a host name or IP)
+	UI::ErrorPopup (msg);
+	return false;
+    }
+    return true;
+}
+
+
+global define string Get_from_header () ``{
+     return Mail::from_header;
+}
+
+global define void Set_from_header (symbol id) ``{
+    string fh = UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::from_header != fh);
+    Mail::from_header = fh;
+}
+
+global define boolean Validate_from_header (symbol id) ``{
+    string fh = UI::QueryWidget (`id (id), `Value);
+    if (fh != "" && ! check_domainname (fh))
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The domain name is incorrect");
+	// TODO: describe a valid domain name
+	UI::ErrorPopup (msg);
+	return false;
+    }
+    return true;
+}
+
+global define string Get_local_domains () ``{
+     return listToString (Mail::local_domains);
+}
+
+global define void Set_local_domains (symbol id) ``{
+    list(string) lld = stringToList (UI::QueryWidget (`id (id), `Value));
+    Mail::Touch (Mail::local_domains != lld);
+    Mail::local_domains = lld;
+}
+
+global define boolean Validate_local_domains (symbol id) ``{
+    list(string) lld = stringToList (UI::QueryWidget (`id (id), `Value));
+    if (find (string s, lld, ``(! check_domainname (s))) != nil)
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The domain name is incorrect");
+	// TODO: describe a valid domain name
+	UI::ErrorPopup (msg);
+	return false;
+    }
+    return true;
+}
+
+global define boolean Get_listen_remote () ``{
+    return Mail::listen_remote;
+}
+
+global define void Set_listen_remote (symbol id) ``{
+    boolean lr = UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::listen_remote != lr);
+    Mail::listen_remote = lr;
+}
+
+global define boolean Get_use_amavis () ``{
+    return Mail::use_amavis;
+}
+
+global define void Set_use_amavis (symbol id) ``{
+    boolean am = UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::use_amavis != am);
+    Mail::use_amavis = am;
+}
+
+/**
+ * @struct fetchmail
+ *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
+ */
+global map fetchmail_item = $[];
+
+// don't forget to reset it!
+global boolean fetchmail_item_touched = false;
+
+global define string Get_fm_server () ``{
+    return fetchmail_item["server"]:"";
+}
+
+global define void Set_fm_server (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["server"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "server", val);
+}
+
+global define boolean Validate_fm_server (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    if (!check_domainname (val))
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	string msg = _("The host name is incorrect");
+	UI::ErrorPopup (msg);
+	return false;
+    }
+    return true;
+}
+
+global define string Get_fm_protocol () ``{
+    return fetchmail_item["protocol"]:"AUTO";
+}
+
+global define void Set_fm_protocol (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["protocol"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "protocol", val);
+}
+
+global define string Get_fm_remote_user () ``{
+    return fetchmail_item["remote_user"]:"";
+}
+
+global define void Set_fm_remote_user (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["remote_user"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "remote_user", val);
+}
+
+global define boolean Validate_fm_remote_user (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    if (val == "")
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	UI::ErrorPopup (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+global define string Get_fm_password () ``{
+    return fetchmail_item["password"]:"";
+}
+
+global define void Set_fm_password (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["password"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "password", val);
+}
+
+
+global define string Get_fm_local_user () ``{
+    return fetchmail_item["local_user"]:"";
+}
+
+global define void Set_fm_local_user (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    fetchmail_item_touched = fetchmail_item_touched ||
+	(fetchmail_item["local_user"]:"" != val);
+    fetchmail_item = add (fetchmail_item, "local_user", val);
+}
+
+global define boolean Validate_fm_local_user (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    if (!check_mail_local_part (val))
+    {
+	// it may be ok if it is directed to an alias
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	UI::ErrorPopup (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+global define string Get_root_alias () ``{
+    return Mail::root_alias;
+}
+
+global define void Set_root_alias (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::root_alias != val);
+    Mail::root_alias = val;
+}
+
+global define boolean Validate_root_alias (symbol id) ``{
+    string val = UI::QueryWidget (`id (id), `Value);
+    // user@machine, \\root - too much variation, don't check yet
+    if (false)
+    {
+	UI::SetFocus (`id (id));
+	// Translators: error popup
+	UI::ErrorPopup (_("The user name format is incorrect."));
+	return false;
+    }
+    return true;
+}
+
+
+
+}

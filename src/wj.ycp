@@ -1,0 +1,284 @@
+/**
+ * File:
+ *   include/mail/wj.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Widget Juggler
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * <ol>
+ * <li> Widget functions to make moving widgets between dialogs easier.
+ * <li> Table editing helpers
+ * </ol>
+ */
+
+{
+
+textdomain "mail"; // shoudn't be necessary
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * @param data	a list of structs
+ * @param keys	which members to put in the table
+ * @return	an item list
+ */
+global define list(term) makeItems (list(map) data, list(string) keys) ``{
+    integer i = 0;
+    return maplist (`d, data, ``{
+	term t = `item (`id (i));
+	i = i + 1;
+	foreach (`k, keys, ``{
+	    t = add (t, lookup (d, k, ""));
+	});
+	return t;
+    });
+}
+
+global boolean edit_touched = false;
+
+/**
+ * A generic handler for editing tables.
+ * The current item of table_widget
+ * makeItems (new_data, keys) is used to fill table_widget
+ * @param action	`add, `edit or `delete
+ * @param data		the data edited using the table
+ * @param keys		keys of respective columns
+ * @param editEntry	a function to edit an entry:
+ *			gets the current entry and list of othe entries as parameters
+ * @param table_widget	id of the table (usually a symbol)
+ * @return		the edited data
+ */
+global define list(map) EditTable (symbol action,
+				   list(map) data,
+				   list(string) keys,
+				   term editEntry,
+				   any table_widget) ``{
+    list(map) new_data = nil;
+    integer entryno = UI::QueryWidget (`id (table_widget), `CurrentItem);
+    boolean touched = false;
+    if (action == `add)
+    {
+	editEntry = add (editEntry, $[]);
+	editEntry = add (editEntry, data);
+	map entry = eval (editEntry);
+	if (size (entry) > 0)
+	{
+	    new_data = add (data, entry);
+	    touched = true;
+	}
+	else
+	{
+	    new_data = data;
+	}
+    }
+    else if (action == `edit)
+    {
+	// edit known fields, preserve unknown fields
+	map old_entry = select (data, entryno, $[]);
+	editEntry = add (editEntry, old_entry);
+	editEntry = add (editEntry, remove (data, entryno));
+	map entry = eval (editEntry);
+	if (size (entry) > 0)
+	{
+	    integer i = 0;
+	    new_data = maplist (`e, data, ``{
+		i = i + 1;
+		return (i - 1 == entryno)? union (old_entry, entry): e;
+	    });
+	    touched = true;
+	}
+	else
+	{
+	    new_data = data;
+	}
+    }
+    else if (action == `delete)
+    {
+	new_data = remove (data, entryno);
+	touched = true;
+    }
+    else
+    {
+	y2error ("Unknown EditTable action %1.", action);
+	new_data = data; // be nice
+    }
+
+    if (touched)
+    {
+	UI::ChangeWidget (`id (table_widget), `Items, makeItems (new_data, keys));
+	edit_touched = true;
+    }
+    return new_data;
+}
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * Formats a list for a TextEntry, separating the elements by ", "
+ * @param alist	a list
+ * @return	a string
+ */
+global define string listToString (list(string) alist) ``{
+    return mergestring (alist, ", ");
+}
+
+/**
+ * Splits a TextEntry string into a list of strings
+ * separated by spaces, commas or semicolons.
+ * Empty strings are removed.
+ * @param astring	a string
+ * @return		a list of strings
+ */
+global define list(string) stringToList (string astring) ``{
+    list(string) alist = splitstring (astring, " ,;");
+    return filter (`s, alist, ``(s != ""));
+}
+
+/* ---------------------------------------------------------------- */
+
+/**
+ * Constructs a widget term.
+ * Uses a global Widgets map.
+ * Keys are symbols (ids), values are
+ * @struct widget_def
+ *    `foo: $[
+ *	"widget": `TextEntry (),
+ *	"opt": `opt (`notify), // optional
+ *	"label": "&Foo",
+ *	// if there are choices, they are used to construct the widget,
+ *	// otherwise get is used
+ *	"choices": [1, 2, 3],
+ *	"help": _("&lt;p&gt;Foo!&lt;/p&gt;"), // used by WJ_MakeHelp, optional
+ *	"get": ``(Get_foo ()),		// gets value from module to widget
+ *	"set": ``(Set_foo ()),		// sets value from widget to module
+ *	// popups an error and returns false if invalid
+ *	"validate": ``(Validate_foo ()),// optional
+ *	],
+ * @param id which widget
+ * @return a widget term
+ */
+global define term WJ_MakeWidget (symbol id) ``{
+    map w_def = Widgets[id]:$[];
+    term widget = w_def["widget"]:nil;
+    if (widget == nil)
+    {
+	return nil;
+    }
+    widget = add (widget, `id (id));
+    if (haskey (w_def, "opt"))
+    {
+	widget = add (widget, w_def["opt"]:nil);
+    }
+    widget = add (widget, w_def["label"]:"LABEL");
+    // if choices are defined (combo boxes ...), use them
+    // otherwise set the value directly
+    // TODO: verified only for TextEntry. Password, CheckBox, ComboBox
+    any init = w_def["choices"]:w_def["get"]:nil;
+    widget = add (widget, eval (init));
+    return widget;
+}
+
+/**
+ * Changes widget value using "get" (useful for widgets with choices).
+ * Uses a global Widgets map. @ref widget_def
+ * @param id which widget
+ */
+global define void WJ_GetWidget (symbol id) ``{
+    UI::ChangeWidget (`id (id), `Value, eval (Widgets[id, "get"]:nil));
+}
+
+/**
+ * Make a help string by concatenating
+ * individual widget helps and other strings.
+ * Uses a global Widgets map. @ref widget_def
+ * @param items an item is<br>
+ *   either	a string - use it<br>
+ *   or		a symbol - lookup its help string in Widgets
+ * @return concatenated strings
+ */
+global define string WJ_MakeHelp (list items) ``{
+    string ret = "";
+    foreach (any item, items, ``{
+	if (!is (item, string))
+	{
+	    item = Widgets[item, "help"]:"";
+	}
+	ret = ret + item;
+    });
+    return ret;
+}
+
+/**
+ * Call the validation functions for a list of widgets.
+ * Widgets with an unspecified function are assumed to be valid.
+ * Uses a global Widgets map. @ref widget_def
+ * @param	widgets which widgets to validate
+ * @return	true if all widgets are ok
+ */
+global define boolean WJ_Validate (list(symbol) widgets) ``{
+    boolean ok = true;
+    foreach (symbol id, widgets, ``{
+	if (ok)
+	{
+	    map w_def = Widgets[id]:nil;
+	    if (w_def== nil)
+	    {
+		// report as the caller
+		y2error (1, "WJ: Missing widget definition for %1", id);
+		ok = false;
+	    }
+	    else
+	    {
+		term validate = w_def["validate"]:``(WJ_Validate_True());
+		validate = add (validate, id);
+		ok = eval (validate);
+	    }
+	}
+	else
+	{
+	    return; //break
+	}
+    });
+    return ok;
+}
+
+/**
+ * A helper for WJ_Validate.
+ * @param id a widget id
+ * @return always true
+ */
+global define boolean WJ_Validate_True (symbol id) ``{
+    return true;
+}
+
+/**
+ * Call the "set" functions for a list of widgets
+ * to commit the UI values to a module.
+ * Uses a global Widgets map. @ref widget_def
+ * @param	widgets which widgets to commit
+ */
+global define void WJ_Set (list(symbol) widgets) ``{
+    foreach (symbol id, widgets, ``{
+	term set_it = Widgets[id, "set"]:nil;
+	if (set_it == nil)
+	{
+	    // report as the caller
+	    y2error (1, "WJ: Missing Set definition for %1", id);
+	}
+	else
+	{
+	    set_it = add (set_it, id);
+	    eval (set_it);
+	}
+    });
+}
+
+}

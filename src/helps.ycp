@@ -71,54 +71,14 @@ to install.</p>");
     }
 
     /**
-     * @param amavis_allowed Installation of amavis is possible, mention it
-     *		in the help text
      * @return Help for Connection type dialog
      */
-    global define string ConnectionTypeDialogHelp (boolean amavis_allowed) ``{
+    global define string ConnectionTypeDialogHelp () ``{
 	// Translators: connection type dialog help, part 1 of 2
 	string s =  _("
 <p>How are you connected to the Internet? With a dial-up connection,
 mails will not be sent immediately but rather after invoking
 <b>sendmail&nbsp;-q</b>.</p>
-");
-	if (amavis_allowed)
-	{
-	    return s +
-	    // Translators: connection type dialog help, part 2 of 2
-	    _("
-<p>If AMaViS is not installed and you want to use it, it will be installed
-automatically.</p>
-");
-	}
-	else
-	{
-	    return s;
-	}
-    }
-
-    /**
-     * @return Help for Outgoing mail dialog
-     */
-    global define string OutgoingDialogHelp () ``{
-    //TODO: sformat with hostname.
-	// Translators: outgoing mail dialog help, part 1 of 3
-	return _("
-<p>Here, specify the domains for which the mail
-will be delivered locally. If you enter nothing,
-the local host name is assumed.</p>
-") +
-	    // Translators: outgoing mail dialog help, part 2 of 3
-	    _("
-<p>The outgoing mail server is generally intended for dial-up connections.
-Enter the Internet service provider's SMTP server, such as
-<b>smtp.provider.com</b>.</p>
-") +
-	    // Translators: outgoing mail dialog help, part 3 of 3
-	    _("
-<p>You may want the mail you sent to appear as if it originated from
-<b>company.com</b> instead of <b>pc-042.company.com</b>.
-Use the text box provided or a more detailed dialog.</p>
 ");
     }
 

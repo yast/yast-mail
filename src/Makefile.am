@@ -13,6 +13,8 @@ client_DATA =			\
 
 myynclude_DATA =		\
 	helps.ycp		\
+	wj.ycp			\
+	widgets.ycp		\
 	ui.ycp
 
 config_DATA =			\
