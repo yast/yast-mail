@@ -4,10 +4,7 @@
 # $Id$
 #
 
-agentsdir = $(YAST2DIR)/servers_non_y2
-scrconfdir = $(YAST2DIR)/scrconf
-
-agents_SCRIPTS = ag_mailtable ag_fetchmailrc
+agent_SCRIPTS = ag_mailtable ag_fetchmailrc
 
 scrconf_DATA = \
 	cfg_amavis.scr		\
@@ -23,8 +20,10 @@ scrconf_DATA = \
 	mail_s_virtuser.scr
 
 TESTS = test-fetchmailrc test-mailtable
-testdata = test-fetchmailrc.in test-fetchmailrc.out \
+testdata = test-fetchmailrc.in \
+	test-fetchmailrc-i.out \
+	test-fetchmailrc-o.out \
 	test-mailtable-1.in test-mailtable-1.out \
 	test-mailtable-2.in test-mailtable-2.out
 
-EXTRA_DIST = $(agents_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata)
+EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata)
