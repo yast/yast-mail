@@ -50,6 +50,8 @@ Group:		System/YaST
 @moduledir@/Mail.ycp
 %dir @configdir@
 @configdir@/mail.y2cc
+%dir @desktopdir@
+@desktopdir@/mail.desktop
 %dir @scrconfdir@
 @scrconfdir@/cfg_amavis.scr
 @scrconfdir@/cfg_mail.scr
