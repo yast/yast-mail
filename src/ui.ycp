@@ -27,6 +27,7 @@ import "Mode";
 import "Mail";
 import "MailAliases";
 import "Hostname";
+import "CWMFirewallInterfaces";
 
 import "Popup";
 import "Label";
@@ -423,12 +424,18 @@ define symbol OutgoingDialog () ``{
 define symbol IncomingDialog () ``{
     Wizard::SetScreenShotName ("mail-22-incoming");
 
-    list<symbol> buttons = [];
+    list<any> buttons = [];
     // watch out, fm_widgets are not part of widgets
     // because of special validation requirements
     list<symbol> widgets = [
 	`listen_remote,
 	];
+    // firewall widget using CWM
+    map<string, any> fw_settings = $[
+	"services": [ "smtp" ],
+	"display_details": true,
+	];
+    map<string,any> fw_cwm_widget = CWMFirewallInterfaces::CreateOpenFirewallWidget (fw_settings);    
 
     // Translators: dialog caption
     string caption = _("Incoming Mail");
@@ -436,6 +443,7 @@ define symbol IncomingDialog () ``{
     term i_contents = `VBox ();
 
     i_contents = add (i_contents, `Left (WJ_MakeWidget (`listen_remote)));
+    i_contents = add (i_contents, fw_cwm_widget["custom_widget"]:`Empty ());
 
     list<symbol> fm_widgets = [];
     if (true) // always embed the first account
@@ -464,9 +472,12 @@ define symbol IncomingDialog () ``{
 		`HSpacing (1),
 		WJ_MakeWidget (`fm_password)
 		),
-	    WJ_MakeWidget (`fm_local_user),
-	    // pushbutton
-	    `PushButton (`id (`downloading), `opt (`key_F7), _("&Details..."))
+	    `HBox (
+		`Bottom (WJ_MakeWidget (`fm_local_user)),
+		`HSpacing (1),
+		// pushbutton
+		`Bottom (`PushButton (`id (`downloading), `opt (`key_F7), _("&Details...")))
+		)
 	    );
 	// frame label: mail downloading (fetchmail)
 	term fm_frame = `Frame (_("&Downloading"), fm_contents);
@@ -501,16 +512,16 @@ define symbol IncomingDialog () ``{
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
 
     // frame label
-    term i_frame = `Frame (_("Incoming Mail"), i_contents);
+//    term i_frame = `Frame (_("Incoming Mail"), i_contents);
     term contents = `HSquash ( `VBox (
 	`VStretch (),
-	i_frame,
+	i_contents,
 	`VStretch ()
 	));
 
     string help = ""; //TODO
     Wizard::SetContentsButtons (
-	caption, contents, WJ_MakeHelp (widgets),
+	caption, contents, WJ_MakeHelp (widgets) + fw_cwm_widget["help"]:"",
 	Label::BackButton (),
 	Label::FinishButton ());
 
@@ -518,18 +529,24 @@ define symbol IncomingDialog () ``{
     WJ_GetWidget (`fm_protocol);
     WJ_GetWidget (`fm_local_user);
     WJ_GetWidget (`delivery_mode);
+    // initialize the widget (set the current value)
+    CWMFirewallInterfaces::OpenFirewallInit (fw_cwm_widget, "");
 
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
 
-    symbol ret = nil;
+    map event = nil;
+    any ret = nil;
     while (true)
     {
-	ret = (symbol) UI::UserInput ();
+	event = UI::WaitForEvent ();
+	ret = event["ID"]:nil;
 	if (ret == `cancel)
 	{
 	    ret = `abort;
 	}
+	// handle the events, enable/disable the button, show the popup if button clicked
+	CWMFirewallInterfaces::OpenFirewallHandle (fw_cwm_widget, "", event);
 
 	if (ret == `back ||
 	    (ret == `abort && Popup::ReallyAbort (Mail::touched)))
@@ -560,6 +577,9 @@ define symbol IncomingDialog () ``{
     if (ret == `next || contains (buttons, ret))
     {
 	WJ_Set (widgets);
+	// grab current settings, store them to SuSEFirewall::
+	CWMFirewallInterfaces::OpenFirewallStore (fw_cwm_widget, "", event);
+	
 	if (!fm_empty)
 	{
 	    WJ_Set (fm_widgets);
@@ -857,11 +877,11 @@ define symbol OutgoingDetailsDialog () ``{
 
 	    if (! Validate_from_header (`from_header))
 	    {
-		//nothing
+		y2debug ("nothing");
 	    }
 	    else if (! Validate_local_domains (`local_domains))
 	    {
-		// nothing, already done
+		y2debug ("nothing, already done");
 	    }
 	    else if (find (string s, lmod, ``(! Hostname::CheckDomain (s))) != nil)
 	    {

@@ -1,10 +1,11 @@
 @HEADER-COMMENT@
 
-# neededforbuild  yast2-devel-packages
+# neededforbuild  yast2-devel-packages yast2-firewall
 
 @HEADER@
 Requires:	yast2 yast2-network
 Requires:	yast2-mail-aliases
+Requires:	yast2-firewall
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel

@@ -24,11 +24,14 @@
     textdomain "mail";
 
     import "MailAliases";
+
     import "Report";
     import "Service";
     import "Summary";
     import "Progress";
     import "Require";
+
+    import "SuSEFirewall";
 
     /* ---------------------------------------------------------------- */
 
@@ -362,7 +365,10 @@
 	// read 2
 	// create_config
 	create_config = SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG)== "yes";
+
+	// open port
 	listen_remote = SCR::Read (.sysconfig.mail.SMTPD_LISTEN_REMOTE)=="yes";
+	SuSEFirewall::Read ();
 
 	// connection_type:
 	boolean nc = false;
@@ -516,8 +522,12 @@
 	// TODO
 	fetchmail_mode = `manual;
 
+	// if we are testing as non-root, it will fail, that's OK
+	map out = (map) SCR::Execute (.target.bash_output, "/usr/bin/id --user");
+	boolean root = out["stdout"]:"" == "0\n";
+
 	fetchmail = (list<map>) SCR::Read (.mail.fetchmail.accounts);
-	if (fetchmail == nil)
+	if (fetchmail == nil && root)
 	{
 	    // Translators: error message,
 	    // %1 is a file name,
@@ -652,6 +662,7 @@ a fixed format to be readable by YaST2.  For details, see
 	// listen_remote
 	SCR::Write (.sysconfig.mail.SMTPD_LISTEN_REMOTE,
 		    listen_remote? "yes":"no");
+	SuSEFirewall::Write ();
 
 	// connection_type
 	// nocanonify/nodns
@@ -1193,7 +1204,7 @@ a fixed format to be readable by YaST2.  For details, see
 	virtual_users = settings["virtual_users"]: [];
 	smtp_auth = settings["smtp_auth"]: [];
 	y2debug ("after %1", settings); // may contain passwords
-        return true;
+	return true;
     }
 
 
