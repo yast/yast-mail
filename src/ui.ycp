@@ -43,23 +43,6 @@ include "mail/wj.ycp";
 global term finish_button = `PushButton (`id (`next), `opt (`default), FinishButtonLabel());
 
 /**
- * Declare a name for the current dialog
- * to ease making screenshots.
- * @param s eg. "mail-1-conntype"
- */
-global define void SetScreenShotName (string s) ``{
-    UI::SetModulename (s);
-}
-
-/**
- * Restore the screenshot name
- * (currently sets fixed default name)
- */
-global define void RestoreScreenShotName () ``{
-    UI::SetModulename ("yast2");
-}
-
-/**
  * A Wizard Sequencer helper
  * @return	`next
  */
@@ -218,7 +201,7 @@ global define symbol MailAutoSequence () ``{
  * @return `abort or `next
  */
 global define symbol ReadDialog () ``{
-    SetScreenShotName ("mail-0-read");
+    Wizard::SetScreenShotName ("mail-0-read");
     // Set help text
     Wizard::RestoreHelp (ReadDialogHelp ());
 
@@ -245,7 +228,7 @@ SuSEconfig will overwrite manual changes.
 "), setting));
 	}
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ( was_ok? `next : `abort );
 }
 
@@ -294,7 +277,7 @@ global define symbol WriteDialog () ``{
  * @return `abort or `next
  */
 global define symbol MtaSelectionDialog () ``{
-    SetScreenShotName ("mail-0-mta");
+    Wizard::SetScreenShotName ("mail-0-mta");
 
     symbol mta = Mail::mta;
     // for now. TODO: disable Next if none selected
@@ -350,7 +333,7 @@ global define symbol MtaSelectionDialog () ``{
 	Mail::Touch (Mail::mta != mta);
 	Mail::mta = mta;
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 }
 
@@ -365,7 +348,7 @@ global symbol preselect_connection_type = nil;
  * @return `back, `abort, `next or `none
  */
 global define symbol ConnectionTypeDialog () ``{
-    SetScreenShotName ("mail-1-conntype");
+    Wizard::SetScreenShotName ("mail-1-conntype");
 
     symbol ct = Mail::connection_type;
     if (preselect_connection_type != nil)
@@ -442,7 +425,7 @@ global define symbol ConnectionTypeDialog () ``{
     }
     // avoid overriding the choice the user has made
     preselect_connection_type = nil;
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 }
 
@@ -452,7 +435,7 @@ global define symbol ConnectionTypeDialog () ``{
  */
 global define symbol BasicDialog () ``{
     boolean dialup = (Mail::connection_type == `dialup);
-    SetScreenShotName (dialup ? "mail-2b-dialup" : "mail-2a-permanent");
+    Wizard::SetScreenShotName (dialup ? "mail-2b-dialup" : "mail-2a-permanent");
 
     list(symbol) buttons = [];
     // watch out, fm_widgets are not part of widgets
@@ -621,7 +604,7 @@ global define symbol BasicDialog () ``{
 	    Mail::fetchmail[0] = fetchmail_item;
 	}
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 }
 
@@ -630,7 +613,7 @@ global define symbol BasicDialog () ``{
  * @return `back, `abort or `next
  */
 global define symbol OutgoingDetailsDialog () ``{
-    SetScreenShotName ("mail-2o-outgoing-details");
+    Wizard::SetScreenShotName ("mail-2o-outgoing-details");
 
     string mod = listToString (Mail::masquerade_other_domains);
     list(string) lmod = [];
@@ -781,7 +764,7 @@ global define symbol OutgoingDetailsDialog () ``{
 	Mail::Touch (Mail::masquerade_users != mu);
 	Mail::masquerade_users = mu;
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 }
 
@@ -955,7 +938,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
  * @return `back, `abort or `next
  */
 global define symbol DownloadingDialog () ``{
-    SetScreenShotName ("mail-2ia-download");
+    Wizard::SetScreenShotName ("mail-2ia-download");
     //List of maps: $[server:, protocol:, remote_user:, local_user:, password:]
     list(map) fm = Mail::fetchmail;
 
@@ -1026,7 +1009,7 @@ global define symbol DownloadingDialog () ``{
 	Mail::Touch (Mail::fetchmail != fm);
 	Mail::fetchmail = fm;
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 }
 
@@ -1104,7 +1087,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
  * @return `back, `abort or `next
  */
 global define symbol AliasesDialog () ``{
-    SetScreenShotName ("mail-2ib-aliases");
+    Wizard::SetScreenShotName ("mail-2ib-aliases");
     list(map) aliases = MailAliases::MergeRootAlias (MailAliases::aliases);
 
     // Translators: dialog caption
@@ -1168,7 +1151,7 @@ global define symbol AliasesDialog () ``{
 	MailAliases::aliases = aliases;
 	MailAliases::FilterRootAlias ();
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 
 }
@@ -1257,7 +1240,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
  * @return `back, `abort or `next
  */
 global define symbol VirtualDialog () ``{
-    SetScreenShotName ("mail-2ic-virtdomains");
+    Wizard::SetScreenShotName ("mail-2ic-virtdomains");
     list(map) vu = Mail::virtual_users;
 
     // Translators: dialog caption
@@ -1320,7 +1303,7 @@ global define symbol VirtualDialog () ``{
 	Mail::Touch (Mail::virtual_users != vu);
 	Mail::virtual_users = vu;;
     }
-    RestoreScreenShotName ();
+    Wizard::RestoreScreenShotName ();
     return ret;
 
 }
