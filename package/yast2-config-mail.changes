@@ -1,10 +1,10 @@
 -------------------------------------------------------------------
-Wed May 22 16:19:21 CEST 2002 - mvidner@suse.cz
+Thu May 23 09:27:51 CEST 2002 - mvidner@suse.cz
 
 - Added Mail::{Get,Set}RootAlias, bug 11730.
 - Adapted to new autoinstall configuration system (nashif).
 - Using current devtools; menuentries -> config.
-- 2.6.1
+- 2.6.2
 
 -------------------------------------------------------------------
 Mon Mar 18 17:16:26 CET 2002 - mvidner@suse.cz
