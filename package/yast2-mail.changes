@@ -2,7 +2,7 @@
 Tue Mar  9 22:22:11 CET 2004 - kkaempf@suse.de
 
 - adapt look&feel (sh@suse.de)
-- fix POSTFIX_MDA value
+- fix POSTFIX_MDA value (#35517, partly)
 - 2.9.6
 
 -------------------------------------------------------------------
