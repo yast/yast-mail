@@ -46,12 +46,12 @@
 	y2error ("Bad argument for mail_auto: %1", Args (0));
 	return false;
     }
-    
+
     {
 	integer i = 0;
 	while (i < size (Args()))
 	{
-	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);	    
+	    if (is (Args (i), map) && nil != Args (i))	settings = Args (i);
 	    i = i + 1;
 	}
     }
@@ -59,9 +59,9 @@
     Mail::Import ( settings );
     y2milestone("Imported: (%1)", settings); // may contain passwords
     Mail::autoyast_config = true;
-    
-    define set_contents() ``{	
-        term contents =
+
+    define set_contents() ``{
+	term contents =
 	    `VBox(
 		  `VSpacing(1),
 		  `RichText( `id(`summary), Mail::Summary()),
@@ -78,20 +78,20 @@
 			    contents, "", true, true);
     }
 
-  
+
     set_contents();
     any result = nil;
     any ret = nil;
-    
+
     repeat {
 	ret = UI::UserInput();
 	if (ret == `configure)
-	{	    	    	    
-	    symbol result = MailAutoSequence ();		    
-		
+	{
+	    symbol result = MailAutoSequence ();
+
 	    if (result == `next || result == `finish)
-	    {		 
-		settings = Mail::Export ();		    
+	    {
+		settings = Mail::Export ();
 	    }
 	    Mail::Set(settings);
 	    set_contents();
@@ -101,9 +101,9 @@
 	    settings = $[];
 	    Mail::Set(settings);
 	    set_contents();
-	}		
-    } until (ret == `back || ret == `next || ret ==`key);   
-  
-    return [ret, settings];    
-          
+	}
+    } until (ret == `back || ret == `next || ret ==`key);
+
+    return [ret, settings];
+
 }

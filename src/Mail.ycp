@@ -1003,12 +1003,12 @@ a fixed format to be readable by YaST2.  For details, see
 	if (missing)
 	{
 	    return false;
-	}	
+	}
 	Set(settings);
 	return true;
     }
 
-    
+
     /**
      * Set module data without validity checking as in Import()
      *
@@ -1036,7 +1036,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    } else {
 		return ([k,v]);
 	    }
-	    
+
 
 	});
 
@@ -1056,7 +1056,7 @@ a fixed format to be readable by YaST2.  For details, see
 	return;
     }
 
-    
+
     /**
      * Dump the mail settings to a single map
      * (For use by autoinstallation.)
@@ -1085,7 +1085,7 @@ a fixed format to be readable by YaST2.  For details, see
      */
     global define string Summary ()
 	``{
-	
+
 	string agent = "";
 	if (mta == `sendmail)
 	     agent = "sendmail";
@@ -1094,15 +1094,15 @@ a fixed format to be readable by YaST2.  For details, see
 	else
 	    agent = "other";
 
-	
+
 	string con_type = "";
 	if (connection_type == `permanent)
 	    con_type = "Permanent";
 	else if (connection_type == `dialup)
 	    con_type = "Dialup";
 	else
-	    con_type = "None";	
-	
+	    con_type = "None";
+
 	string summary = "";
 	summary = Summary::AddHeader(summary, _("MTA"));
 	summary = Summary::AddLine(summary, agent);
@@ -1115,7 +1115,7 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = Summary::AddHeader(summary, _("From Header"));
 	summary = Summary::AddLine(summary, (from_header != "") ? from_header : Summary::NotConfigured ());
 
-	
+
 	summary = summary + ListItem( _("Local Domains"),local_domains);
 	summary = summary + ListItem( _("Masquerade other Domains"),masquerade_other_domains);
 	summary = summary + ListItem( _("Masquerade Users"),masquerade_users);
@@ -1123,11 +1123,11 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = summary + ListItem( _("Aliases"),aliases);
 	summary = summary + ListItem( _("Virtual Users"),virtual_users);
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
-	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : Summary::NotConfigured ());	
+	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : Summary::NotConfigured ());
 	return summary;
     }
 
-    
+
     define string ListItem(string title, any value) ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, title);
@@ -1139,8 +1139,8 @@ a fixed format to be readable by YaST2.  For details, see
 		    entry = sformat("%1 Entries configured", size(value));
 		else
 		    entry = d;
-		
-		summary = Summary::AddListItem(summary, entry);		
+
+		summary = Summary::AddListItem(summary, entry);
 	    });
 	    summary = Summary::CloseList(summary);
 	} else {
