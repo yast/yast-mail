@@ -38,12 +38,11 @@
      */
     global symbol mta = nil;
 
-	/**
+    /**
      *	If true, don't run SuSEconfig or restart the services.
      *  Autoinstall uses this to do  all in one place.
-	 */
-	global boolean write_only = false;
-
+     */
+    global boolean write_only = false;
 
     boolean create_config = false;
     /**
@@ -121,6 +120,14 @@
      * List of maps: $[comment:, alias:, destinations:] (all are strings)
      */
     global list(map) virtual_users = [];
+
+    /**
+     * SMTP AUTH (#23000)
+     * list of maps:
+     * The ui only handles the first list item, the rest is for autoyast
+     * $[server: string, user: string, password: string(plain text)]
+     */
+    global list(map) smtp_auth = [];
 
     /* ---------------------------------------------------------------- */
 

@@ -1,0 +1,17 @@
+$Id$
+
+In http://bugzilla.suse.de/show_bug.cgi?id=23000 there's a request for
+a SMTP-AUTH configuration dialog.
+
+phadraba: UI part
+mvidner: SCR part
+
+See the commment at Mail::smtp_auth.
+At this stage we will only support plain text passwords.
+Sendmail requires that the password be base64 encoded, which will be
+taken care of in Mail::{Read,Write} (mvidner)
+
+Where to put the dialog: "Outgoing details..." will change from a
+simple button to a menu button with 2 items. Its original function will be
+available as "Masquerading...", and a new one, "Authentication..."
+will lead to the new dialog.
