@@ -169,6 +169,9 @@ sub write_file ()
 
 # read the agent arguments
 $_ = <STDIN>;
+# no input at all - simply exit
+exit if ! defined $_;
+
 # reply to the client (this actually gets eaten by the ScriptingAgent)
 ycp::Return (undef);
 
@@ -245,7 +248,7 @@ while ( <STDIN> )
 	else
 	{
 	    y2error ("Unrecognized path! '$path'");
-	    ycp::Return ("");
+	    ycp::Return (undef);
 	}
     }
 
