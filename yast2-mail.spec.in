@@ -33,10 +33,14 @@ Summary:	Configuration of mail
 %defattr(-,root,root)
 %dir @yncludedir@/mail
 @yncludedir@/mail/*
+%dir @clientdir@
 @clientdir@/mail.ycp
 @clientdir@/mail_*.ycp
+%dir @moduledir@
 @moduledir@/Mail.ycp
+%dir @configdir@
 @configdir@/mail.y2cc
+%dir @scrconfdir@
 @scrconfdir@/cfg_amavis.scr
 @scrconfdir@/cfg_mail.scr
 @scrconfdir@/cfg_postfix.scr
@@ -46,5 +50,6 @@ Summary:	Configuration of mail
 @scrconfdir@/mail_p_virtual.scr
 @scrconfdir@/mail_s_generics.scr
 @scrconfdir@/mail_s_virtuser.scr
+%dir @agentdir@
 @agentdir@/ag_fetchmailrc
 %doc @docdir@
