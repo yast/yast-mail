@@ -34,11 +34,11 @@
     /* parse arguments */
     list args = Args ();
     string first_arg = args[0]:"";
-    if (first_arg == "from_lan")
+    if (first_arg == "permanent")
     {
 	preselect_connection_type = `permanent;
     }
-    else if (first_arg == "from_modem")
+    else if (first_arg == "dialup")
     {
 	preselect_connection_type = `dialup;
     }
