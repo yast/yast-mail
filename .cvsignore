@@ -15,3 +15,4 @@ missing
 mkinstalldirs
 install-sh
 configure.in
+autom4te.cache
