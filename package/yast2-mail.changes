@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Sep 11 06:14:28 CEST 2003 - nashif@suse.de
+
+- #30291: return list of required packages for autoinstallation
+
+-------------------------------------------------------------------
 Thu Sep  4 17:25:18 CEST 2003 - jsuchome@suse.cz
 
 - fix: delivery mode not saved (#30032)

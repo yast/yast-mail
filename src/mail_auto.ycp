@@ -71,6 +71,9 @@ else if (func == "Reset") {
     Mail::Import($[]);
     ret = $[];
 }
+else if (func == "Packages") {
+    ret = Mail::AutoPackages();
+}
 else if (func == "Read") {
     ret = Mail::Read(``{});
 }

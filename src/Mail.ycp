@@ -32,6 +32,12 @@
 
     /* ---------------------------------------------------------------- */
 
+
+    /**
+     * Required packages
+     */
+    global list required_packages = [];
+
     /**
      * `sendmail, `postfix or `other
      * Initialized by ReadMta
@@ -1274,4 +1280,15 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 	return summary;
     }
+
+	/**
+	* Return required packages for auto-installation
+    * @return map of packages to be installed and to be removed
+    */
+    global define map AutoPackages() ``{
+	     return ($["install": required_packages, "remove": []]);
+
+    }
+
+
 }
