@@ -752,8 +752,15 @@ a fixed format to be readable by YaST2.  For details, see
 	// postfix_mda
 	if (mta == `postfix)
 	{
-	    // strip the quote
-	    string s_mda = "" + tostring (postfix_mda);
+	    string s_mda = "local";		// default to local
+	    if (postfix_mda == `procmail;
+	    {
+		s_mda = "procmail";
+	    }
+	    else if (postfix_mda == `cyrus)
+	    {
+		s_mda = "cyrus";
+	    }
 	    SCR::Write (.sysconfig.postfix.POSTFIX_MDA, s_mda);
 	}
 	return true;
