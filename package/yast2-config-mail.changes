@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Feb 11 11:13:56 CET 2002 - mvidner@suse.cz
+
+- Don't add brackets to relayhost for Postfix.
+- Added headings and focus for input popups.
+- 2.5.9
+
+-------------------------------------------------------------------
 Wed Feb  6 14:16:21 CET 2002 - mvidner@suse.cz
 
 - Added provides of yast2-config-sendmail-devel and old yast2-config-network.
