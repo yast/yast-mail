@@ -23,6 +23,8 @@
     module "Mail";
     textdomain "mail";
 
+    import "Report";
+
     /**
      * `sendmail, `postfix or `other
      */
@@ -179,11 +181,8 @@
 
 	DemoData ();
 
-	// TODO FIXME Assign the true texts intead of these
-	string caption = _("Initializing XXpkgXX configuration");
+	string caption = _("Initializing mail configuration");
 
-	// TODO FIXME Names of real stages
-	// We do not set help text here, because it was set outside
 	Progress::New (caption, " ", 0, [
 			   // do not translate MTA
 			   _("Determine Mail Transport Agent (MTA)"),
@@ -201,8 +200,19 @@
 	    return false;
 	}
 	// read 1
-	//TODO: detect properly
-	mta = `sendmail;
+	if (SCR::Read (.targetpkg.installed, "sendmail"))
+	{
+	    mta = `sendmail;
+	}
+	else if (SCR::Read (.targetpkg.installed, "postfix"))
+	{
+	    mta = `postfix;
+	}
+	else
+	{
+	    mta = `other;
+	}
+
 	if (mta == `other)
 	{
 	    // TODO: adapt workflow to say sorry and bye.
@@ -266,8 +276,9 @@
 	}
 	else if (mta == `postfix)
 	{
-	    outgoing_mail_server = SCR::Read (.rc.postfix.POSTFIX_RELAYHOST);
-	    // TODO strip [brackets]
+	    string oms = SCR::Read (.rc.postfix.POSTFIX_RELAYHOST);
+	    // strip brackets, if any
+	    outgoing_mail_server = select (regexptokenize (oms, "\\[(.*)\\]"), 0, oms);
 	}
 	else
 	{
@@ -391,17 +402,22 @@
     }
 
     // document and TEST
+    /**
+     * Merges mail tables, which are order-preserving maps.
+     * First are the entries of the old map, with values updated
+     * from the new one, then the rest of the new map.
+     * @param new	new table
+     * @param old	old table
+     * @return		merged table
+     */
     define list(map) mergeTables (list(map) new, list(map) old) ``{
+	// make a true map
 	map new_m = listmap (map e, new,
 			     ``([
 				    e["key"]:"",
 				    [ e["comment"]:"", e["value"]:"" ]
 				    ]));
-	map old_m = listmap (map e, old,
-			     ``([
-				    e["key"]:"",
-				    [ e["comment"]:"", e["value"]:"" ]
-				    ]));
+	// update old values
 	list(map) replaced = maplist (map e, old, ``{
 	    string k = e["key"]:"";
 	    list cv = new_m[k]:[];
@@ -415,6 +431,7 @@
 		return $["key": k, "comment": e["comment"]:"", "value": e["value"]:""];
 	    }
 	});
+	// remove already updated values
 	list(map) filtered = filter (map e, new, ``(
 					 size (new_m[ e["key"]:"" ]:[]) > 0)
 	    );
@@ -429,28 +446,48 @@
      * @return True on success
      */
     global define boolean Write (block abort) ``{
-	boolean write_aborted = false;
-	// TODO FIXME Assign the true texts intead of these
-	string caption = _("Saving XXpkgXX configuration");
-
-	// TODO FIXME Names of real stages
-	// We do not set help text here, because it was set outside
-	Progress::New (caption, " ", 0, [
-			   _("Write general settings"),
-			   _("Write masquerading settings"),
-			   _("Write downloading settings"),
-			   _("Write alias tables"),
-			   _("Run SuSEconfig"),
-			   ],
-		       [], "");
-
-	// announce 1
-	Progress::NextStage ();
-	if (eval (abort))
+	list stages = [
+	    [ _("Write general settings"), ``(WriteGeneral ())],
+	    ];
+	if (connection_type != `none)
 	{
-	    return false;
+	    stages = add (stages, [ _("Write masquerading settings"), ``(WriteMasquerading ()) ]);
+	    if (connection_type == `dialup)
+	    {
+		stages = add (stages, [ _("Write downloading settings"), ``(WriteDownloading ()) ]);
+	    }
+	    stages = add (stages, [ _("Write alias tables"), ``(WriteAliases ()) ]);
 	}
-	// write 1
+	stages = add (stages, [ _("Run SuSEconfig"), ``(WriteFinish ()) ]);
+
+	string caption = _("Saving mail configuration");
+	// We do not set help text here, because it was set outside
+	Progress::New (caption, " ", 0, maplist (list e, stages, ``(e[0]:"")), [], "");
+
+	foreach (list e, stages, ``{
+	    Progress::NextStage ();
+	    if (eval (abort))
+	    {
+		return false;
+	    }
+
+	    term f = e[1]:``(false);
+	    if (! eval (f))
+	    {
+		return false;
+	    }
+	});
+
+	// complete
+	Progress::NextStage ();
+	return true;
+    }
+
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteGeneral () ``{
 	// connection_type
 	if (mta == `sendmail)
 	{
@@ -536,14 +573,15 @@
 	{
 	    return false;
 	}
+	return true;
+    }
 
-	// announce 2
-	Progress::NextStage ();
-	if (eval (abort))
-	{
-	    return false;
-	}
-	// write 2
+    /**
+     * Part of Write.
+     * Also flushes .rc.system
+     * @return success
+     */
+    define boolean WriteMasquerading () ``{
 	// from_header
 	SCR::Write (.rc.system.FROM_HEADER, from_header);
 	// masquerade_other_domains
@@ -581,28 +619,30 @@
 	{
 	    return false;
 	}
+	return true;
+    }
 
-
-	// TODO only if dialup - how to skip in progress?
-	// announce 3
-	Progress::NextStage ();
-	if (eval (abort))
-	{
-	    return false;
-	}
-	// write 3
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteDownloading () ``{
 	// fetchmail
+	// TODO ?other settings: autofetch? at device up?
 	SCR::Write (.mail.fetchmail.accounts, fetchmail);
-
-
-
-	// announce 4
-	Progress::NextStage ();
-	if (eval (abort))
+	if (! SCR::Write (.mail.fetchmail, nil))
 	{
+	    Report::Error (_("Error writing Fetchmail configuration."));
 	    return false;
 	}
-	// write 4
+	return true;
+    }
+
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteAliases () ``{
 	// aliases
 	path alias_path = nil;
 	if (mta == `sendmail)
@@ -649,15 +689,82 @@
 	{
 	    return false;
 	}
+	return true;
+    }
 
-
-
-	//TODO at the end:
+    /**
+     * Part of Write.
+     * @return success
+     */
+    define boolean WriteFinish () ``{
 	//flush the agents
-	//run SuSEconfig with the necessary modules
+	if (!SCR::Write (.rc.system, nil))
+	{
+	    Report::Error (sformat (_("Error writing file %1"), "/etc/rc.config"));
+	    return false;
+	}
+	list(path) tables = nil;
+	if (mta == `sendmail)
+	{
+	    if (!SCR::Write (.rc.sendmail, nil))
+	    {
+		Report::Error (_("Error writing Sendmail configuration file."));
+		return false;
+	    }
+	    tables = [
+		.mail.sendmail.generics,
+		.mail.sendmail.aliases,
+		.mail.sendmail.virtuser,
+		];
+	}
+	else if (mta == `postfix)
+	{
+	    if (!SCR::Write (.rc.postfix, nil))
+	    {
+		Report::Error (_("Error writing Postfix configuration file."));
+		return false;
+	    }
+	    tables = [
+		.mail.postfix.sendercanonical,
+		.mail.postfix.aliases,
+		.mail.postfix.virtual,
+		];
+	}
+	else
+	{
+	    return false;
+	}
 
-	// complete
-	Progress::NextStage ();
+	foreach (path p, tables, ``{
+	    if (!SCR::Write (p, nil))
+	    {
+		string filename = SCR::Read (p + ".meta.filename");
+		Report::Error (sformat (_("Error writing file %1"), filename));
+		return false;
+	    }
+	});
+
+	//run SuSEconfig with the necessary modules
+	// TODO other modules using FROM_HEADER?
+	integer ret = 0;
+	if (mta == `sendmail)
+	{
+	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module sendmail");
+	}
+	else if (mta == `postfix)
+	{
+	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module postfix");
+	}
+	else
+	{
+	    return false;
+	}
+
+	if (ret != 0)
+	{
+	    Report::Error (_("Error running SuSEconfig."));
+	    return false;
+	}
 	return true;
     }
 
@@ -733,8 +840,4 @@
 	// TODO FIXME: your code here...
 	return _("Summary of the configuration...");
     }
-
-    // TODO FIXME: Your code (the needed operations with the settings)
-    // TODO FIXME: For example remembering the card being currently
-    // TODO FIXME: configured and storing it to the structures, etc.
 }
