@@ -94,6 +94,16 @@ mails will not be sent immediately but rather after invoking
     }
 
     /**
+     * @return Help for Detailed address rewriting dialog
+     */
+    global define string AuthenticationDialogHelp () ``{
+	// Translators: masquerading dialog help, part 1 of 1
+	return _("
+<p></p>
+");
+    }
+
+    /**
      * @return Help for Downloading dialog
      */
     global define string DownloadingDialogHelp () ``{

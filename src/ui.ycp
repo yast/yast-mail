@@ -55,6 +55,7 @@ global map dialogs = $[
     "connection_type":	``( ConnectionTypeDialog () ),
     "basic":		``( BasicDialog () ),
     "outgoing-details":	``( OutgoingDetailsDialog () ),
+    "outgoing-auth":	``( OutgoingAuthOptions () ),
     "downloading":	``( DownloadingDialog () ),
     "aliases":		``( AliasesDialog () ),
     "virtual":		``( VirtualDialog () ),
@@ -72,16 +73,22 @@ global map common_sequence = $[
     "basic" :
     $[
 	`abort	: `abort,
-	`outgoing_details : "outgoing-details",
-	`downloading : "downloading",
-	`aliases	: "aliases",
-	`virtual	: "virtual",
-	`next	: "common-next",
+	`outgoing_details	: "outgoing-details",
+	`outgoing_auth_opts	: "outgoing-auth",
+	`downloading		: "downloading",
+	`aliases		: "aliases",
+	`virtual		: "virtual",
+	`next			: "common-next",
 	],
     "outgoing-details" :
     $[
 	`abort	: `abort,
 	`next	: "basic",
+	],
+    "outgoing-auth" :
+    $[
+	`abort : `abort,
+	`next  : "basic",
 	],
     "downloading" :
     $[
@@ -500,10 +507,15 @@ global define symbol BasicDialog () ``{
 		WJ_MakeWidget (`outgoing_mail_server),
 		`HSpacing (1),
 		// Translators: button
-		`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details...")))
+		//`Bottom (`PushButton (`id (`outgoing_details), _("&Outgoing details...")))
+		`Bottom (`MenuButton (_("&Outgoing details..."), [
+		    `item(`id(`outgoing_details), _("Masquerading")),
+		    `item(`id(`outgoing_auth_opts), _("Authentication"))
+		    ]))
 		)
 	    );
     buttons = add (buttons, `outgoing_details);
+    buttons = add (buttons, `outgoing_auth_opts);
 
     term i_contents = `VBox ();
 
@@ -808,6 +820,108 @@ global define symbol OutgoingDetailsDialog () ``{
 	Mail::Touch (Mail::masquerade_users != mu);
 	Mail::masquerade_users = mu;
     }
+    Wizard::RestoreScreenShotName ();
+    return ret;
+}
+
+/**
+ * D2.2
+ * Outgoing server authentification
+ * @return `back, `abort or `next
+ */
+global define symbol OutgoingAuthOptions() ``{
+    Wizard::SetScreenShotName ("mail-2o-outgoing-authentication");
+
+    //string mod = listToString (Mail::masquerade_other_domains);
+    //list(string) lmod = [];
+    //list(map) mu = Mail::masquerade_users;
+
+    // Translators: dialog caption
+    string caption = _("Outgoing server authentication");
+    term contents =
+	`VBox(
+	    `HBox(
+		`HWeight(1,
+		    `Empty()
+		),
+		`HWeight(3,
+		    `VBox(
+			`TextEntry(`id(`server), _("Outgoing &server")),
+			`TextEntry(`id(`user),   _("&User name")),
+			`Password( `id(`passw),  _("&Password"))
+		    )
+		),
+		`HWeight(1,
+		    `Empty()
+		)
+	    )
+	);
+    //);
+
+    Wizard::SetContentsButtons (caption, contents, AuthenticationDialogHelp (), BackButtonLabel (), OKButtonLabel ());
+
+    any ret = nil;
+    map config = nil;
+
+    foreach(`line, Mail::smtp_auth, ``{
+	if (line["server"]:"" == Mail::outgoing_mail_server) {
+	    config = line;
+	}
+    });
+    if (config == nil) {
+	config = add(config, "server",   Mail::outgoing_mail_server);
+	config = add(config, "user",     "");
+	config = add(config, "password", "");
+    }
+    
+    y2milestone("%1; %2", Mail::outgoing_mail_server, config);
+    
+    UI::ChangeWidget(`id(`server), `Value, config["server"]:"");
+    UI::ChangeWidget(`id(`user),   `Value, config["user"]:"");
+    UI::ChangeWidget(`id(`passw),  `Value, config["password"]:"");
+
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `cancel)
+	{
+	    ret = `abort;
+	}
+
+	/*if (ret == `masqdomains)
+	{
+	    UI::ChangeWidget (`id (`mdg), `CurrentButton, `masqothers);
+	}
+	else if (contains ([`add, `edit, `delete], ret))
+	{
+	    mu = EditTable(ret, mu, ["user", "address"], ``(MasqueradeUserPopup ()), `tab);
+	}*/
+	else if ((ret == `abort
+		  && UI::ReallyAbortPopup (Mail::touched || edit_touched))
+		 || ret == `back)
+	{
+	    break;
+	}
+	else if (ret == `next)
+	{
+	    Mail::smtp_auth = add(Mail::smtp_auth, "server",   UI::QueryWidget(`id(`server), `Value));
+	    Mail::smtp_auth = add(Mail::smtp_auth, "user",     UI::QueryWidget(`id(`user),   `Value));
+	    Mail::smtp_auth = add(Mail::smtp_auth, "password", UI::QueryWidget(`id(`pass),   `Value));
+	}
+    }
+
+    /*if (ret == `next)
+    {
+	// all querywidgets are already done by the validation part
+	Set_from_header (`from_header);
+	Set_local_domains (`local_domains);
+
+	Mail::Touch (Mail::masquerade_other_domains != lmod);
+	Mail::masquerade_other_domains = lmod;
+
+	Mail::Touch (Mail::masquerade_users != mu);
+	Mail::masquerade_users = mu;
+    }*/
     Wizard::RestoreScreenShotName ();
     return ret;
 }
