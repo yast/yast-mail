@@ -413,7 +413,7 @@ global define symbol OutgoingDialog () ``{
 	    `TextEntry (`id (`relay), _("&Outgoing mail server"), oms),
 	    `VSpacing (0.5),
 	    `TextEntry (`id (`from), _("Domain for the '&From' header"), fh),
-	    `PushButton (`id (`masqdetail), _("Detailed address &rewriting ...")),
+	    `PushButton (`id (`masqdetail), _("Detailed &address rewriting ...")),
 	    `VSpacing (0.2)
 	    );
 
