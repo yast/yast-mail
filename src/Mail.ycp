@@ -38,6 +38,13 @@
      */
     global symbol mta = nil;
 
+	/**
+     *	If true, don't run SuSEconfig or restart the services.
+     *  Autoinstall uses this to do  all in one place.
+	 */
+	global boolean write_only = false;
+
+
     boolean create_config = false;
     /**
      * If MAIL_CREATE_CONFIG is not yes, the user
@@ -473,11 +480,9 @@ a fixed format to be readable by YaST2.  For details, see
      * @param abort A block that can be called by Write to find
      *	      out whether abort is requested. Returns true if abort
      *	      was pressed.
-     * @param writeonly	If true, don't run SuSEconfig or restart the services.
-     *			Autoinstall uses this to do in all in one place.
      * @return True on success
      */
-    global define boolean Write (block abort, boolean writeonly) ``{
+    global define boolean Write (block abort) ``{
 	list stages = [
 	    // Translators: progress label
 	    [ _("Writing general settings"), ``(WriteGeneral ())],
@@ -497,7 +502,7 @@ a fixed format to be readable by YaST2.  For details, see
 	// Translators: progress label
 	stages = add (stages, [ _("Finishing writing configuration files"), ``(WriteFlush ()) ]);
 	// autoinstallation does it all together later
-	if (! writeonly)
+	if (! write_only)
 	{
 	    // Translators: progress label
 	    stages = add (stages, [ _("Running SuSEconfig"), ``(WriteSuSEconfig ()) ]);

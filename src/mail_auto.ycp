@@ -19,96 +19,78 @@
  */
 
 /**
- * @param first a map of mail settings
- * @return list [`back, `next or `key; edited settings]
+ * @param first a function
+ * @return any
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
- * @example map ret = WFM::CallModule ("mail_auto", [ mm ]);
+ * @example map ret = WFM::CallModule ("mail_auto", [ "Summary", mm ]);
  */
 
 {
-    textdomain "mail";
+textdomain "mail";
 
-    import "Mail";
-    import "Mode";
+y2milestone("----------------------------------------");
+y2milestone("Mail auto started");
 
-    Mode::config = true;
-    include "mail/ui.ycp";
+import "Mail";
+import "Mode";
 
-    map settings = $[];
-    list args = WFM::Args ();
-    if ( size (args) <= 0 )
-    {
-	y2error ("Did not get the settings, probably some mistake...");
-	return false;
-    }
-    if ( !is ( WFM::Args (0), map ) )
-    {
-	y2error ("Bad argument for mail_auto: %1", WFM::Args (0));
-	return false;
-    }
+Mode::config = true;
+import "Mail";
+include "mail/ui.ycp";
 
-    {
-	integer i = 0;
-	while (i < size (WFM::Args()))
-	{
-	    if (is (WFM::Args (i), map) && nil != WFM::Args (i))	settings = WFM::Args (i);
-	    i = i + 1;
-	}
-    }
+any ret = nil;
+string func = "";
+map param = $[];
 
-    Mail::Import ( settings );
+/* Check arguments */
+if(size(Args()) > 0 && is(Args(0), string)) {
+    func = WFM::Args(0);
+    if(size(Args()) > 1 && is(Args(1), map))
+	param = WFM::Args(1);
+}
+y2debug("func=%1", func);
+y2debug("param=%1", param);
 
-    /**
-     * Set the wizard dialog contents to a current summary
-     * and Configure, Reset buttons
-     */
-    define void set_contents() ``{
-	term contents =
-	    `VBox(
-		  `VSpacing(1),
-		  `RichText( `id(`summary), Mail::Summary()),
-		  `VSpacing(),
-		  `HBox(
-		      // button label
-			`PushButton(`id(`configure), _("&Configure Mail")),
-			`HStretch(),
-		      // button label
-			`PushButton(`id(`reset), _("&Reset Configuration"))
-			),
-		  `VSpacing(1)
-		  );
+/* Create a  summary*/
+if(func == "Summary") {
+    Mail::Import(param);
+    ret = Mail::Summary();
+}
+/* Reset configuration */
+else if (func == "Reset") {
+    Mail::Import($[]);
+    ret = $[];
+}
+/* Change configuration (run AutoSequence) */
+else if (func == "Change") {
+    Mail::Import(param);
+    ret = MailAutoSequence();
+}
+/* Return actual state */
+else if (func == "Result") {
+    ret = Mail::Export();
+}
+/* Write givven settings */
+else if (func == "Write") {
+    import "Progress";
+    Mail::write_only = true;
+    Mail::Import(param);
+    Progress::off();
+    ret = Mail::Write(``{ return false; });
+    Progress::on();
+	return ret;
+}
+/* Unknown function */
+else {
+    y2error("Unknown function: %1", func);
+    ret = false;
+}
 
-	// dialog heading
-	Wizard::SetContents(_("Mail Configuration"),
-			    contents, "", true, true);
-    }
+y2debug("ret=%1", ret);
+y2milestone("Mail auto finished");
+y2milestone("----------------------------------------");
 
+return ret;
 
-    set_contents();
-    any result = nil;
-    any ret = nil;
-
-    repeat {
-	ret = UI::UserInput();
-	if (ret == `configure)
-	{
-	    symbol result = MailAutoSequence ();
-
-	    if (result == `next || result == `finish)
-	    {
-		settings = Mail::Export ();
-	    }
-	    Mail::Set(settings);
-	    set_contents();
-	}
-	else if ( ret == `reset)
-	{
-	    settings = $[];
-	    Mail::Set(settings);
-	    set_contents();
-	}
-    } until (ret == `back || ret == `abort || ret == `next || ret ==`key);
-
-    return [ret, settings];
-
+/* EOF */
 }
