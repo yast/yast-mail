@@ -106,7 +106,8 @@
 	    ],
 	];
 
-    Pkg::FAKE (`IsProvided, true);
+    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,
+			      "amavis-postfix": false]);
 
     block dont_abort = ``{return false;};
     Progress::off ();

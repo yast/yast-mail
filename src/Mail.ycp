@@ -198,6 +198,14 @@
     global list(string) remove_packages = [];
 
     /**
+     * Of the four available amavis packages, amavis-postfix does not need
+     * a service running, others do.
+     * We query rpm in WriteGeneral (so that it works for autoinst too).
+     * This is only used if use_amavis is on, of course.
+     */
+    boolean amavis_service = true;
+
+    /**
      * Detect which packages have to be installed
      * and return a descriptive string for a plain text pop-up.
      * @return "" or "Foo will be installed.\nBar will be installed.\n"
@@ -658,6 +666,12 @@ a fixed format to be readable by YaST2.  For details, see
 
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
+	// used also in WriteServices
+	amavis_service = ! Installed ("amavis-postfix");
+	if (amavis_service)
+	{
+	    Runlevel::ServiceAdjust ("amavis", use_amavis? "enable":"disable");
+	}
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up
@@ -943,11 +957,8 @@ a fixed format to be readable by YaST2.  For details, see
      * @return success
      */
     define boolean WriteServices () ``{
-	string service = "";
-	if (mta == `sendmail)
+	if (amavis_service)
 	{
-	    service = "sendmail";
-	    // amavis
 	    Runlevel::RunInitScript ("amavis", "stop");
 	    if (use_amavis)
 	    {
@@ -957,16 +968,16 @@ a fixed format to be readable by YaST2.  For details, see
 		    Report::Error (sformat (_("Error starting service %1."), "amavis"));
 		    return false;
 		}
-		Runlevel::ServiceAdjust ("amavis", "enable");
 	    }
-	    else
-	    {
-		Runlevel::ServiceAdjust ("amavis", "disable");
-	    }
+	}
+
+	string service = "";
+	if (mta == `sendmail)
+	{
+	    service = "sendmail";
 	}
 	else if (mta == `postfix)
 	{
-	    // There's no separate amavis init script.
 	    service = "postfix";
 	}
 	else
