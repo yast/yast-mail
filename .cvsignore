@@ -21,3 +21,4 @@ mail.pot
 missing
 mkinstalldirs
 stamp-h*
+Makefile.am.common
