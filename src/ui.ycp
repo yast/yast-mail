@@ -874,7 +874,7 @@ global define symbol OutgoingAuthOptions() ``{
 	config = add(config, "user",     "");
 	config = add(config, "password", "");
     }
-    
+
     UI::ChangeWidget(`id(`server), `Value, config["server"]:"");
     UI::ChangeWidget(`id(`user),   `Value, config["user"]:"");
     UI::ChangeWidget(`id(`passw),  `Value, config["password"]:"");
