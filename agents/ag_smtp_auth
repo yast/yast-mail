@@ -1,0 +1,280 @@
+#!/usr/bin/perl -w
+#
+# $Id$
+# Author: Martin Vidner <mvidner@suse.cz>
+#
+# An agent for parsing and writing smtp_auth files.
+# /etc/mail/auth/auth-info
+# /etc/postfix/sasl_passwd
+#
+# (cloned from ag_fetchmailrc)
+#
+# Read (.foo.accounts)
+# Write (.foo.accounts, alist)
+# Write (.foo, nil)
+
+use ycp;
+use strict;
+use Fcntl; # O_* for sysopen
+use Errno qw(ENOENT);
+use MIME::Base64;
+
+# Data model:
+# entries are maps with these keys, values are strings:
+# comment: "# foo\n# bar\n" or ""
+# server
+# user
+# password
+# (others, for sendmail)
+my @accounts;
+my $trailing_comment;
+
+my $sendmail; # if true, parse auth-info, otherwise sasl_passwd
+my $filename = "/etc/postfix/sasl_passwd";
+my $file_ok;
+
+# TODO writing: when to use base64?
+# only sendmail
+# always password
+# non alphanumeric? (esp. quote)
+# <foo>_base64: "t"?
+
+my %sm_tokens = (
+		 "U" => "user",
+		 "P" => "password",
+		);
+
+# return false in case of an error
+sub parse_file ()
+{
+    @accounts = ();
+    $trailing_comment = "";
+
+    if (!open (FILE, $filename))
+    {
+	return 1 if ($! == ENOENT); # ok if it is not there
+	y2error ("$filename: $!");
+	return 0;
+    }
+
+    while (<FILE>)
+    {
+	chomp;
+	if (/^\s*$/ || /^#/)
+	{
+	    $trailing_comment .= "$_\n";
+	    next;
+	}
+
+	my $entry = {};
+	if ($sendmail)
+	{
+	    m/^AuthInfo:(\S+)\s*(.*)/;
+	    $entry->{server} = $1;
+	    $_ = $2;
+
+	    while (/^"(.)([:=])([^"]*)"\s*/)
+	    {
+		my $token = $1;
+		my $b64 = $2 eq "=";
+		my $value = $3;
+		$value = decode_base64 ($value) if ($b64);
+
+		my $key = $sm_tokens{$token} || $token;
+		$entry->{$key} = $value;
+		$entry->{"${key}_base64"} = $b64? "t": "";
+	    }
+
+	    # if user (U) is not specified, copy from authentication id (I)
+	    if (! $entry->{user})
+	    {
+		$entry->{user} = $entry->{I};
+		$entry->{user_base64} = $entry->{I_base64};
+	    }
+	}
+	else # postfix
+	{
+	    m/^(\S+)\s+([^:]+):(.*)/;
+	    $entry = { "server" => $1, "user" => $2, "password" => $3 };
+	}
+
+	$entry->{comment} = $trailing_comment;
+	$trailing_comment = "";
+	push @accounts, $entry;
+    }
+    close (FILE);
+    return 1;
+}
+
+
+sub write_file ()
+{
+    foreach my $entry (@accounts)
+    {
+	print FILE $entry->{comment}; # may be empty
+	if ($sendmail)
+	{
+	    print FILE "AuthInfo:$entry->{server}";
+	    while (my ($key, $value) = each %{$entry})
+	    {
+		next if ($key eq "server" || $key eq "comment");
+		next if ($key =~ /_base64$/);
+		# that leaves us with the relevant data.
+		# should it be base64-encoded?
+		my $b64 = $entry->{"${key}_base64"};
+		if (defined ($b64))
+		{
+		    $b64 = $b64 eq "t";
+		}
+		else
+		{
+		    $b64 = $key eq "password" || $value !~ /^[A-Za-z0-9._-]*$/;
+		}
+		$key = ($key eq "user")? "U": ($key eq "password")? "P": $key;
+		# don't do line splitting while encoding
+		$value = encode_base64 ($value, "") if ($b64);
+		print FILE ' "', $key, ($b64? "=": ":"), $value, '"';
+	    }
+	    print FILE "\n";
+	}
+	else # postfix
+	{
+	    print FILE "$entry->{server}\t$entry->{user}:$entry->{password}\n"
+	}
+    }
+    print FILE $trailing_comment;
+
+    close (FILE);
+
+    if (-f $filename)
+    {
+	rename $filename, "$filename.YaST2.save" or return y2error ("Creating backup: $!"), 0;
+    }
+    rename "$filename.YaST2.new", $filename or return y2error ("Moving temp file: $!"), 0;
+    return 1;
+}
+
+#
+# MAIN cycle
+#
+
+while ( <STDIN> )
+{
+    chomp;
+    y2debug ("Got: ", $_);
+    if (/^nil$/)
+    {
+	print "nil\n";
+	next;
+    }
+
+    my ($command, @arguments) = ycp::ParseTerm ($_);
+    if ($command =~ "AuthPostfix|AuthSendmail")
+    {
+	# reply to the client (this actually gets eaten by the ScriptingAgent)
+	ycp::Return (undef);
+	print "\n";
+	$sendmail = ($command eq "AuthSendmail");
+	my $filename = shift @arguments || ($sendmail?
+					    "/etc/mail/auth/auth-info":
+					    "/etc/postfix/sasl_passwd");
+	$file_ok = parse_file ();
+	next;
+    }
+    # else it should be a regular command
+    my $path = "";
+    my $pathref = shift @arguments;
+    if (defined $pathref)
+    {
+	if (ref($pathref) eq "SCALAR" && $$pathref =~ /^\./)
+	{
+	    $path = $$pathref;
+	}
+	# 'result (nil)' is a standard command
+	elsif ($command ne "result")
+	{
+	    y2error ("The first argument is not a path. ('$pathref')");
+	}
+    }
+    my $argument = shift @arguments;
+    y2warning ("Superfluous command arguments ignored") if (@arguments > 0);
+
+
+    if ($command eq "Dir")
+    {
+	if ($path eq ".")
+	{
+	    ycp::Return (["accounts", "meta", "trailing_comment"]);
+	}
+	else if ($path eq ".meta")
+	{
+	    ycp::Return (["filename"]);
+	}
+	else
+	{
+	    ycp::Return ([]);
+	}
+    }
+
+    elsif ($command eq "Write")
+    {
+	my $result = "true";
+	if ($path eq ".trailing_comment" && ! ref ($argument))
+	{
+	    $trailing_comment = $argument;
+	}
+	elsif ($path eq ".accounts" && ref ($argument) eq "ARRAY")
+	{
+	    @accounts = @{$argument};
+	}
+	elsif ($path eq "." && !defined ($argument))
+	{
+	    $result = write_file () ? "true":"false";
+	}
+	else
+	{
+	    y2error ("Wrong path $path or argument: ", ref ($argument));
+	    $result = "false";
+	}
+
+	ycp::Return ($result);
+    }
+
+    elsif ($command eq "Read")
+    {
+	if (! $file_ok)
+	{
+	    ycp::Return (undef);
+	}
+	elsif ($path eq ".trailing_comment")
+	{
+	    ycp::Return ($trailing_comment, 1);
+	}
+	elsif ($path eq ".accounts")
+	{
+	    ycp::Return (\@accounts, 1);
+	}
+	elsif ($path eq ".meta.filename")
+	{
+	    ycp::Return ($filename, 1);
+	}
+	else
+	{
+	    y2error ("Unrecognized path! '$path'");
+	    ycp::Return (undef);
+	}
+    }
+
+    elsif ($command eq "result")
+    {
+	exit;
+    }
+
+    # Unknown command
+    else
+    {
+	y2error ("Unknown instruction $command or argument: ", ref ($argument));
+	ycp::Return ("false");
+    }
+    print "\n";
+}

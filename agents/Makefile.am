@@ -4,7 +4,7 @@
 # $Id$
 #
 
-agent_SCRIPTS = ag_fetchmailrc
+agent_SCRIPTS = ag_fetchmailrc ag_smtp_auth
 
 scrconf_DATA = \
 	cfg_amavis.scr		\
@@ -12,8 +12,10 @@ scrconf_DATA = \
 	cfg_postfix.scr		\
 	cfg_sendmail.scr	\
 	mail_fetchmail.scr	\
+	mail_p_auth.scr		\
 	mail_p_canonical.scr	\
 	mail_p_virtual.scr	\
+	mail_s_auth.scr		\
 	mail_s_generics.scr	\
 	mail_s_virtuser.scr
 

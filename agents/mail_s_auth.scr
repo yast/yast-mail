@@ -1,0 +1,24 @@
+/**
+ * $Id$
+ * Summary:
+ *   SCR Agent for reading/writing the Sendmail SMTP-AUTH secrets
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * Access:
+ *   read/write
+ *
+ * The file specifies a map, but we represent it as a list to preserve
+ * preceding comments and the order of entries.
+ * list entries are"
+ *  $[ "server": "smtp.example.com", "user": "joe", "password": "cleartext" ]
+ * There are other map keys which must be preserved!
+ *
+ * The file is only written after a flush:
+ *   Write (.mail.sendmail.auth, nil)
+ *
+ * Example:
+ *   Read (.mail.sendmail.auth.accounts)
+ */
+.mail.sendmail.auth
+
+`ag_smtp_auth (AuthSendmail ())
