@@ -74,10 +74,12 @@
     DUMP ("sendmail");
     TEST (``(Mail::GetRootAlias ()), [READ_s], nil);
     TEST (``(Mail::SetRootAlias ("ruut")), [READ_s], nil);
+    TEST (``(Mail::SetRootAlias ("")), [READ_s], nil);
 
     DUMP ("postfix");
-    TEST (``(Mail::GetRootAlias ()), [READ_p1], nil);
+    TEST (``(Mail::GetRootAlias ()), [[ READ_p1, READ_p2]], nil);
     // apparently the dumb^H^H^H^Hdummy aggent reads from the first map
     // while there's input.
     TEST (``(Mail::SetRootAlias ("ruut")), [[ READ_p1, READ_p2]], nil);
+    TEST (``(Mail::SetRootAlias ("")), [[ READ_p1, READ_p2]], nil);
 }

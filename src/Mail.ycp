@@ -55,8 +55,10 @@
     /**
      * For use by the Users package.
      * Does not use the internal state, just calls the agent.
+     * SuSEconfig or newaliases is NOT called!
      * (TODO: what if it is called while the main module is running?)
      * Errors are reported via Report::Error.
+     * @param destinations The new alias. If "", it is removed.
      * @return true on success
      */
     global define boolean SetRootAlias (string destinations) ``{
@@ -64,7 +66,7 @@
 	    "key": "root",
 	    "value": destinations,
 	    // TODO: "created by the ... yast2 module"?
-	    //"comment": "",
+	    "comment": "",
 	    ];
 	ReadMta ();
 	path alias_path = nil;
@@ -83,7 +85,15 @@
 	{
 	    return false;
 	}
-	list(map) new = mergeTables ([root_raw], SCR::Read (alias_path));
+	list(map) new = SCR::Read (alias_path);
+	if (destinations == "")
+	{
+	    new = filter (map e, new, ``( e["key"]:"" != "root" ));
+	}
+	else
+	{
+	    new = mergeTables ([root_raw], new);
+	}
 	SCR::Write (alias_path, new);
 	if (! SCR::Write (flush_path, nil))
 	{
