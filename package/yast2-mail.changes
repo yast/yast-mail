@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Sep  4 17:25:18 CEST 2003 - jsuchome@suse.cz
+
+- fix: delivery mode not saved (#30032)
+- proposal for local domains (#29919)
+
+-------------------------------------------------------------------
 Wed Sep  3 17:17:16 CEST 2003 - jsuchome@suse.cz
 
 - part of helptext was not shown

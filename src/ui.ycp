@@ -724,6 +724,18 @@ global define symbol IncomingDialog () ``{
 	    WJ_Set (fm_widgets);
 	    // CHECK: aliasing is not harmful here
 	    Mail::fetchmail[0] = fetchmail_item;
+
+	    // -------------- fix of bug #29919:
+	    // -------------- propose local domains when fetchmail is used:
+	    if (Mail::fetchmail != [] && Mail::local_domains == [] &&
+		Mail::mta == `postfix)
+	    {
+		// popup text (do not change values)
+		if (Popup::YesNo (_("In order to be able to deliver mail to your local MTA,
+the value of POSTFIX_LOCALDOMAINS in /etc/sysconfig/postfix will be set to
+\"\$myhostname, localhost.\$mydomain, \$mydomain\".")))
+			Mail::local_domains = [ "\$myhostname", "localhost.\$mydomain", "\$mydomain"];
+	    }
 	}
     }
     Wizard::RestoreScreenShotName ();

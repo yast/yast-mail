@@ -802,7 +802,6 @@ a fixed format to be readable by YaST2.  For details, see
 	{
 	    return false;
 	}
-	return true;
 
 	// postfix_mda
 	if (mta == `postfix)
@@ -811,6 +810,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    string s_mda = "" + postfix_mda;
 	    SCR::Write (.sysconfig.postfix.POSTFIX_MDA, s_mda);
 	}
+	return true;
     }
 
     /**
