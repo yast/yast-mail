@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Mar  5 15:45:10 CET 2004 - mvidner@suse.cz
+
+- added type information (lslezak)
+- merged proofread texts
+- 2.9.5
+
+-------------------------------------------------------------------
 Thu Feb 19 13:58:44 CET 2004 - lslezak@suse.cz
 
 - removed yast2-packager from Requires and neededforbuild
