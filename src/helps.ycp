@@ -60,9 +60,16 @@ An additional dialog will inform you whether it is safe to do so or not.
      * @return Help for Connection type dialog
      */
     global define string ConnectionTypeDialogHelp () ``{
-	// Translators: connection type dialog help, part 1 of 1
+	// Translators: connection type dialog help, part 1 of 2
 	return _("
-<p>How are you connected to the Internet?</p>
+<p>How are you connected to the Internet? With a dial-up connection,
+mails will not be sent immediately but rather after invoking
+<b>sendmail -q</b>.</p>
+") +
+	    // Translators: connection type dialog help, part 2 of 2
+	    _("
+<p>If AMaViS is not installed and you want to use it, it will be installed
+automatically.</p>
 ");
     }
 

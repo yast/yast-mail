@@ -24,6 +24,7 @@
     textdomain "mail";
 
     import "Report";
+    import "Runlevel";
 
     /**
      * `sendmail, `postfix or `other
@@ -34,6 +35,12 @@
      * `permanent, `dialup or `none
      */
     global symbol connection_type = `permanent;
+
+    /**
+     * Use a virus scanner (AMaViS).
+     * amavis-sendmail or amavis-postfix must be installed.
+     */
+    global boolean use_amavis = false;
 
     /**
      * Domains for locally delivered mail.
@@ -252,6 +259,9 @@
 	{
 	    connection_type = `permanent;
 	}
+
+	// amavis
+	use_amavis = (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
 	// local_domains
 	string ld_s = "";
@@ -549,6 +559,9 @@
 	    return false;
 	}
 
+	// amavis
+	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
+
 	// local_domains
 	if (mta == `sendmail)
 	{
@@ -709,6 +722,11 @@
 	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/mail"));
 	    return false;
 	}
+	if (!SCR::Write (.sysconfig.amavis, nil))
+	{
+	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/amavis"));
+	    return false;
+	}
 	list(path) tables = nil;
 	if (mta == `sendmail)
 	{
@@ -756,10 +774,25 @@
 	if (mta == `sendmail)
 	{
 	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module sendmail");
+
+	    Runlevel::RunInitScript ("amavis", "stop");
+	    if (use_amavis)
+	    {
+		Runlevel::RunInitScript ("amavis", "start");
+		Runlevel::ServiceAdjust ("amavis", "enable");
+	    }
+	    else
+	    {
+		Runlevel::ServiceAdjust ("amavis", "disable");
+	    }
+	    // sendmail
+	    Runlevel::RunInitScript ("sendmail", "restart");
 	}
 	else if (mta == `postfix)
 	{
 	    ret = SCR::Execute (.target.bash, "/sbin/SuSEconfig --module postfix");
+	    // There's no separate amavis init script.
+	    // rcpostfix reload is included in SuSEconfig.
 	}
 	else
 	{
@@ -789,7 +822,7 @@
 	}
 
 	boolean missing = false;
-	foreach (`k, ["mta", "connection_type", "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases", "merge_aliases", "virtual_users"], ``{
+	foreach (`k, ["mta", "connection_type", "use_amavis", "local_domains", "outgoing_mail_server", "from_header", "masquerade_other_domains", "masquerade_users", "fetchmail", "aliases", "merge_aliases", "virtual_users"], ``{
 	    if (! haskey (settings, k))
 	    {
 		y2error ("Missing at Import: '%1'.", k);
@@ -803,6 +836,7 @@
 
 	mta = settings["mta"]: `other;
 	connection_type = settings["connection_type"]: `none;
+	use_amavis = settings["use_amavis"]: false;
 	local_domains = settings["local_domains"]: [];
 	outgoing_mail_server = settings["outgoing_mail_server"]: "";
 	from_header = settings["from_header"]: "";
@@ -825,6 +859,7 @@
 	return $[
 	    "mta": mta,
 	    "connection_type": connection_type,
+	    "use_amavis": use_amavis,
 	    "local_domains": local_domains,
 	    "outgoing_mail_server": outgoing_mail_server,
 	    "from_header": from_header,

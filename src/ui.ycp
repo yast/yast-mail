@@ -29,6 +29,7 @@ import "Mail";
 include "ui/common_popups.ycp";
 include "ui/common_messages.ycp";
 include "wizard/sequencer.ycp";
+include "require.ycp";
 
 include "mail/helps.ycp";
 
@@ -198,6 +199,18 @@ global define symbol ReadDialog () ``{
  * @return `abort or `next
  */
 global define symbol WriteDialog () ``{
+    // Install amavis package if it is not there.
+    // Cannot do it in Write, autoinstall does it differently.
+    if (Mail::use_amavis)
+    {
+	string pkg = (Mail::mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
+	if (! SCR::Read (.targetpkg.installed, pkg))
+	{
+	    // require.ycp
+	    DoInstallAndRemove ([pkg], []);
+	}
+    }
+
     // Set help text
     Wizard::RestoreHelp (WriteDialogHelp ());
 
@@ -316,6 +329,7 @@ global define list(map) EditTable (symbol action,
  */
 global define symbol ConnectionTypeDialog () ``{
     symbol ct = Mail::connection_type;
+    boolean amavis = Mail::use_amavis;
 
     string caption = _("Connection type");
     term contents =
@@ -339,25 +353,37 @@ global define symbol ConnectionTypeDialog () ``{
 		)
 	    );
 
+    contents = `VBox (
+	contents,
+	`VSpacing (1),
+	`CheckBox (`id (`amavis), _("Enable &virus scanning (AMaViS)"), amavis)
+	);
+
     Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (), BackButtonLabel (), NextButtonLabel ());
 
     any ret = nil;
     while (true)
     {
-	ret = UI::UserInput ();
-	if (ret == `permanent || ret == `dialup)
+	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
+	if (ct == `permanent || ct == `dialup)
 	{
-	    Wizard::RestoreNextButton ();
+	    UI::ChangeWidget (`id (`next), `Label, NextButtonLabel());
+	    //argh, slow
+	    //Wizard::RestoreNextButton ();
+	    UI::ChangeWidget (`id (`amavis), `Enabled, true);
 	}
 	else if (ret == `none)
 	{
-	    Wizard::ReplaceNextButton (finish_button);
+	    UI::ChangeWidget (`id (`next), `Label, FinishButtonLabel());
+	    //argh, slow
+	    //Wizard::ReplaceNextButton (finish_button);
+	    UI::ChangeWidget (`id (`amavis), `Value, false);
+	    UI::ChangeWidget (`id (`amavis), `Enabled, false);
 	}
-	else if (ret == `abort && ! UI::ReallyAbortPopup (Mail::touched))
-	{
-	    continue;
-	}
-	else
+
+	ret = UI::UserInput ();
+	if (ret == `back || ret == `next ||
+	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
 	{
 	    break;
 	}
@@ -368,6 +394,10 @@ global define symbol ConnectionTypeDialog () ``{
 	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 	Mail::Touch (Mail::connection_type != ct);
 	Mail::connection_type = ct;
+
+	amavis = UI::QueryWidget (`id (`amavis), `Value);
+	Mail::Touch (Mail::use_amavis != amavis);
+	Mail::use_amavis = amavis;
 
 	ret = (ct == `none)? `none: ret;
     }

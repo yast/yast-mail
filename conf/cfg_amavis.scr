@@ -1,0 +1,30 @@
+/**
+ * File:
+ *   cfg_amavis.scr
+ * Summary:
+ *   SCR Agent for reading/writing /etc/sysconfig/amavis
+ *   using the ini-agent
+ * Access:
+ *   read/write
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ * See:
+ *   yast2-agent-ini/ini.html
+ *   libscr
+ * Example:
+ *   Read(.sysconfig.amavis.USE_AMAVIS)
+ *   ("no")
+ **
+ *   Write(.sysconfig.amavis.USE_AMAVIS, "yes")
+ *   (true)
+ *
+ * $Id$
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/amavis</tt>
+ * in an easy manner.
+ */
+.sysconfig.amavis
+
+`ag_ini(
+  SysConfigFile("/etc/sysconfig/amavis")
+)

@@ -34,6 +34,7 @@ BuildArchitectures:	noarch
 @YAST2DIR@/clients/mail_*.ycp
 @YAST2DIR@/modules/Mail.ycp
 @YAST2DIR@/menuentries/menuentry_mail.y2cc
+@YAST2DIR@/scrconf/cfg_amavis.scr
 @YAST2DIR@/scrconf/cfg_mail.scr
 @YAST2DIR@/scrconf/cfg_postfix.scr
 @YAST2DIR@/scrconf/cfg_sendmail.scr

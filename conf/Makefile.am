@@ -7,6 +7,7 @@
 scrconfdir = $(YAST2DIR)/scrconf
 
 scrconf_DATA = \
+	cfg_amavis.scr		\
 	cfg_mail.scr		\
 	cfg_postfix.scr		\
 	cfg_sendmail.scr	\
