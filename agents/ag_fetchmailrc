@@ -170,9 +170,9 @@ sub write_file ()
     sysopen (FILE, "$filename.YaST2.new", O_WRONLY | O_TRUNC | O_CREAT, 0600)
 	or return y2error ("Creating file"), 0;
 
-    if ($comment !~ /yast2-config-mail/)
+    if ($comment !~ /yast2-(config-)?mail/)
     {
-	$comment .= "# Edit carefully, see /usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt\n";
+	$comment .= "# Edit carefully, see /usr/share/doc/packages/yast2-mail/fetchmailrc.txt\n";
     }
     print FILE $comment;
     foreach (@globals)
