@@ -145,7 +145,8 @@ foreach my $s (split /\n/, $foo)
 
 sub write_file ()
 {
-    open (FILE, ">$filename.YaST2.new");
+    # TODO: mode 600, owner root!
+    open (FILE, ">$filename.YaST2.new") or return y2error ("Creating file"), 0;
 
     #TODO: "edit with caution, see foo.doc"
     print FILE $comment;
