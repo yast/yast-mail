@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Sep 15 08:48:21 CEST 2003 - jsuchome@suse.cz
+
+- write proper value for default of local domains
+- 2.8.8
+
+-------------------------------------------------------------------
 Thu Sep 11 06:14:28 CEST 2003 - nashif@suse.de
 
 - #30291: return list of required packages for autoinstallation
