@@ -24,7 +24,7 @@ include_DATA =			\
 	ui.ycp
 
 menu_DATA =			\
-	menuentry_mail.ycp
+	menuentry_mail.y2cc
 
 modules_DATA =			\
 	Mail.ycp
