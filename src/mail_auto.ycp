@@ -58,7 +58,11 @@
 
     Mail::Import ( settings );
 
-    define set_contents() ``{
+    /**
+     * Set the wizard dialog contents to a current summary
+     * and Configure, Reset buttons
+     */
+    define void set_contents() ``{
 	term contents =
 	    `VBox(
 		  `VSpacing(1),
