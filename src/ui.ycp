@@ -22,7 +22,6 @@
 textdomain "mail";
 
 import "Wizard";
-import "Wizard_hw";
 import "Progress";
 import "Mail";
 
@@ -120,8 +119,7 @@ global define symbol MainSequence () ``{
 	    "connection_type":	``( ConnectionTypeDialog () ),
 	    "outgoing":		``( OutgoingDialog () ),
 	    "masquerading":	``( MasqueradingDialog () ),
-	    "skip?":		[ ``( DialupOnly () ), true ],
-//	    "skip?":		[ ``( (Mail::connection_type == `dialup) ? `next : `skip ), true],
+	    "dialup?":		[ ``( DialupOnly () ), true ],
 	    "downloading":	``( DownloadingDialog () ),
 	    "aliases":		``( AliasesDialog () ),
 	    "virtual":		``( VirtualDialog () ),
@@ -133,35 +131,37 @@ global define symbol MainSequence () ``{
 	$[
 	    `abort	: `abort,
 	    `next	: "outgoing",
+	    `aliases	: "aliases",
+	    `virtual	: "virtual",
 	    `none	: `next
+	],
+	"aliases" :
+	$[
+	    `abort	: `abort,
+	    `next	: "connection_type",
+	],
+	"virtual" :
+	$[
+	    `abort	: `abort,
+	    `next	: "connection_type",
 	],
 	"outgoing" :
 	$[
 	    `abort	: `abort,
-	    `next	: "skip?",
+	    `next	: "dialup?",
 	    `masqdetail : "masquerading",
 	],
 	"masquerading" :
 	$[
 	    `abort	: `abort,
-	    `ok		: "outgoing",
+	    `next	: "outgoing",
 	],
-	"skip?" :
+	"dialup?" :
 	$[
-	    `next	: "downloading",
-	    `skip	: "aliases",
+	    `yes	: "downloading",
+	    `no		: `next,
 	],
 	"downloading" :
-	$[
-	    `abort	: `abort,
-	    `next	: "aliases",
-	],
-	"aliases" :
-	$[
-	    `abort	: `abort,
-	    `next	: "virtual",
-	],
-	"virtual" :
 	$[
 	    `abort	: `abort,
 	    `next	: `next,
@@ -348,7 +348,7 @@ global define symbol ConnectionTypeDialog () ``{
     boolean amavis = Mail::use_amavis;
 
     // Translators: dialog caption
-    string caption = _("Connection type");
+    string caption = _("General mail settings");
     term contents =
 	`Frame (
 	    // Translators: frame label
@@ -378,7 +378,12 @@ global define symbol ConnectionTypeDialog () ``{
 	contents,
 	`VSpacing (1),
 	// Translators: check box label
-	`CheckBox (`id (`amavis), _("Enable &virus scanning (AMaViS)"), amavis)
+	`CheckBox (`id (`amavis), _("&Enable virus scanning (AMaViS)"), amavis),
+	`VSpacing (1),
+	// Translators: button
+	`PushButton (`id (`aliases), _("&Aliases ...")),
+	// Translators: button
+	`PushButton (`id (`virtual), _("&Virtual domains ..."))
 	);
 
     Wizard::SetContentsButtons (caption, contents, ConnectionTypeDialogHelp (), BackButtonLabel (), NextButtonLabel ());
@@ -404,14 +409,14 @@ global define symbol ConnectionTypeDialog () ``{
 	}
 
 	ret = UI::UserInput ();
-	if (ret == `back || ret == `next ||
+	if (ret == `back || ret == `next || ret == `aliases || ret == `virtual ||
 	    (ret == `abort && UI::ReallyAbortPopup (Mail::touched)))
 	{
 	    break;
 	}
     }
 
-    if (ret == `next)
+    if (ret == `next || ret == `aliases || ret == `virtual)
     {
 	ct = UI::QueryWidget (`id (`ctg), `CurrentButton);
 	Mail::Touch (Mail::connection_type != ct);
@@ -468,13 +473,16 @@ global define symbol OutgoingDialog () ``{
 	    `TextEntry (`id (`relay), _("&Outgoing mail server"), oms),
 	    `VSpacing (0.5),
 	    // Translators: text entry label
-	    `TextEntry (`id (`from), _("Domain for the '&From' header"), fh),
+	    `TextEntry (`id (`from), _("Do&main for the 'From' header"), fh),
 	    // Translators: button
 	    `PushButton (`id (`masqdetail), _("Detailed &address rewriting ...")),
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, OutgoingDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (
+	caption, contents, OutgoingDialogHelp (), BackButtonLabel (),
+	(Mail::connection_type == `dialup) ?
+	NextButtonLabel () : FinishButtonLabel ());
 
     any ret = nil;
     // The only input comes from the buttons.
@@ -509,7 +517,7 @@ global define symbol OutgoingDialog () ``{
 
 /**
  * D2.1
- * @return `back, `abort or `ok
+ * @return `back, `abort or `next
  */
 global define symbol MasqueradingDialog () ``{
 
@@ -609,8 +617,6 @@ global define symbol MasqueradingDialog () ``{
 
     if (ret == `next)
     {
-	ret = `ok;
-
 	list(string) lmod = [];
 	symbol rb = UI::QueryWidget (`id (`mdg), `CurrentButton);
 	if (rb == `masqothers)
@@ -689,10 +695,10 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 }
 
 /**
- * @return `next if connection_type is `dialup, otherwise `skip
+ * @return `yes if connection_type is `dialup, otherwise `no
  */
 global define symbol DialupOnly () ``{
-    return Mail::connection_type == `dialup ? `next: `skip;
+    return Mail::connection_type == `dialup ? `yes: `no;
 }
 
 /**
@@ -733,7 +739,7 @@ global define symbol DownloadingDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, DownloadingDialogHelp (), BackButtonLabel (), FinishButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -845,7 +851,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 }
 
 /**
- * D4
+ * D1.1
  * @return `back, `abort or `next
  */
 global define symbol AliasesDialog () ``{
@@ -874,7 +880,7 @@ global define symbol AliasesDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), BackButtonLabel (), NextButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, AliasesDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
@@ -918,7 +924,7 @@ global define symbol AliasesDialog () ``{
 }
 
 /**
- * D4.1, 5.1
+ * D1.1.1, 1.2.1
  * Used for adding and editing an alias/virtual domain entry.
  * @param default	$["alias": "destinations": ?comment] or just $[]
  * @param existing	current entry list
@@ -978,7 +984,7 @@ global define map AliasPopup (map default, list(map) existing) ``{
 
 
 /**
- * D5
+ * D1.2
  * @return `back, `abort or `next
  */
 global define symbol VirtualDialog () ``{
@@ -1007,7 +1013,7 @@ global define symbol VirtualDialog () ``{
 	    `VSpacing (0.2)
 	    );
 
-    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), FinishButtonLabel ());
+    Wizard::SetContentsButtons (caption, contents, VirtualDialogHelp (), BackButtonLabel (), OKButtonLabel ());
 
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
