@@ -230,6 +230,20 @@ SuSEconfig will overwrite manual changes.
 "), setting));
 	}
     }
+    else
+    {
+	if (Mail::mta == `other)
+	{
+	    // After text freeze, but
+	    // a) either something is very broken -> user must know
+	    // b) user installed a different MTA -> knowledgeable enough to
+	    // ba) never see this message anyway
+	    // bb) read English
+	    // Translators: error popup
+	    UI::ErrorPopup (_("YaST2 can only configure Postfix and Sendmail
+but neither of them is installed."));
+	}
+    }
     Wizard::RestoreScreenShotName ();
     return ( was_ok? `next : `abort );
 }

@@ -260,8 +260,7 @@
 	ReadMta ();
 	if (mta == `other)
 	{
-	    // TODO: adapt workflow to say sorry and bye.
-	    return true;
+	    return false;
 	}
 
 	// announce 2
@@ -526,12 +525,14 @@ a fixed format to be readable by YaST2.  For details, see
 	    Progress::NextStage ();
 	    if (eval (abort))
 	    {
+		// TODO: finishes only this iteration, not the function
 		return false;
 	    }
 
 	    term f = e[1]:``(false);
 	    if (! eval (f))
 	    {
+		// TODO: finishes only this iteration, not the function
 		return false;
 	    }
 	});
