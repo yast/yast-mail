@@ -145,10 +145,13 @@ foreach my $s (split /\n/, $foo)
 
 sub write_file ()
 {
-    # TODO: mode 600, owner root!
-    open (FILE, ">$filename.YaST2.new") or return y2error ("Creating file"), 0;
+    sysopen (FILE, "$filename.YaST2.new", O_WRONLY | O_TRUNC | O_CREAT, 0600)
+	or return y2error ("Creating file"), 0;
 
-    #TODO: "edit with caution, see foo.doc"
+    if ($comment !~ /yast2-config-mail/)
+    {
+	$comment .= "# Edit carefully, see /usr/share/doc/packages/yast2-config-mail/fetchmailrc.txt\n";
+    }
     print FILE $comment;
     foreach (@globals)
     {
