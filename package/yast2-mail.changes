@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon Feb  3 16:31:21 CET 2003 - mvidner@suse.de
+
+- Added a SMTP-AUTH dialog (#23000, with phadraba).
+- Relaxed Import checks, added Read to _auto (nashif).
+- Merged proofread texts.
+- 2.7.4
+
+-------------------------------------------------------------------
 Mon Jan 20 10:11:47 CET 2003 - mvidner@suse.de
 
 - Fixed the auto dispatcher (Import) (nashif).
