@@ -1,0 +1,52 @@
+[Desktop Entry]
+Type=Application
+Categories=Qt;X-SuSE-YaST-Net_advanced;
+
+X-KDE-ModuleType=Library
+X-KDE-RootOnly=true
+X-KDE-HasReadOnlyMode=true
+X-KDE-Library=yast2
+X-KDE-FactoryName=mail
+
+X-SuSE-YaST-Group=Net_advanced
+X-SuSE-YaST-Argument=
+X-SuSE-YaST-RootOnly=true
+X-SuSE-YaST-AutoInst=all
+X-SuSE-YaST-Geometry=
+X-SuSE-YaST-SortKey=
+X-SuSE-YaST-AutoinstResource=
+
+Icon=sendmail
+Exec=/sbin/yast2 mail 
+
+Name=Mail Transfer Agent
+GenericName=Configure mail
+Name[cs]=Agent přenosu pošty (MTA)
+GenericName[cs]=Konfigurovat poštu
+GenericName[de]=Mailkonfiguration
+Name[es]=Agente de transferencia de mensajes (MTA)
+GenericName[es]=Configurar correo
+Name[hu]=Levéltovábbító szerver (Mail Transfer Agent, MTA)
+GenericName[hu]=Levelezés beállítása
+GenericName[it]=Configurazione posta
+Name[ko]=메일 전송 에이전트
+GenericName[ko]=메일 설정
+GenericName[nl]=Configureer mail
+Name[pt]=Servidor de Correio - MTA
+GenericName[pt]=Configurar correio
+GenericName[sk]=Konfigurovať poštu
+Name[sv]=Överföringsagent för e-post (MTA)
+GenericName[sv]=Ställ in e-post
+GenericName[da]=Indstil e-post
+Name[el]=Πράκτορας Μεταφοράς Αλληλογραφίας
+GenericName[el]=Ρύθμιση αλληλογραφίας
+Name[fr]=Agent de transfert de mail
+GenericName[fr]=Configurer le courrier
+Name[ja]=メッセージ転送機能体
+GenericName[ja]=電子メールを設定する
+Name[lt]=Pašto gabenimo agentas
+GenericName[lt]=Konfigūruoti paštą
+Name[sl]=Posrednik za prenos pošte
+GenericName[sl]=Konfiguriraj pošto
+Name[tr]=Posta transfer yöneticisi
+GenericName[tr]=Posta yapılandırması düzenleyin
