@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Aug 24 09:34:11 CEST 2004 - mvidner@suse.cz
+
+- Fixed UI that was broken because of stricter type checking.
+- Improved firewall config writing to cooperate with autoyast.
+- 2.10.3
+
+-------------------------------------------------------------------
 Mon Aug 16 15:14:45 CEST 2004 - mvidner@suse.cz
 
 - Adjusted testsuite to changes in firewall.

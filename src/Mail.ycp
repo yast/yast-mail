@@ -662,7 +662,7 @@ a fixed format to be readable by YaST2.  For details, see
 	// listen_remote
 	SCR::Write (.sysconfig.mail.SMTPD_LISTEN_REMOTE,
 		    listen_remote? "yes":"no");
-	SuSEFirewall::Write ();
+	SuSEFirewall::WriteOnly ();
 
 	// connection_type
 	// nocanonify/nodns
@@ -1078,7 +1078,7 @@ a fixed format to be readable by YaST2.  For details, see
 
 	// ServiceAdjust enable/disable is done in WriteGeneral
 
-	return true;
+	return SuSEFirewall::ActivateConfiguration ();
     }
 
     /**
