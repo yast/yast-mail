@@ -77,6 +77,9 @@ automatically.</p>
 ");
     }
 
+    /**
+     * @return Help for Outgoing mail dialog
+     */
     global define string OutgoingDialogHelp () ``{
     //TODO: sformat with hostname.
 	// Translators: outgoing mail dialog help, part 1 of 3
@@ -120,6 +123,9 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>
 ");
     }
 
+    /**
+     * @return Help for Aliases dialog, with a "man_aliases" hyperlink.
+     */
     global define string AliasesDialogHelp () ``{
 	// Translators: aliases dialog help, part 1 of 2
 	return _("
