@@ -81,7 +81,7 @@ else if (func == "Change") {
     ret = MailAutoSequence();
 }
 /* Return actual state */
-else if (func == "Result") {
+else if (func == "Export") {
     ret = Mail::Export();
 }
 /* Write givven settings */
