@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Jan 14 17:30:20 CET 2003 - mvidner@suse.de
+
+- Added function key shortcuts for ncurses.
+
+-------------------------------------------------------------------
 Fri Jan 10 16:27:57 CET 2003 - mvidner@suse.de
 
 - Prevent agent from returning strings as integers/booleans (#21804).
