@@ -60,6 +60,7 @@ global define list<string> GetLocalUsers () ``{
 	import "Users";
 	import "UsersCache";
 
+	Users::SetGUI (false);
 	Users::Read ();
 	local_users = (list<string>) union (
 		    UsersCache::GetUsernames ("local"),
