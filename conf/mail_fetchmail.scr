@@ -16,6 +16,6 @@
 
 `ag_fetchmailrc (
   Fetchmail ($[
-    "filename": "/etc/fetchmailrc";
+    "filename": "/etc/fetchmailrc",
   ])
 )
