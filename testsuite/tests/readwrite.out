@@ -67,4 +67,5 @@ Read	.init.scripts.exists "fetchmail" true
 Execute	.target.bash "/etc/init.d/fetchmail stop" $["TERM":"raw"] 0
 Read	.init.scripts.exists "sendmail" true
 Execute	.target.bash "/etc/init.d/sendmail restart" $["TERM":"raw"] 0
+Execute	.target.bash "/etc/init.d/SuSEfirewall2_final start" $["TERM":"raw"] 0
 Return	true
