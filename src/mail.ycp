@@ -1,0 +1,40 @@
+/**
+ * File:
+ *   clients/mail.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Main file
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * Main file for mail configuration. Uses all other files.
+ *
+ */
+
+{
+    /***
+     * <h3>Configuration of the mail</h3>
+     */
+
+    textdomain "mail";
+
+    include "mail/ui.ycp";
+
+    /* The main () */
+    y2milestone ("Mail module started");
+    y2milestone ("----------------------------------------");
+
+    /* main ui function */
+    any ret = MailSequence ();
+    y2debug ("ret == %1", ret);
+
+    /* Finish */
+    y2milestone ("Mail module finished");
+    return ret;
+}

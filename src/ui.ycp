@@ -1,0 +1,412 @@
+/**
+ * File:
+ *   include/mail/ui.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   User interface functions.
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * All user interface functions.
+ *
+ */
+
+{
+
+textdomain "mail";
+
+import "Wizard";
+import "Wizard_hw";
+import "Progress";
+import "Mail";
+
+include "ui/common_popups.ycp";
+include "ui/common_messages.ycp";
+include "wizard/sequencer.ycp";
+
+include "mail/helps.ycp";
+
+/**
+ * Whole configuration of mail
+ */
+global define MailSequence () ``{
+    map aliases =
+	$[
+	    "read"	: [ ``( ReadDialog () ), true ],
+	    "main"	:   ``( MainSequence () ),
+	    "write"	: [ ``( WriteDialog () ), true ]
+	];
+
+    map sequence = $[
+	"ws_start" : "read",
+	"read" :
+	$[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" :
+	$[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    string caption = _("Mail configuration");
+    term contents = `Label (_("Initializing ..."));
+
+    Wizard::CreateDialog ();
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				"",
+				BackButtonLabel (),
+				NextButtonLabel ());
+
+    any ret = WizardSequencer (aliases, sequence);
+
+    UI::CloseDialog ();
+    return ret;
+}
+
+/**
+ * Whole configuration of mail but without reading and writing.
+ * For use with autoinstallation.
+ */
+global define MailAutoSequence () ``{
+    string caption = _("Mail configuration");
+    term contents = `Label (_("Initializing ..."));
+
+    Wizard::CreateDialog ();
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				"",
+				BackButtonLabel (),
+				NextButtonLabel ());
+
+    // Run the main configuration workflow
+    any ret = MainSequence ();
+
+    UI::CloseDialog ();
+    return ret;
+}
+
+/**
+ * Main workflow of the mail configuration
+ */
+global define MainSequence () ``{
+    // TODO FIXME: adapt the following to your needs!
+    map aliases =
+	$[
+	    "detected"	:   ``( DetectedDialog () ),
+	    "overview"	:   ``( OverviewDialog () ),
+	    "configure"	: [ ``( AddSequence () ), true ],
+	    "add"	: [ ``( AddSequence () ), true ],
+	    "edit"	: [ ``( AddSequence () ), true ]
+	];
+
+    // TODO FIXME: adapt the following to your needs!
+    map sequence = $[
+	"ws_start" : "detected",
+	"detected" :
+	$[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `configure_button: "configure",
+	    `edit_button: "overview"
+	],
+	"overview" :
+	$[
+	    `abort	: `abort,
+	    `next	: `next,
+	    `add_button	: "add",
+	    `edit_button: "edit"
+	],
+
+	"configure" :
+	$[
+	    `abort	: `abort,
+	    `next	: "detected",
+	],
+	"add" :
+	$[
+	    `abort	: `abort,
+	    `next	: "overview",
+	],
+	"edit" :
+	$[
+	    `abort	: `abort,
+	    `next	: "overview",
+	]
+    ];
+
+    any ret = WizardSequencer (aliases, sequence);
+
+    return ret;
+}
+
+/**
+ * Add a configuration of mail
+ */
+global define AddSequence () ``{
+    // TODO FIXME: adapt the following to your needs!
+    map aliases =
+	$[
+	    "config1"	: ``( Configure1Dialog () ),
+	    "config2"	: ``( Configure2Dialog () )
+	];
+
+    // TODO FIXME: adapt the following to your needs!
+    map sequence = $[
+	"ws_start" : "config1",
+	"config1" :
+	$[
+	    `abort	: `abort,
+	    `next	: "config2"
+	],
+	"config2" :
+	$[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    return WizardSequencer ( aliases, sequence );
+}
+
+/**
+ * Read settings dialog
+ */
+global define ReadDialog () ``{
+    // TODO FIXME Assign the true texts intead of these
+    string caption = _("Initializing mail configuration");
+    // TODO FIXME Set the right number of stages
+    integer no_of_stages = 3;
+
+    // TODO FIXME Names of real stages
+    Progress::New ( caption, " ", no_of_stages,
+		   [ _("Read the database"),
+		     _("Read the previous settings"),
+		     _("Detect the devices") ],
+		   [ _("Reading the database..."),
+		     _("Reading the previous settings..."),
+		     _("Detecting the devices..."),
+		     _("Finished") ],
+		   ReadDialogHelp () );
+
+    // A callback function for increasing the progress during read.
+    block callback = ``{
+	Progress::NextStage ();
+	return UI::PollInput () != `abort;
+    };
+
+    // Read the configuration
+    boolean was_ok = Mail::Read ( callback );
+
+    // TODO FIXME possibly handle the abort
+
+    return ( was_ok? `next : `abort );
+}
+
+/**
+ * Write settings dialog
+ */
+global define WriteDialog () ``{
+    // TODO FIXME Assign the true texts intead of these
+    string caption = _("Saving mail configuration");
+    // TODO FIXME And set the right number of stages
+    integer no_of_stages = 2;
+
+    // TODO FIXME Names of real stages
+    Progress::New ( caption, " ", no_of_stages,
+		   [ _("Write the settings"),
+		     _("Run SuSEconfig") ],
+		   [ _("Writing the settings..."),
+		     _("Running SuSEconfig..."),
+		     _("Finished") ],
+		   WriteDialogHelp () );
+
+    // Callback functions for increasing the progress and for [Abort] question
+    block callback = ``{
+	Progress::NextStage ();
+	return UI::PollInput () != `abort;
+    };
+    block callback_abort = ``{
+	return UI::ReallyAbortPopup ( true );
+    };
+
+    // Read the configuration
+    boolean was_ok = Mail::Write ( callback, callback_abort );
+
+    // TODO FIXME possibly handle the abort
+
+    return ( was_ok? `next : `abort );
+}
+
+/**
+ * Main dialog
+ */
+global define DetectedDialog () ``{
+    string caption = _("Mail setup");
+    // TODO FIXME modify the following according to your needs
+    term contents =
+	Wizard_hw::DetectedContent (_("Mail to configure"),
+				   [],
+				   false,
+				   Mail::Summary ());
+
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				DetectedDialogHelp (),
+				BackButtonLabel (),
+				FinishButtonLabel () );
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort)
+	{
+	    // TODO FIXME: check for change of the configuration
+	    if ( UI::ReallyAbortPopup ( true ) )
+		break;
+	    else
+		continue;
+	}
+	else
+	{
+	    /* TODO FIXME: your code ... */
+	    break;
+	}
+    };
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ */
+global define OverviewDialog () ``{
+    string caption = _("Mail overview");
+    // TODO FIXME: real data for the table
+    term contents =
+						 // For translators: Header of the table with installed cards
+	Wizard_hw::ConfiguredContent ( `header ( _("Number"),
+						 // For translators: Header of the table with installed cards
+						 _("Mail")),
+						 [],
+						 nil, nil, nil, nil );
+    contents = Wizard_hw::SpacingAround ( contents, 1.5, 1.5, 1.0, 1.0 );
+
+
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				OverviewDialogHelp (),
+				BackButtonLabel (),
+				FinishButtonLabel () );
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort)
+	{
+	    // TODO FIXME: check for change of the configuration
+	    if ( UI::ReallyAbortPopup ( true ) )
+		break;
+	    else
+		continue;
+	}
+	else
+	{
+	    /* TODO FIXME: your code ... */
+	    break;
+	}
+    };
+
+    return ret;
+}
+
+/**
+ * Configure1 dialog
+ * TODO FIXME: A more descriptive name for the dialog
+ */
+global define Configure1Dialog () ``{
+    // TODO FIXME: real configuration workflow
+    string caption = _("Mail configure1");
+    term contents = `Label (_("First part of configuration of mail"));
+
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				Configure1DialogHelp (),
+				BackButtonLabel (),
+				NextButtonLabel () );
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort)
+	{
+	    // TODO FIXME: check for change of the configuration
+	    if ( UI::ReallyAbortPopup ( true ) )
+		break;
+	    else
+		continue;
+	}
+	else
+	{
+	    /* TODO FIXME: your code ... */
+	    break;
+	}
+    };
+
+    return ret;
+}
+
+/**
+ * Configure2 dialog
+ * TODO FIXME: A more descriptive name for the dialog
+ */
+global define Configure2Dialog () ``{
+    // TODO FIXME: real configuration workflow
+    string caption = _("Mail configure2");
+    term contents = `Label (_("Second part of configuration of mail"));
+
+    Wizard::SetContentsButtons ( caption,
+				contents,
+				Configure2DialogHelp (),
+				BackButtonLabel (),
+				NextButtonLabel () );
+
+    any ret = nil;
+    while (true)
+    {
+	ret = UI::UserInput ();
+	if (ret == `abort)
+	{
+	    // TODO FIXME: check for change of the configuration
+	    if ( UI::ReallyAbortPopup ( true ) )
+		break;
+	    else
+		continue;
+	}
+	else
+	{
+	    /* TODO FIXME: your code ... */
+	    break;
+	}
+    };
+
+    return ret;
+}
+
+}

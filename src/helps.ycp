@@ -1,0 +1,86 @@
+/**
+ * File:
+ *   include/mail/helps.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Help texts of all the dialogs.
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * The help texts.
+ *
+ */
+
+{
+    textdomain "mail";
+
+    /**
+     * Help for the ReadDialog () dialog.
+     * return string The help text.
+     */
+    global define ReadDialogHelp () ``{
+	return
+	    // For translators: mail read dialog help, part 1 of 2
+_("<P>Help for ReadDialog ()...</P>") +
+	    // For translators: mail read dialog help, part 2 of 2
+_("<P>Split it to more _() if it has more paragraphs to make the life
+of the translators easier.</P>");
+    }
+
+    /**
+     * Help for the WriteDialog () dialog.
+     * return string The help text.
+     */
+    global define WriteDialogHelp () ``{
+	return
+	    // For translators: mail write dialog help, part 1 of 1
+_("<P>Help for WriteDialog ()...</P>");
+    }
+
+    /**
+     * Help for the DetectedDialog () dialog.
+     * return string The help text.
+     */
+    global define DetectedDialogHelp () ``{
+	return
+	    // For translators: mail detected dialog help, part 1 of 1
+_("<P>Help for DetectedDialog ()...</P>");
+    }
+
+    /**
+     * Help for the OverviewDialog () dialog.
+     * return string The help text.
+     */
+    global define OverviewDialogHelp () ``{
+	return
+	    // For translators: mail overview dialog help, part 1 of 1
+_("<P>Help for OverviewDialog ()...</P>");
+    }
+
+    /**
+     * Help for the Configure1Dialog () dialog.
+     * return string The help text.
+     */
+    global define Configure1DialogHelp () ``{
+	return
+	    // For translators: mail configure1 dialog help, part 1 of 1
+_("<P>Help for Configure1Dialog ()...</P>");
+    }
+
+    /**
+     * Help for the Configure2Dialog () dialog.
+     * return string The help text.
+     */
+    global define Configure2DialogHelp () ``{
+	return
+	    // For translators: mail configure2 dialog help, part 1 of 1
+_("<P>Help for Configure2Dialog ()...</P>");
+    }
+
+}

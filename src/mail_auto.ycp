@@ -1,0 +1,56 @@
+/**
+ * File:
+ *   mail_auto.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Client for autoinstallation
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * This is a client for autoinstallation. It takes its arguments,
+ * goes through the configuration and return the setting.
+ * Does not do any changes to the configuration.
+ */
+
+/**
+ * @param first a map of mail settings
+ * @return boolean success of operation
+ * @example map mm = $[ "FAIL_DELAY" : "77" ];
+ * @example map ret = CallModule ("mail_auto", [ mm ]);
+ */
+
+{
+    textdomain "mail";
+
+    import "Mail";
+
+    include "mail/ui.ycp";
+
+    list args = Args ();
+    if ( size (args) <= 0 )
+    {
+	y2error ("Did not get the settings, probably some mistake...");
+	return false;
+    }
+    if ( !is ( Args (0), map ) )
+    {
+	y2error ("Bad argument for mail_auto: %1", Args (0));
+	return false;
+    }
+
+    // The settings are in the first argument
+    map settings = select (args, 0);
+    y2milestone("Imported: (%1)", settings);
+
+    Mail::Import ( settings );
+
+    MailAutoSequence ();
+
+    return Mail::Export ();
+}

@@ -1,0 +1,131 @@
+/**
+ * File:
+ *   modules/Mail.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Data for configuration of mail, input and output functions.
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * Representation of the configuration of mail.
+ * Input and output routines.
+ *
+ */
+
+{
+    // Set the name of the module
+    module "Mail";
+
+    // Settings: Define all variables needed for configuration of mailX
+    // TODO FIXME: Define all the variables necessary to hold
+    // TODO FIXME: the configuration here (with the appropriate
+    // TODO FIXME: description)
+    // TODO FIXME: For example:
+    //   // List of the configured cards
+    //   list cards = [];
+    //   // Some additional parameter needed for the confgiuration
+    //   boolean additional_parameter
+
+    /**
+     * Read all mail settings from the SCR
+     * @param increase_progress A block that will be evaluated after each milestone.
+     *        It must return boolean to get known when we should stop after [Abort]
+     * @return boolean True on success
+     */
+    global define Read (block increase_progress) ``{
+	boolean read_aborted = false;
+
+	// TODO FIXME: your code here (fill the above mentioned variables)...
+	integer step = 0;
+	while (step < 3)
+	{
+	    read_aborted = !eval (increase_progress);
+	    if (read_aborted)
+	    {
+		break;
+	    }
+
+	    sleep (2000);
+	    step = step + 1;
+	};
+
+	// increase the progress to "finish"
+	eval (increase_progress);
+	return !read_aborted;
+    }
+
+    /**
+     * Update the SCR according to mail settings
+     * @param increase_progress A block that will be evaluated after each milestone.
+     *        It must return boolean to get known when we should stop after [Abort]
+     * @param really_abort A block that will be evaluated after [Abort],
+     *        because [Abort] in the time of writing could be critical...
+     *        It must return boolean to get known if we should really stop.
+     * @return boolean True on success
+     */
+    global define Write (block increase_progress, block really_abort) ``{
+	boolean write_aborted = false;
+
+	// TODO FIXME: your code here (store the above mentioned variables)...
+	integer step = 0;
+	while (step < 2)
+	{
+	    write_aborted = !eval (increase_progress);
+	    if (write_aborted && eval (really_abort))
+	    {
+		break;
+	    }
+	    write_aborted = false;
+
+	    sleep (2000);
+	    step = step + 1;
+	};
+
+	// increase the progress to "finish"
+	eval (increase_progress);
+	return !write_aborted;
+    }
+
+    /**
+     * Get all mail settings from the first parameter
+     * (For use by autoinstallation.)
+     * @param settings The YCP structure to be imported.
+     * @return boolean True on success
+     */
+    global define Import (map settings) ``{
+	// TODO FIXME: your code here (fill the above mentioned variables)...
+	sleep (3000);
+	return true;
+    }
+
+    /**
+     * Dump the mail settings to a single map
+     * (For use by autoinstallation.)
+     * @return map Dumped settings (later acceptable by Import ())
+     */
+    global define Export () ``{
+	// TODO FIXME: your code here (return the above mentioned variables)...
+	sleep (3000);
+	return $[];
+    }
+
+    /**
+     * Build a textual summary that can be used e.g. in inst_hw_config () or
+     * something similar.
+     * @return string Summary of the configuration.
+     */
+    global define Summary () ``{
+	// TODO FIXME: your code here...
+	return _("Summary of the configuration...");
+    }
+
+    // TODO FIXME: Your code (the needed operations with the settings)
+    // TODO FIXME: For example remembering the card being currently
+    // TODO FIXME: configured and storing it to the structures, etc.
+}

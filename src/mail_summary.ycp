@@ -1,0 +1,28 @@
+/**
+ * File:
+ *   mail_summary.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Summary for the last installation screen.
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *
+ * $Id$
+ *
+ * Summary for the last installation screen.
+ */
+
+{
+    textdomain "mail";
+
+    import "Mail";
+
+    // Do not show any progress during Read()
+    Mail::Read ( ``{ return true; } );
+
+    return Mail::Summary ();
+}
