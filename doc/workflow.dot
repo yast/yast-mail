@@ -1,0 +1,22 @@
+digraph "mail-workflow" {
+  "mail-1-conntype" ->
+  write
+
+  read ->
+  "mail-1-conntype" ->
+  "mail-21-outgoing" ->
+  "mail-22-incoming" ->
+  write [minlen=2]
+
+  {
+    rank=same
+    "mail-21-outgoing" -> "mail-2o-outgoing-details" [dir=both]
+    "mail-21-outgoing" -> "mail-2o-outgoing-authentication" [dir=both]
+  }
+  {
+    rank=same
+    "mail-22-incoming" -> "mail-2ia-download" [dir=both]
+    "mail-22-incoming" -> "mail-2ib-aliases" [dir=both]
+    "mail-22-incoming" -> "mail-2ic-virtdomains" [dir=both]
+  }
+}
