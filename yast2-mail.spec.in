@@ -1,6 +1,9 @@
 @HEADER-COMMENT@
 
-# neededforbuild  yast2-devel-packages yast2-firewall
+# What needs what:
+# yast2-firewall: yast2-network
+# Alphabetically:
+# neededforbuild  yast2-devel-packages yast2-firewall yast2-network
 
 @HEADER@
 Requires:	yast2 yast2-network
