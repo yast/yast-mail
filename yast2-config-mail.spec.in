@@ -1,6 +1,5 @@
 ## yast2-config-mail.spec.in, processed by y2tool create-spec,
 ## invoked automatically from Makefile.am
-
 @HEADER-COMMENT@
 
 # neededforbuild  autoconf automake ycpdoc yast2-testsuite dejagnu expect tcl yast2-base libycp liby2 libyui libscr yast2-core-wfm yast2-core-scr yast2-agent-system libycp-devel yast2-devtools
@@ -8,7 +7,9 @@
 @HEADER@
 
 Summary:	Configuration of mail
-Requires:	yast2 yast2-trans-mail yast2-lib-wizard yast2-lib-sequencer
+Requires:	yast2 yast2-trans-mail yast2-lib-sequencer
+Requires:	yast2-lib-wizard >= 2.5.8
+Requires:	yast2-agent-targetpkg
 BuildArchitectures:	noarch
 
 %description
