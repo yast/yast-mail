@@ -15,13 +15,16 @@ use Errno qw(ENOENT);
 # all comments are joined: "# foo\n# bar\n"
 my $comment;
 # global options. strings.
+# also contains unparsable items
 my @globals;
 # entries are maps with these keys, values are strings:
 # enabled (boolean), server, protocol, remote_user, local_user, password,
 # other_server_options, other_user_options
 my @accounts;
-# numbers of statements that did not parse - TODO - what to do with them?
-my @parse_errors;
+# Read only, set to "true" if there are entries we could not parse.
+# It is used to assure the user that we know there is unparsed data
+# and that we will not lose it
+my $have_unparsed;
 
 my $filename = "/etc/fetchmailrc";
 
@@ -32,7 +35,7 @@ sub parse_file ()
     $comment = "";
     @globals = ();
     @accounts = ();
-    @parse_errors = ();
+    $have_unparsed = "false";
 
     if (!open (FILE, $filename))
     {
@@ -67,10 +70,6 @@ sub parse_file ()
 	{
 	    # empty statements are ok.
 	}
-	elsif ($statement =~ /^\s*(set\s+.*)\s*$/s)
-	{
-	    push @globals, $1;
-	}
 	elsif ($statement =~ m{^\s*
 				(poll|server|skip) \s* ($stringre) \s* # $1 $2
 				protocol \s+ ([[:alnum:]]+) \s* # $3
@@ -99,11 +98,15 @@ sub parse_file ()
 	    push @accounts, $entry;
 	}
 	else
+	#elsif ($statement =~ /^\s*(set\s+.*)\s*$/s)
 	{
-	    #Unrecognized statement.
-	    #Note that we cannot log it because that could disclose a password.
-	    y2warning "ag_fetchmailrc: Parse error in statement $i";
-	    push @parse_errors, $i;
+	    # a global setting or an unrecognized statement
+	    push @globals, $statement;
+	    # does it look like a regular entry?
+	    if ($statement =~ /^poll /m) #m: ^ matches after newlines
+	    {
+		$have_unparsed = "true";
+	    }
 	}
     }
     return 1;
@@ -290,6 +293,10 @@ while ( <STDIN> )
 	elsif ($path eq ".accounts")
 	{
 	    ycp::Return (\@accounts, 1);
+	}
+	elsif ($path eq ".have_unparsed")
+	{
+	    ycp::Return ($have_unparsed);
 	}
 	else
 	{
