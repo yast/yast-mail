@@ -880,7 +880,7 @@ a fixed format to be readable by YaST2.  For details, see
 		.mail.postfix.sendercanonical,
 		.mail.aliases,
 		.mail.postfix.virtual,
-		.mail.postfix.auith,
+		.mail.postfix.auth,
 		];
 	}
 	else

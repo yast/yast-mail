@@ -917,7 +917,7 @@ global define symbol OutgoingAuthOptions() ``{
     if (ret == `next)
     {
 	// all querywidgets are already done by the validation part
-	Mail::Touch (smtp_auth[0]:$[] != config);
+	Mail::Touch (Mail::smtp_auth[0]:$[] != config);
 	Mail::smtp_auth[0] = config;
 	// removing? had to add it first so that there is something to remove.
 	if (config == $[])
