@@ -146,6 +146,49 @@
     /* ---------------------------------------------------------------- */
 
     /**
+     * Read only, set by ProbePackages.
+     * Use as an argument to require.ycp/DoInstallAndRemove
+     */
+    global list(string) install_packages = [];
+    /**
+     * Read only, set by ProbePackages.
+     * Use as an argument to require.ycp/DoInstallAndRemove
+     */
+    global list(string) remove_packages = [];
+
+    /**
+     * Detect which packages have to be installed
+     * and return a descriptive string for a plain text pop-up.
+     * @return "" or "Foo will be installed.\nBar will be installed.\n"
+     */
+    global define string ProbePackages () ``{
+	string message = "";
+	install_packages = [];
+	remove_packages = [];
+
+	if (use_amavis)
+	{
+	    string pkg = (mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
+	    if (! SCR::Read (.targetpkg.installed, pkg))
+	    {
+		install_packages = add (install_packages, pkg);
+		message = message + _("AMaViS, a virus scanner, will be installed.\n");
+	    }
+	}
+
+	if (connection_type == `dialup &&
+	    ! SCR::Read (.targetpkg.installed, "fetchmail"))
+	{
+	    install_packages = add (install_packages, "fetchmail");
+	    message = message + _("Fetchmail, a mail downloading utility, will be installed.\n");
+	}
+
+	return message;
+    }
+
+    /* ---------------------------------------------------------------- */
+
+    /**
      * Read all mail settings from the SCR
      * @param abort A block that can be called by Read to find
      *	      out whether abort is requested. Returns true if abort

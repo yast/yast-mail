@@ -46,6 +46,7 @@ global define symbol MailSequence () ``{
 	$[
 	    "read"	: [ ``( ReadDialog () ), true ],
 	    "main"	:   ``( MainSequence () ),
+	    "confirm"	: [ ``( ConfirmDialog () ), true],
 	    "write"	: [ ``( WriteDialog () ), true ]
 	];
 
@@ -59,6 +60,10 @@ global define symbol MailSequence () ``{
 	"main" :
 	$[
 	    `abort	: `abort,
+	    `next	: "confirm"
+	],
+	"confirm" :
+	$[
 	    `next	: "write"
 	],
 	"write" : $[
@@ -210,20 +215,26 @@ SuSEconfig will overwrite your changes."), setting));
 }
 
 /**
+ * Confirmation dialog before saving and installing needed packages
+ * @return `back or `next
+ */
+global define symbol ConfirmDialog () ``{
+    string message1 = _("The configuration will be written now.\n");
+    string message2 = Mail::ProbePackages ();
+    return UI::ContinueCancelPopup (message1 + message2) ? `next : `back;
+}
+
+/**
  * Write settings dialog
  * @return `abort or `next
  */
 global define symbol WriteDialog () ``{
-    // Install amavis package if it is not there.
+    // Install packages if needed.
     // Cannot do it in Write, autoinstall does it differently.
-    if (Mail::use_amavis)
+    if (size (Mail::install_packages) > 0 || size (Mail::remove_packages) > 0)
     {
-	string pkg = (Mail::mta == `sendmail)? "amavis-sendmail":"amavis-postfix";
-	if (! SCR::Read (.targetpkg.installed, pkg))
-	{
-	    // require.ycp
-	    DoInstallAndRemove ([pkg], []);
-	}
+	// require.ycp
+	DoInstallAndRemove (Mail::install_packages, Mail::remove_packages);
     }
 
     // Set help text
