@@ -1,7 +1,4 @@
-(nil)
-"
- only a comment
-
-"
-[] 
+nil
+"\n only a comment\n\n"
+[]
 ""

@@ -1,11 +1,6 @@
-(nil)
+nil
 ""
 [
-$["comment":" comment1
-","value":"destination","key":"alias1",] ,
-$["comment":" comment2
-","value":"foobar","key":"alias2",] ,
-] 
-" trailing
- comment
-"
+$["comment":" comment1\n", "key":"alias1", "value":"destination"], 
+$["comment":" comment2\n", "key":"alias2", "value":"foobar"]]
+" trailing\n comment\n"
