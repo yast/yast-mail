@@ -281,4 +281,31 @@ global define void WJ_Set (list(symbol) widgets) ``{
     });
 }
 
+/* ---------------------------------------------------------------- */
+// Layout
+// Helpers for frequently used layout idioms
+
+/**
+ * Make a RadioButtonGroup containing Left aligned widgets
+ * in a VBox that has VSpacing (0.2) as top/bottom padding.
+ * @param	g_id	group id
+ * @param	rbs	a list of widgets, usually RadioButtons
+ * @return	widget
+ */
+global define term RadioButtonVBox (symbol g_id,
+				    list(term) rbs) ``{
+    term spacing = `VSpacing (0.2);
+    term rb_vbox = `VBox (spacing);
+    foreach (term rb, rbs, ``{
+	term left_rb = `Left (rb);
+	rb_vbox = add (rb_vbox, left_rb);
+    });
+    rb_vbox = add (rb_vbox, spacing);
+
+    return `RadioButtonGroup (
+	`id (g_id),
+	rb_vbox
+	);
+}
+
 }
