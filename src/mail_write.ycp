@@ -52,7 +52,7 @@
     }
 
     Progress::off ();
-    boolean ret = Mail::Write ( ``{ return false; } );
+    boolean ret = Mail::Write ( ``{ return false; }, true );
     Progress::on ();
     return ret;
 }

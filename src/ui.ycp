@@ -235,7 +235,7 @@ global define symbol WriteDialog () ``{
     };
 
     // Read the configuration
-    boolean was_ok = Mail::Write ( callback );
+    boolean was_ok = Mail::Write ( callback, false );
 
     // TODO FIXME possibly handle the abort
 
