@@ -60,9 +60,12 @@ if(size(Args()) > 0 && is(Args(0), string)) {
 y2debug("func=%1", func);
 y2debug("param=%1", param);
 
+/* Import */
+if(func == "Import") {
+    ret = Mail::Import(param);
+}
 /* Create a  summary*/
 if(func == "Summary") {
-    Mail::Import(param);
     ret = Mail::Summary();
 }
 /* Reset configuration */
@@ -72,7 +75,6 @@ else if (func == "Reset") {
 }
 /* Change configuration (run AutoSequence) */
 else if (func == "Change") {
-    Mail::Import(param);
     ret = MailAutoSequence();
 }
 /* Return actual state */
@@ -83,7 +85,6 @@ else if (func == "Result") {
 else if (func == "Write") {
     import "Progress";
     Mail::write_only = true;
-    Mail::Import(param);
     Progress::off();
     ret = Mail::Write(``{ return false; });
     Progress::on();
