@@ -31,8 +31,6 @@
     y2milestone ("Mail module started");
     y2milestone ("----------------------------------------");
 
-    Mail::autoyast_config = false;
-
     /* main ui function */
     any ret = MailSequence ();
     y2debug ("ret == %1", ret);

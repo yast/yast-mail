@@ -141,13 +141,6 @@
     /* ---------------------------------------------------------------- */
 
     /**
-     * True if preparing data for autoinstallation. In that case,
-     * do not validate against the current system (eg. user names).
-     * TODO: Use Mode::config.
-     */
-    global boolean autoyast_config = false;
-
-    /**
      * Has the configuration been changed?
      * Can be used as an argument to UI::ReallyAbortPopup
      */
@@ -1014,7 +1007,7 @@ a fixed format to be readable by YaST2.  For details, see
      *
      */
     global define void Set(map settings) ``{
-	y2milestone("before %1", settings);
+	y2debug ("before %1", settings); // may contain passwords
 	settings = mapmap(`k,`v, settings,``{
 	    if (k == "mta" && is(v,symbol)) {
 		return([k,v]);
@@ -1052,8 +1045,7 @@ a fixed format to be readable by YaST2.  For details, see
 	aliases = settings["aliases"]: [];
 	merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
-	y2milestone("after %1", settings);
-	return;
+	y2debug ("after %1", settings); // may contain passwords
     }
 
 
@@ -1127,7 +1119,12 @@ a fixed format to be readable by YaST2.  For details, see
 	return summary;
     }
 
-
+    /**
+     * Summarizes a list of data
+     * @param title passed to Summary::AddHeader
+     * @param value a list (of scalars, lists or maps)
+     * @return Summary-formatted description
+     */
     define string ListItem(string title, any value) ``{
 	string summary = "";
 	summary = Summary::AddHeader(summary, title);

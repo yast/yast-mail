@@ -20,7 +20,7 @@
 
 /**
  * @param first a map of mail settings
- * @return map edited settings or an empty map if canceled
+ * @return list [`back, `next or `key; edited settings]
  * @example map mm = $[ "FAIL_DELAY" : "77" ];
  * @example map ret = CallModule ("mail_auto", [ mm ]);
  */
@@ -57,8 +57,6 @@
     }
 
     Mail::Import ( settings );
-    y2milestone("Imported: (%1)", settings); // may contain passwords
-    Mail::autoyast_config = true;
 
     define set_contents() ``{
 	term contents =

@@ -23,6 +23,7 @@ textdomain "mail";
 
 import "Wizard";
 import "Progress";
+import "Mode";
 import "Mail";
 
 include "ui/common_popups.ycp";
@@ -910,7 +911,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
     string address = lookup (default, "address", "");
     list(string) forbidden = maplist (`e, existing, ``( lookup (e, "user", "") ));
 
-    if (!Mail::autoyast_config && local_users == nil)
+    if (!Mode::config && local_users == nil)
     {
 	InitializeLocalUsers ();
     }
@@ -922,7 +923,7 @@ global define map MasqueradeUserPopup (map default, list(map) existing) ``{
 		`VSpacing(0.2),
 		// Translators: popup dialog heading
 		`Heading (_("Sender address rewriting")),
-		Mail::autoyast_config ?
+		Mode::config ?
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`user), _("&Local user"), user)) :
 		`Left (`ComboBox (`id (`user), `opt (`editable), _("&Local user"), local_users)),
@@ -1107,6 +1108,7 @@ global define map FetchmailPopup (map default, list(map) existing) ``{
 		`Left (`Password (`id (`password1), _("P&assword"), password)),
 		// Translators: text entry label
 		`Left (`Password (`id (`password2), _("Reenter pass&word"), password)),
+		// editable because entering a mail alias makes sense too
 		// Translators: text entry label
 		`Left (`ComboBox (`id (`luser), `opt (`editable), _("&Local user"), local_users)),
 		`VSpacing(0.2),
