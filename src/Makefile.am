@@ -23,6 +23,10 @@ module_DATA =			\
 	MailAliases.ycp		\
 	Mail.ycp
 
+mail:
+	ln -sf . mail
+
+ycpchook = mail
 
 EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA)
 

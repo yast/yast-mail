@@ -224,7 +224,7 @@ symbol preselect_connection_type = nil;
 define symbol ConnectionTypeDialog () ``{
     Wizard::SetScreenShotName ("mail-1-conntype");
 
-    list<symbol> widgets = [];
+    list widgets = [];
 
     symbol ct = Mail::connection_type;
     if (preselect_connection_type != nil)
@@ -379,10 +379,10 @@ define symbol OutgoingDialog () ``{
 	Label::BackButton (),
 	Label::NextButton ());
 
-    any ret = nil;
+    symbol ret = nil;
     while (true)
     {
-	ret = UI::UserInput ();
+	ret = (symbol) UI::UserInput ();
 	if (ret == `cancel)
 	{
 	    ret = `abort;
@@ -520,10 +520,10 @@ define symbol IncomingDialog () ``{
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
 
-    any ret = nil;
+    symbol ret = nil;
     while (true)
     {
-	ret = UI::UserInput ();
+	ret = (symbol) UI::UserInput ();
 	if (ret == `cancel)
 	{
 	    ret = `abort;
@@ -792,7 +792,7 @@ define symbol OutgoingDetailsDialog () ``{
 
     Wizard::SetContentsButtons (caption, contents, help , Label::BackButton (), Label::OKButton ());
 
-    any ret = nil;
+    symbol ret = nil;
     edit_touched = false;
     while (true)
     {
@@ -807,7 +807,7 @@ define symbol OutgoingDetailsDialog () ``{
 	    UI::SetFocus (`id (`tab));
 	}
 
-	ret = UI::UserInput ();
+	ret = (symbol) UI::UserInput ();
 	if (ret == `cancel)
 	{
 	    ret = `abort;
@@ -1294,12 +1294,19 @@ define symbol AliasesDialog () ``{
 	UI::SetFocus (`id (`tab));
 
 	ret = UI::UserInput ();
+
+	symbol ret_sym = nil;
+	if (is(ret,symbol))
+	{
+	    ret_sym = (symbol) ret;
+	}
+
 	if (ret == `cancel)
 	{
 	    ret = `abort;
 	}
 
-	if (contains ([`add, `edit, `delete], ret))
+	if (contains ([`add, `edit, `delete], ret_sym))
 	{
 	    aliases = EditTable((symbol)ret, aliases, ["alias", "destinations"],
 		AliasPopup, `tab);
@@ -1366,7 +1373,7 @@ define symbol VirtualDialog () ``{
     UI::ChangeWidget (`id (`edit), `Enabled, false);
     UI::ChangeWidget (`id (`delete), `Enabled, false);
 
-    any ret = nil;
+    symbol ret = nil;
     edit_touched = false;
     while (true)
     {
@@ -1377,7 +1384,7 @@ define symbol VirtualDialog () ``{
 	// Kludge, because a `Table still does not have a shortcut.
 	UI::SetFocus (`id (`tab));
 
-	ret = UI::UserInput ();
+	ret = (symbol) UI::UserInput ();
 	if (ret == `cancel)
 	{
 	    ret = `abort;

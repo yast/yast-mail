@@ -90,7 +90,7 @@ define list<map> EditTable (symbol action,
 	if (size (entry) > 0)
 	{
 	    integer i = 0;
-	    new_data = maplist (`e, data, ``{
+	    new_data = maplist (map e, data, ``{
 		i = i + 1;
 		return (i - 1 == entryno)? union (old_entry, entry): e;
 	    });
@@ -223,22 +223,30 @@ define boolean WJ_Validate_True (symbol id) ``{
  * @param	widgets which widgets to validate
  * @return	true if all widgets are ok
  */
-define boolean WJ_Validate (list<symbol> widgets) ``{
+define boolean WJ_Validate (list widgets) ``{
     boolean ok = true;
-    foreach (symbol id, widgets, ``{
+    foreach (any id, widgets, ``{
 	if (ok)
 	{
-	    map w_def = (map) lookup (Widgets, id, nil);
-	    if (w_def== nil)
+	    if (is(id,symbol))
 	    {
-		// report as the caller
-		y2error (1, "WJ: Missing widget definition for %1", id);
-		ok = false;
+		symbol id_sym = (symbol) id;
+		map w_def = (map) lookup (Widgets, id, nil);
+		if (w_def== nil)
+		{
+		    // report as the caller
+		    y2error (1, "WJ: Missing widget definition for %1", id);
+		    ok = false;
+		}
+		else
+		{
+		    boolean (symbol) validate = w_def["validate"]:WJ_Validate_True;
+		    ok = validate (id_sym);
+		}
 	    }
 	    else
 	    {
-		boolean (symbol) validate = w_def["validate"]:WJ_Validate_True;
-		ok = validate (id);
+		ok = false;
 	    }
 	}
 	else
@@ -260,11 +268,16 @@ define void WJ_Set_Missing (symbol id) ``{
  * Uses a global Widgets map. @ref widget_def
  * @param	widgets which widgets to commit
  */
-define void WJ_Set (list<symbol> widgets) ``{
-    foreach (symbol id, widgets, ``{
+define void WJ_Set (list widgets) ``{
+    foreach (any id, widgets, ``{
 
-	void (symbol) set_it = Widgets[id, "set"]:WJ_Set_Missing;
-	set_it (id);
+	if (is(id,symbol))
+	{
+	    symbol id_sym = (symbol) id;
+
+	    void (symbol) set_it = Widgets[id_sym, "set"]:WJ_Set_Missing;
+	    set_it (id_sym);
+	}
     });
 }
 

@@ -1041,7 +1041,7 @@ a fixed format to be readable by YaST2.  For details, see
      * @return True on success
      */
     global define boolean Write (block<boolean> abort) ``{
-	list stages = [
+	list<list> stages = [
 	    // Translators: progress label
 	    [ _("Writing general settings"), WriteGeneral ],
 	    ];
@@ -1104,7 +1104,9 @@ a fixed format to be readable by YaST2.  For details, see
      * @param settings The YCP structure to be imported.
      * @return True on success
      */
-    global define boolean Import (map settings) ``{
+    global define boolean Import (map Settings) ``{
+	map<string,any> settings = (map<string,any>) Settings;
+
 	y2debug ("before %1", settings); // may contain passwords
 	settings = mapmap(string k, any v, settings,``{
 	    if (k == "mta" && is(v,symbol)) {
@@ -1163,7 +1165,7 @@ a fixed format to be readable by YaST2.  For details, see
      * @return Dumped settings (later acceptable by Import ())
      */
     global define map Export () ``{
-	map settings = $[
+	map<string,any> settings = $[
 	    "mta": mta,
 	    "connection_type": connection_type,
 	    "listen_remote": listen_remote,
@@ -1185,7 +1187,8 @@ a fixed format to be readable by YaST2.  For details, see
 	}
 	// Dont export empty fields
 	foreach (string k, any v, settings, ``{
-	    if (contains ([ "", nil, [], $[] ], v))
+	    // FIXME: bug #35240
+	    if (contains ((list<any>)([ "", nil, [], $[] ]), v))
 	    {
 		settings = remove(settings, k);
 	    }

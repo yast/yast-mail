@@ -90,7 +90,7 @@ define string listToString (list<string> alist) ``{
  */
 define list<string> stringToList (string astring) ``{
     list<string> alist = splitstring (astring, " ,;");
-    return filter (`s, alist, ``(s != ""));
+    return filter (string s, alist, ``(s != ""));
 }
 
 /* ---------------------------------------------------------------- */

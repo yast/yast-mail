@@ -24,7 +24,7 @@
      * Help for the ReadDialog () dialog.
      * @return The help text.
      */
-    global define string ReadDialogHelp () ``{
+    define string ReadDialogHelp () ``{
 	// TODO FIXME: Modify it to your needs!
 	return
 	    // For translators: mail read dialog help, part 1 of 2
@@ -44,7 +44,7 @@ now.
      * Help for the WriteDialog () dialog.
      * @return The help text.
      */
-    global define string WriteDialogHelp () ``{
+    define string WriteDialogHelp () ``{
 	// TODO FIXME: Modify it to your needs!
 	return
 	    // For translators: mail write dialog help, part 1 of 2
@@ -63,7 +63,7 @@ An additional dialog will inform you whether it is safe to do so.
     /**
      * @return Help for MTA selection dialog
      */
-    global define string MtaSelectionDialogHelp () ``{
+    define string MtaSelectionDialogHelp () ``{
 	// Translators: mailer (MTA) selection dialog help, part 1 of 1
 	// do not translate MTA
 	return _("<p>Select the mail system (Mail Transfer Agent, MTA)
@@ -73,7 +73,7 @@ to install.</p>");
     /**
      * @return Help for Connection type dialog
      */
-    global define string ConnectionTypeDialogHelp () ``{
+    define string ConnectionTypeDialogHelp () ``{
 	// Translators: connection type dialog help, part 1 of 2
 	string s =  _("
 <p>How are you connected to the Internet? With a dial-up connection,
@@ -86,7 +86,7 @@ mails will not be sent immediately but rather after invoking
     /**
      * @return Help for Detailed address rewriting dialog
      */
-    global define string MasqueradingDialogHelp () ``{
+    define string MasqueradingDialogHelp () ``{
 	// Translators: masquerading dialog help, part 1 of 1
 	return _("
 <p>Specify the rewriting of the sender's address here for each user.</p>
@@ -96,7 +96,7 @@ mails will not be sent immediately but rather after invoking
     /**
      * @return Help for Detailed address rewriting dialog
      */
-    global define string AuthenticationDialogHelp () ``{
+    define string AuthenticationDialogHelp () ``{
 	// Translators: authentication dialog help 1/4
 	return _("
 <p>Some servers require authentication for sending mails. Here you can
@@ -127,7 +127,7 @@ They will not be lost.</p>
     /**
      * @return Help for Downloading dialog
      */
-    global define string DownloadingDialogHelp () ``{
+    define string DownloadingDialogHelp () ``{
 	// Translators: downloading dialog help, part 1 of 1
 	return _("
 <p>These are parameters for downloading mail from
@@ -138,7 +138,7 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>
     /**
      * @return Help for Aliases dialog, with a "man_aliases" hyperlink.
      */
-    global define string AliasesDialogHelp () ``{
+    define string AliasesDialogHelp () ``{
 	// Translators: aliases dialog help, part 1 of 2
 	return _("
 <p>This table redirects mail delivered locally.
@@ -155,7 +155,7 @@ for a description of advanced features.</p>
     /**
      * @return Help for virtual domains dialog
      */
-    global define string VirtualDialogHelp () ``{
+    define string VirtualDialogHelp () ``{
 	// Translators: virtual domains dialog help, part 1 of 2
 	return _("
 <p>This table redirects incoming mail. Unlike the alias table,
