@@ -25,7 +25,7 @@
 
     import "MailAliases";
     import "Report";
-    import "Runlevel";
+    import "Service";
     import "Summary";
     import "Progress";
     import "Require";
@@ -687,7 +687,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    y2internal("Unrecognized connection_type: %1", connection_type);
 	    return false;
 	}
-	Runlevel::ServiceAdjust (service, "enable");
+	Service::Enable (service);
 
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
@@ -695,7 +695,7 @@ a fixed format to be readable by YaST2.  For details, see
 	amavis_service = true;
 	if (amavis_service)
 	{
-	    Runlevel::ServiceAdjust ("amavis", use_amavis? "enable":"disable");
+	    Service::Adjust ("amavis", use_amavis? "enable":"disable");
 	}
 
 	// SENDMAIL_ARGS
@@ -1002,10 +1002,10 @@ a fixed format to be readable by YaST2.  For details, see
     define boolean WriteServices () ``{
 	if (amavis_service)
 	{
-	    Runlevel::RunInitScript ("amavis", "stop");
+	    Service::Stop ("amavis");
 	    if (use_amavis)
 	    {
-		if (Runlevel::RunInitScript ("amavis", "start") != 0)
+		if (!Service::Start ("amavis"))
 		{
 		    // Translators: error message
 		    Report::Error (sformat (_("Error starting service %1."), "amavis"));
@@ -1028,7 +1028,7 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 
-	if (Runlevel::RunInitScript (service, "restart") != 0)
+	if (!Service::Restart (service))
 	{
 	    // Translators: error message
 	    Report::Error (sformat (_("Error starting service %1."), service));
