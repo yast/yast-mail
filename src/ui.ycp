@@ -148,17 +148,7 @@ global define symbol MailSequence () ``{
 	    ]
 	];
 
-    // Translators: dialog caption
-    string caption = _("Mail configuration");
-    // label
-    term contents = `Label (_("Initializing..."));
-
     Wizard::CreateDialog ();
-    Wizard::SetContentsButtons ( caption,
-				contents,
-				"",
-				Label::BackButton (),
-				Label::NextButton ());
 
     // the second map must override the first!
     sequence = union (common_sequence, sequence);

@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 20 14:57:18 CEST 2003 - jsuchome@suse.de
+
+- removed redundant "initialization dialog" (#28779)
+- 2.8.6
+
+-------------------------------------------------------------------
 Tue Aug 12 06:17:51 CEST 2003 - nashif@suse.de
 
 - Import settings directly
