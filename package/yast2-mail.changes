@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Thu May 27 10:52:52 CEST 2004 - mvidner@suse.cz
+
+- Moved ag_fetchmailrc to yast2-mail-aliases because it's
+  needed by yast2-mail-server (#40972)
+- 2.9.16
+
+-------------------------------------------------------------------
+Tue May  4 09:50:01 CEST 2004 - mvidner@suse.cz
+
+- merged proofread messages
+- 2.9.15
+
+-------------------------------------------------------------------
 Fri Apr 16 15:51:32 CEST 2004 - mvidner@suse.cz
 
 - Mail::Import returns boolean (nashif)

@@ -54,7 +54,6 @@ Group:		System/YaST
 @scrconfdir@/cfg_mail.scr
 @scrconfdir@/cfg_postfix.scr
 @scrconfdir@/cfg_sendmail.scr
-@scrconfdir@/mail_fetchmail.scr
 @scrconfdir@/mail_p_auth.scr
 @scrconfdir@/mail_p_canonical.scr
 @scrconfdir@/mail_p_virtual.scr
@@ -62,7 +61,6 @@ Group:		System/YaST
 @scrconfdir@/mail_s_generics.scr
 @scrconfdir@/mail_s_virtuser.scr
 %dir @agentdir@
-@agentdir@/ag_fetchmailrc
 @agentdir@/ag_smtp_auth
 %doc @docdir@
 
@@ -72,5 +70,7 @@ Group:		System/YaST
 @moduledir@/MailAliases.y*
 %dir @scrconfdir@
 @scrconfdir@/mail_aliases.scr
+@scrconfdir@/mail_fetchmail.scr
 %dir @agentdir@
+@agentdir@/ag_fetchmailrc
 @agentdir@/ag_mailtable
