@@ -11,13 +11,13 @@ S2='s/,\] $/,\
 for CASE in test-mailtable-*.in; do
     CASE=${CASE%.in}
     echo $CASE
-    AGPROG='Mailtable ($["filename": "'$CASE.in'", "continue_escaped_newline": true, "continue_leading_blanks": true, "colon": true,])
-Read (.leading_comment)
-Read (.table)
-Read (.trailing_comment)'
+    AGPROG='`Mailtable ($["filename": "'$CASE.in'", "continue_escaped_newline": true, "continue_leading_blanks": true, "colon": true,])
+`Read (.leading_comment)
+`Read (.table)
+`Read (.trailing_comment)'
     echo "$AGPROG" \
-	| ./ag_mailtable "$@" \
-	| parseycp -n \
+	| ./ag_mailtable -l - "$@" \
+	| ycpc -l - -E - \
 	| sed -e "$S1" -e "$S2" > $CASE.out.tmp
     diff -u $CASE.out $CASE.out.tmp
 done
