@@ -109,10 +109,12 @@ simply leave these fields empty.</p>
 Enter the Internet service provider's SMTP server, such as <b>smtp.provider.com</b>.</p>
 ") +
 	// Translators: authentication dialog help 3/4
-	    _("\n<p>In the <b>User Name</b> field, enter the user name you got from your provider.</p>
+	    _("
+<p>In the <b>User Name</b> field, enter the user name you got from your provider.</p>
 ") +
 	// Translators: authentication dialog help 4/4
-	    _("\n<p>Enter your password in the <b>Password</b> field.</p>
+	    _("
+<p>Enter your password in the <b>Password</b> field.</p>
 ") +
 	// Translators: authentication dialog help, 5/4
 	    _("
