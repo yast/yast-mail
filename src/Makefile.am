@@ -8,8 +8,7 @@ myyncludedir = $(yncludedir)/mail
 
 client_DATA =			\
 	mail.ycp		\
-	mail_auto.ycp	\
-	mail_write.ycp
+	mail_auto.ycp
 
 myynclude_DATA =		\
 	helps.ycp		\
