@@ -16,7 +16,7 @@ X-SuSE-YaST-Geometry=
 X-SuSE-YaST-SortKey=
 X-SuSE-YaST-AutoInstClonable=true
 
-Icon=sendmail
+Icon=yast-mail
 Exec=/sbin/yast2 mail 
 
 Name=Mail Transfer Agent
