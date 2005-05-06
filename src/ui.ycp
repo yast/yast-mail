@@ -661,13 +661,13 @@ define boolean check_mail_address (string address) ``{
 /**
  * D2.1.1
  * Used for adding and editing a user masquerading entry.
- * @param default	$["user": "address":] or just $[]
+ * @param defaultv	$["user": "address":] or just $[]
  * @param existing	current masqueading list
  * @return		$["comment": "", "user": "address":] or $[] on cancel
  */
-define map MasqueradeUserPopup (map default, list<map> existing) ``{
-    string user = default["user"]:"";
-    string address = default["address"]:"";
+define map MasqueradeUserPopup (map defaultv, list<map> existing) ``{
+    string user = defaultv["user"]:"";
+    string address = defaultv["address"]:"";
     list<string> forbidden = maplist (map e, existing, ``( e["user"]:"" ));
 
     term contents =
@@ -1022,13 +1022,13 @@ define symbol OutgoingAuthOptions() ``{
 
 /**
  * D3.1
- * @param default
+ * @param defaultv
  *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
  * @param existing	unused
  * @return edited data (with no other fields) or $[] on cancel
  */
-define map FetchmailPopup (map default, list<map> existing) ``{
-    fetchmail_item = default;
+define map FetchmailPopup (map defaultv, list<map> existing) ``{
+    fetchmail_item = defaultv;
     fetchmail_item_touched = false;
 
     list<symbol> widgets = [
@@ -1200,13 +1200,13 @@ define symbol DownloadingDialog () ``{
 /**
  * D1.1.1, 1.2.1
  * Used for adding and editing an alias/virtual domain entry.
- * @param default	$["alias": "destinations": ?comment] or just $[]
+ * @param defaultv	$["alias": "destinations": ?comment] or just $[]
  * @param existing	current entry list
  * @return		$["comment": ""?, "alias": "destinations":] or $[] on cancel
  */
-define map AliasPopup (map default, list<map> existing) ``{
-    string alias = default["alias"]:"";
-    string destinations = default["destinations"]:"";
+define map AliasPopup (map defaultv, list<map> existing) ``{
+    string alias = defaultv["alias"]:"";
+    string destinations = defaultv["destinations"]:"";
     list<string> forbidden = maplist (map e, existing, ``( e["alias"]:"" ));
 
     term contents =
