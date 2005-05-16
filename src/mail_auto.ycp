@@ -33,8 +33,6 @@ y2milestone("Mail auto started");
 
 import "Mail";
 import "Mode";
-import "Mail";
-include "mail/ui.ycp";
 
 any ret = nil;
 string func = "";
