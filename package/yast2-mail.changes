@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue May 17 10:24:48 CEST 2005 - mvidner@suse.cz
+
+- Reverted a misguided omission of an include file.
+- 2.12.2
+
+-------------------------------------------------------------------
 Mon May 16 12:42:21 CEST 2005 - mvidner@suse.cz
 
 - Don't use "default" as an identifier.
