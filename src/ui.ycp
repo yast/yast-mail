@@ -1022,8 +1022,7 @@ define symbol OutgoingAuthOptions() ``{
 
 /**
  * D3.1
- * @param defaultv
- *	$[server:, protocol:, remote_user:, local_user:, password:, ...]
+ * @param defaultv $[server:, protocol:, remote_user:, local_user:, password:, ...]
  * @param existing	unused
  * @return edited data (with no other fields) or $[] on cancel
  */

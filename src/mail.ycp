@@ -56,13 +56,22 @@
 	preselect_connection_type = `dialup;
     }
 
-    // print summary in command line
+    /**
+     * CLI action handler.
+     * Print summary in command line
+     * @param options command options
+     * @return false so that Write is not called in non-interactive mode
+     */
     define boolean MailSummaryHandler (map options) {
 
 	CommandLine::Print (RichText::Rich2Plain (Mail::Summary ()));
 	return false;
     }
 
+    /**
+     * CLI initializer.
+     * @return whether successful
+     */
     define boolean MailRead () {
 
 	block<boolean> callback	= ``{

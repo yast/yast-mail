@@ -290,7 +290,7 @@
     }
 
     /**
-     * Whether rcfetchmail should run
+     * @return Whether rcfetchmail should run
      */
     define boolean RunFetchmailGlobally () ``{
 	return size (fetchmail) > 0;
@@ -1132,7 +1132,7 @@ a fixed format to be readable by YaST2.  For details, see
     /**
      * Get all mail settings from the first parameter
      * (For use by autoinstallation.)
-     * @param settings The YCP structure to be imported.
+     * @param Settings The YCP structure to be imported.
      * @return True on success
      */
     global define boolean Import (map Settings) ``{

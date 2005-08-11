@@ -6,7 +6,7 @@
  *   Configuration of mail
  *
  * Summary:
- *   Widget Juggler
+ *   Widget Juggler. One of the predecessors of CWM.
  *
  * Authors:
  *   Martin Vidner <mvidner@suse.cz>
@@ -124,6 +124,9 @@ define list<map> EditTable (symbol action,
 
 /**
  * Evaluate a function pointer, working around interpreter limitations
+ * @param fp pointer to a functin without parameters returning
+ *           boolean string symbol or list
+ * @return its return value as any
  */
 any evaluate_fp (any fp) {
     if (is (fp, boolean ()))
@@ -280,6 +283,11 @@ define boolean WJ_Validate (list widgets) ``{
     return ok;
 }
 
+/**
+ * Set a variable acording to widget value
+ * This is an error reporting  fallback if the real function was not defined
+ * @param id widget id
+ */
 define void WJ_Set_Missing (symbol id) ``{
     // report as the caller
     y2error (1, "WJ: Missing Set definition for %1", id);

@@ -111,10 +111,19 @@ map fetchmail_item = $[];
 boolean fetchmail_item_touched = false;
 
 
+/**
+ * (sample)
+ * @return a variable to be used by a widget
+ */
 define string Get_foo () ``{
     return fetchmail_item["protocol"]:"";
 }
 
+/**
+ * (sample)
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_foo (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -122,6 +131,12 @@ define void Set_foo (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "protocol", val);
 }
 
+/**
+ * (sample)
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_foo (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!Hostname::CheckDomain (val))
@@ -135,16 +150,28 @@ define boolean Validate_foo (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_outgoing_mail_server () ``{
      return Mail::outgoing_mail_server;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_outgoing_mail_server (symbol id) ``{
     string oms = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::outgoing_mail_server != oms);
     Mail::outgoing_mail_server = oms;
 }
 
+/**
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_outgoing_mail_server(symbol id) ``{
     // when validating: may be enclosed in brackets (prevents mx lookups)
     string oms = (string) UI::QueryWidget (`id (id), `Value);
@@ -166,10 +193,17 @@ define boolean Validate_outgoing_mail_server(symbol id) ``{
 }
 
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_from_header () ``{
      return Mail::from_header;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_from_header (symbol id) ``{
     string fh = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::from_header != fh);
@@ -187,16 +221,28 @@ define boolean Validate_from_header (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_local_domains () ``{
      return listToString (Mail::local_domains);
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_local_domains (symbol id) ``{
     list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
     Mail::Touch (Mail::local_domains != lld);
     Mail::local_domains = lld;
 }
 
+/**
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_local_domains (symbol id) ``{
     list<string> lld = stringToList ((string)UI::QueryWidget(`id (id), `Value));
     // find one that fails
@@ -223,20 +269,34 @@ define boolean Validate_local_domains (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define boolean Get_listen_remote () ``{
     return Mail::listen_remote;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_listen_remote (symbol id) ``{
     boolean lr = (boolean) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::listen_remote != lr);
     Mail::listen_remote = lr;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define boolean Get_use_amavis () ``{
     return Mail::use_amavis;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_use_amavis (symbol id) ``{
     boolean am = (boolean) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (Mail::use_amavis != am);
@@ -244,10 +304,17 @@ define void Set_use_amavis (symbol id) ``{
 }
 
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_fm_server () ``{
     return fetchmail_item["server"]:"";
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_fm_server (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -255,7 +322,12 @@ define void Set_fm_server (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "server", val);
 }
 
-// also used for smtp_auth server
+/**
+ * also used for smtp_auth server
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_fm_server (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!Hostname::CheckDomain (val))
@@ -269,10 +341,17 @@ define boolean Validate_fm_server (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_fm_protocol () ``{
     return fetchmail_item["protocol"]:"AUTO";
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_fm_protocol (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -280,10 +359,17 @@ define void Set_fm_protocol (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "protocol", val);
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_fm_remote_user () ``{
     return fetchmail_item["remote_user"]:"";
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_fm_remote_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -291,7 +377,12 @@ define void Set_fm_remote_user (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "remote_user", val);
 }
 
-// also used for smtp_auth user
+/**
+ * also used for smtp_auth user
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_fm_remote_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (val == "")
@@ -304,10 +395,17 @@ define boolean Validate_fm_remote_user (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_fm_password () ``{
     return fetchmail_item["password"]:"";
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_fm_password (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -316,10 +414,17 @@ define void Set_fm_password (symbol id) ``{
 }
 
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_fm_local_user () ``{
     return fetchmail_item["local_user"]:"";
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_fm_local_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     fetchmail_item_touched = fetchmail_item_touched ||
@@ -327,6 +432,11 @@ define void Set_fm_local_user (symbol id) ``{
     fetchmail_item = add (fetchmail_item, "local_user", val);
 }
 
+/**
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_fm_local_user (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     if (!check_mail_local_part (val))
@@ -340,16 +450,28 @@ define boolean Validate_fm_local_user (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define string Get_root_alias () ``{
     return MailAliases::root_alias;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_root_alias (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     Mail::Touch (MailAliases::root_alias != val);
     MailAliases::root_alias = val;
 }
 
+/**
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_root_alias (symbol id) ``{
     string val = (string) UI::QueryWidget (`id (id), `Value);
     // user@machine, \\root - too much variation, don't check yet
@@ -363,6 +485,9 @@ define boolean Validate_root_alias (symbol id) ``{
     return true;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
 define symbol Get_delivery_mode () ``{
     map scr2ui = $[
 	`local: `dm_local,
@@ -373,6 +498,10 @@ define symbol Get_delivery_mode () ``{
     return val;
 }
 
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
 define void Set_delivery_mode (symbol id) ``{
     symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
     map ui2scr = $[
@@ -385,6 +514,11 @@ define void Set_delivery_mode (symbol id) ``{
     Mail::postfix_mda = val;
 }
 
+/**
+ * Validate widget value
+ * @param id widget id
+ * @return valid?
+ */
 define boolean Validate_delivery_mode (symbol id) ``{
     symbol val = (symbol) UI::QueryWidget (`id (id), `Value);
     // Procmail is only OK if root has an alias
@@ -418,14 +552,23 @@ define boolean Validate_delivery_mode (symbol id) ``{
     return true;
 }
 
+/**
+ * @return list of choides for a combo box
+ */
 define list Choices_protocol () ``{
     return Mail::protocol_choices;
 }
 
+/**
+ * @return list of choides for a combo box
+ */
 define list Choices_local_user () ``{
     return GetLocalUsers ();
 }
 
+/**
+ * @return list of choides for a combo box
+ */
 define list Choices_delivery_mode () ``{
 
     return [
