@@ -937,8 +937,11 @@ define symbol OutgoingAuthOptions() ``{
 		),
 		`HWeight(3,
 		    `VBox(
+			// text entry
 			`TextEntry(`id(`server), _("Outgoing &Server")),
+			// text entry
 			`TextEntry(`id(`user),   _("&User name")),
+			// password entry
 			`Password( `id(`passw),  _("&Password"))
 		    )
 		),

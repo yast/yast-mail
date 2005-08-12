@@ -1308,12 +1308,18 @@ a fixed format to be readable by YaST2.  For details, see
 	summary = summary + ListItem (_("Masquerade Users"), masquerade_users, "user");
 	// summary header
 	summary = Summary::AddHeader(summary, _("Accept remote SMTP connections"));
-	// summary item
-	summary = Summary::AddLine(summary, (listen_remote) ? _("Yes") : _("No"));
+	summary = Summary::AddLine(summary, (listen_remote) ?
+				   // summary item
+				   _("Yes") :
+				   // summary item
+				   _("No"));
 	// summary header
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
-	// summary item
-	summary = Summary::AddLine(summary, (use_amavis) ? _("Yes") : _("No"));
+	summary = Summary::AddLine(summary, (use_amavis) ?
+				   // summary item
+				   _("Yes") :
+				   // summary item
+				   _("No"));
 	// summary item
 	summary = summary + ListItem (_("Fetchmail"), fetchmail, "server");
 	// summary item
