@@ -255,6 +255,28 @@
 		// Translators: popup message part, ends with a newline
 		message = message + _("AMaViS, a virus scanner, will be installed.\n");
 	    }
+
+	    if (! Package::Installed ("clamav"))
+	    {
+		// #115295
+		// Amavis alone will block incoming mail if no scanner is found
+		// We ship clamav but not on opensuse
+		// Clamav can work without clamav-db.rpm if set up manually
+		// so we do not check Installed "clamav-db"
+		y2milestone ("clamav not installed");
+		if (! Package::AvailableAll (["clamav", "clamav-db"]))
+		{
+		    // error popup. 
+		    Report::Error (_("AMaViS needs a virus scanner such as ClamAV
+to do the actual scanning, but ClamAV was not found.
+Configure a scanner manually."));
+		}
+		else
+		{
+		    install_packages = add (install_packages, "clamav");
+		    install_packages = add (install_packages, "clamav-db");
+		}
+	    }
 	}
 
 	if (size (fetchmail) > 0 &&

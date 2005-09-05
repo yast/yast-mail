@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep  5 17:35:20 CEST 2005 - mvidner@suse.cz
+
+- If AMaViS is wanted install also ClamAV to prevent mail from
+  piling up in the incoming queue (#115295).
+- 2.12.4
+
+-------------------------------------------------------------------
 Fri Aug 12 15:04:24 CEST 2005 - mvidner@suse.cz
 
 - Added comments for translators.
