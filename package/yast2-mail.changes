@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Nov 23 16:56:19 CET 2005 - mvidner@suse.cz
+
+- ag_fetchmailrc: allow * as the local user to enable multidrop
+  (with varkoly).
+- 2.13.0
+
+-------------------------------------------------------------------
 Mon Sep  5 17:35:20 CEST 2005 - mvidner@suse.cz
 
 - If AMaViS is wanted install also ClamAV to prevent mail from

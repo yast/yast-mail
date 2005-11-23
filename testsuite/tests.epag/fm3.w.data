@@ -1,0 +1,2 @@
+# Edit carefully, see /usr/share/doc/packages/yast2-mail/fetchmailrc.txt
+poll "pop3.example.com" protocol AUTO : user "common" there with password "secret" is * here ;

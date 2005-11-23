@@ -79,7 +79,7 @@ sub parse_file ()
 				: \s*
 				user \s* ($stringre) \s* there \s+ # $5
 				with \s+ password \s* ($stringre) \s* # $6
-				is \s* ($stringre) \s* here \s* # $7
+				is \s* ($stringre|\*) \s* here \s* # $7
 				(.*) # $8
 			       }xso) # whitespace, dot matches \n, compile once
 	{
@@ -93,7 +93,12 @@ sub parse_file ()
 	    $entry->{other_server_options} = $4;
 	    $entry->{remote_user} = read_string ($5);
 	    $entry->{password} = read_string ($6);
-	    $entry->{local_user} = read_string ($7);
+	    # local_user: return * as "*" to allow multidrop
+	    if( $7 eq '*' ) {
+	       $entry->{local_user} = '*';
+	    } else {
+	       $entry->{local_user} = read_string ($7);
+	    }
 	    $entry->{other_user_options} = $8;
 	    push @accounts, $entry;
 	}
@@ -191,7 +196,11 @@ sub write_file ()
 	print FILE ":";
 	print FILE " user ", write_string ($entry->{remote_user}), " there";
 	print FILE " with password ", write_string ($entry->{password});
-	print FILE " is ", write_string ($entry->{local_user}), " here ";
+	if( $entry->{local_user} eq '*' ) {
+	  print FILE " is * here ";
+	} else {
+	  print FILE " is ", write_string ($entry->{local_user}), " here ";
+	}
 	print FILE $entry->{other_user_options} || "";
 	print FILE ";\n"
     }

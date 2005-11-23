@@ -1,0 +1,3 @@
+# multidrop: * for local user
+poll "pop3.example.com" protocol AUTO:
+     user "common" there with password "secret" is * here;
