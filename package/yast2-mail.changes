@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan  5 10:01:38 CET 2006 - mvidner@suse.cz
+
+- Adjusted testsuite for changes in firewall code.
+- 2.13.1
+
+-------------------------------------------------------------------
 Wed Nov 23 16:56:19 CET 2005 - mvidner@suse.cz
 
 - ag_fetchmailrc: allow * as the local user to enable multidrop
