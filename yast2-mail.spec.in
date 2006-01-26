@@ -1,9 +1,9 @@
 @HEADER-COMMENT@
 
 # Alphabetically:
-# neededforbuild  yast2-devel-packages
 
 @HEADER@
+BuildRequires:	yast2-devel-packages
 # new firewall interface
 Requires:	yast2 >= 2.11.11
 Requires:	yast2-mail-aliases
