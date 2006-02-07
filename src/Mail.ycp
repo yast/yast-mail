@@ -1290,20 +1290,28 @@ a fixed format to be readable by YaST2.  For details, see
 
 	string agent = "";
 	if (mta == `sendmail)
-	     agent = "sendmail";
+	    // MTA used: Sendmail
+	    // Not translated
+	    agent = "Sendmail";
 	else if (mta == `postfix)
-	    agent = "postfix";
+	    // MTA used: Postfix
+	    // Not translated
+	    agent = "Postfix";
 	else
-	    agent = "other";
+	    // MTA used: other than Sendmail or Postfix
+	    agent = _("Other");
 
 
 	string con_type = "";
 	if (connection_type == `permanent)
-	    con_type = "Permanent";
+	    // summary: connection type
+	    con_type = _("Permanent");
 	else if (connection_type == `dialup)
-	    con_type = "Dialup";
+	    // summary: connection type
+	    con_type = _("Dial-up");
 	else
-	    con_type = "None";
+	    // summary: connection type
+	    con_type = _("None");
 
 	string nc = Summary::NotConfigured ();
 	string summary = "";

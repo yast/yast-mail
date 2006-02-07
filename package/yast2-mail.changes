@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Feb  7 17:17:23 CET 2006 - mvidner@suse.cz
+
+- Marked some autoyast summary strings for translation (#146661).
+
+-------------------------------------------------------------------
 Mon Jan 16 15:13:23 CET 2006 - mvidner@suse.cz
 
 - Again adjusted test cases for NetworkManager related changes (~#135595).
