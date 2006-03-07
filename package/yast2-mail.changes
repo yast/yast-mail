@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Mar  7 17:28:30 CET 2006 - mvidner@suse.cz
+
+- Converted neededforbuild to BuildRequires
+  and removed yast2-devel-packages.
+- 2.13.3
+
+-------------------------------------------------------------------
 Tue Feb  7 17:17:23 CET 2006 - mvidner@suse.cz
 
 - Marked some autoyast summary strings for translation (#146661).
