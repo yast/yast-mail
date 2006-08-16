@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Wed Aug 16 12:35:29 CEST 2006 - kmachalkova@suse.cz
+
+- Install cyrus-imapd if POSTFIX_MDA is set to 'cyrus' (#172108) 
+- 2.13.4
+
+-------------------------------------------------------------------
 Tue Mar  7 17:28:30 CET 2006 - mvidner@suse.cz
 
 - Converted neededforbuild to BuildRequires
