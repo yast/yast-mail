@@ -1,8 +1,9 @@
 -------------------------------------------------------------------
-Tue Sep  5 10:24:55 CEST 2006 - mvidner@suse.cz
+Tue Sep  5 17:32:52 CEST 2006 - mvidner@suse.cz
 
 - Copy the outgoing mail server from the authentication dialog to the
   main dialog to avoid inconsistency (#158220).
+- At initialization, don't show a separate firewall progress dialog.
 
 -------------------------------------------------------------------
 Wed Aug 16 12:35:29 CEST 2006 - kmachalkova@suse.cz

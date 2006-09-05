@@ -379,7 +379,9 @@ Configure a scanner manually."));
 
 	// open port
 	listen_remote = SCR::Read (.sysconfig.mail.SMTPD_LISTEN_REMOTE)=="yes";
+	boolean old = Progress::set (false);
 	SuSEFirewall::Read ();
+	Progress::set (old);
 
 	// connection_type:
 	boolean nc = false;
