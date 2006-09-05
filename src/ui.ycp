@@ -1018,6 +1018,12 @@ define symbol OutgoingAuthOptions() ``{
 	{
 	    Mail::smtp_auth = remove (Mail::smtp_auth, 0);
 	}
+	else
+	{
+	    // #158220
+	    Mail::Touch (Mail::outgoing_mail_server != config["server"]:"");
+	    Mail::outgoing_mail_server = config["server"]:"";
+	}
     }
     Wizard::RestoreScreenShotName ();
     return (symbol)ret;
