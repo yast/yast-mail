@@ -379,9 +379,9 @@ Configure a scanner manually."));
 
 	// open port
 	listen_remote = SCR::Read (.sysconfig.mail.SMTPD_LISTEN_REMOTE)=="yes";
-	boolean old = Progress::set (false);
+	boolean progress_orig = Progress::set (false);
 	SuSEFirewall::Read ();
-	Progress::set (old);
+        Progress::set (progress_orig);
 
 	// connection_type:
 	boolean nc = false;
@@ -676,7 +676,9 @@ a fixed format to be readable by YaST2.  For details, see
 	// listen_remote
 	SCR::Write (.sysconfig.mail.SMTPD_LISTEN_REMOTE,
 		    listen_remote? "yes":"no");
+	boolean progress_orig = Progress::set (false);
 	SuSEFirewall::WriteOnly ();
+	Progress::set (progress_orig);
 
 	// connection_type
 	// nocanonify/nodns

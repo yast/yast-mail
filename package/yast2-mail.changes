@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Sep 11 13:53:04 CEST 2006 - mvidner@suse.cz
+
+- Fixed Progress nesting (#202351).
+- Using autodocs-ycp.ami (with parentheses for automake-1.9.6).
+- 2.13.6
+
+-------------------------------------------------------------------
 Tue Sep  5 17:35:46 CEST 2006 - mvidner@suse.cz
 
 - Copy the outgoing mail server from the authentication dialog to the

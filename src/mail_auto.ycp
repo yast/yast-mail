@@ -106,9 +106,9 @@ else if (func == "SetModified") {
 else if (func == "Write") {
     import "Progress";
     Mail::write_only = true;
-    Progress::off();
+    boolean progress_orig = Progress::set(false);
     ret = Mail::Write(abort_block);
-    Progress::on();
+    Progress::set(progress_orig);
     return ret;
 }
 /* Unknown function */
