@@ -59,12 +59,56 @@ define list<string> GetLocalUsers () ``{
 	// initialize the list
 	import "Users";
 	import "UsersCache";
+	import "Ldap";
+
+	UI::OpenDialog (`VBox (
+	    // LogView label. take a string from users?
+	    `LogView (`id (`progress), _("Reading the &User List"),
+		      // visible, max
+		      4, 10),
+	    `VSpacing (1)));
 
 	Users::SetGUI (false);
+	local_users = [];
+
+	UI::ChangeWidget (`id (`progress), `LastLine,
+			  // LogView progress line
+			  _("Local users") + "\n");
 	Users::Read ();
-	local_users = (list<string>) union (
-		    UsersCache::GetUsernames ("local"),
-		    UsersCache::GetUsernames ("system"));
+	local_users = flatten ([local_users, 
+				UsersCache::GetUsernames ("local"),
+				UsersCache::GetUsernames ("system")]);
+
+	if (Users::LDAPAvailable ())
+	{
+	    UI::ChangeWidget (`id (`progress), `LastLine,
+			      // LogView progress line
+			      _("LDAP users") + "\n");
+
+	    if (Users::LDAPNotRead ())
+	    {
+		// open the popup that asks for password (or anonymous access)
+		//if (Ldap::bind_pass == nil)
+		//    Ldap::SetBindPassword (Ldap::GetLDAPPassword (true));
+		// alternatively, force anonymous access:
+		Ldap::SetAnonymous (true);
+		Users::ReadNewSet ("ldap");
+	    }
+	    local_users = flatten ([local_users, 
+				    UsersCache::GetUsernames ("ldap")]);
+	}
+
+	if (Users::NISAvailable ())
+	{
+	    UI::ChangeWidget (`id (`progress), `LastLine,
+			      // LogView progress line
+			      _("NIS users") + "\n");
+	    Users::ReadNewSet ("nis");
+	    local_users = flatten ([local_users, 
+				    UsersCache::GetUsernames ("nis")]);
+	}
+	
+	UI::CloseDialog ();
     }
     return local_users;
 }

@@ -287,6 +287,13 @@ Configure a scanner manually."));
 	    message = message + _("Fetchmail, a mail downloading utility, will be installed.\n");
 	}
 
+	if ((postfix_mda == `cyrus) &&
+		! Package::Installed("cyrus-imapd"))
+	{
+		install_packages = add(install_packages,"cyrus-imapd");
+	    // Translators: popup message part, ends with a newline
+	    message = message + _("Cyrus-imapd, an IMAP server, will be installed.\n");
+	}
 	return message;
     }
 
@@ -372,7 +379,9 @@ Configure a scanner manually."));
 
 	// open port
 	listen_remote = SCR::Read (.sysconfig.mail.SMTPD_LISTEN_REMOTE)=="yes";
+	boolean progress_orig = Progress::set (false);
 	SuSEFirewall::Read ();
+        Progress::set (progress_orig);
 
 	// connection_type:
 	boolean nc = false;
@@ -667,7 +676,9 @@ a fixed format to be readable by YaST2.  For details, see
 	// listen_remote
 	SCR::Write (.sysconfig.mail.SMTPD_LISTEN_REMOTE,
 		    listen_remote? "yes":"no");
+	boolean progress_orig = Progress::set (false);
 	SuSEFirewall::WriteOnly ();
+	Progress::set (progress_orig);
 
 	// connection_type
 	// nocanonify/nodns
