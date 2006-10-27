@@ -4,91 +4,101 @@ namespace config = "http://www.suse.com/1.0/configns"
 
 mail =
   element mail {
-    aliases?,
-    connection_type,
-    fetchmail?,
-    from_header?,
-    listen_remote?,
-    local_domains?,
-    masquerade_other_domains?,
-    masquerade_users?,
-    mta,
-    outgoing_mail_server?,
-    use_amavis?,
+    aliases? &
+    connection_type &
+    fetchmail? &
+    from_header? &
+    listen_remote? &
+    local_domains? &
+    masquerade_other_domains? &
+    masquerade_users? &
+    mta &
+    outgoing_mail_server? &
+    postfix_mda? &
+    use_amavis? &
     virtual_users?
   }
+
+# we have code to accept it as symbol or string
+mail_SYMBOL_OR_TEXT =
+  attribute config:type { "symbol" }? 
 
 aliases =
   element aliases {
     LIST,
-    alias+
+    element alias {
+      element alias { text } &
+      element destinations { text } &
+      element comment { text }
+    }*
   }
-alias = element alias { (text | alias | comment | destinations)* }
-destinations = element destinations { text }
 
 connection_type =
   element connection_type {
-    attribute config:type { text },
-    text
+    mail_SYMBOL_OR_TEXT,
+    ( "permanent" | "dialup" | "none" )
   }
 
 fetchmail =
   element fetchmail {
     LIST,
-    fetchmail_entry+
+    element fetchmail_entry {
+      element server { text } &
+      element protocol { text } &
+      element remote_user { text } &
+      element local_user { text } &
+      element password { text }
+    }+
   }
-fetchmail_entry =
-  element fetchmail_entry {
-    local_user, password, protocol, remote_user, server
-  }
-local_user = element local_user { text }
-password = element password { text }
-protocol = element protocol { text }
-remote_user = element remote_user { text }
-server = element server { text }
 
 from_header = element from_header { text }
 
-listen_remote =
-  element listen_remote {
-    attribute config:type { text },
-    text
-  }
+listen_remote = element listen_remote { BOOLEAN }
 
 local_domains =
   element local_domains {
     LIST,
-    domains
+    element domains { text }*
   }
-domains = element domains { text }
 
 masquerade_other_domains =
   element masquerade_other_domains {
     LIST,
-    domain+
+    element domain { text }*
   }
-#  <!ELEMENT domain (#PCDATA)>  redefined in networking
 
 masquerade_users =
   element masquerade_users {
     LIST,
-    masquerade_user+
+    element masquerade_user {
+      element user { text } &
+      element address { text } &
+      element comment { text }?
+    }*
   }
-masquerade_user = element masquerade_user { address, comment, user }
-address = element address { text }
 
 mta =
-  element mta { SYMBOL }
+  element mta {
+    mail_SYMBOL_OR_TEXT,
+    ( "sendmail" | "postfix" )
+  }
 
 outgoing_mail_server = element outgoing_mail_server { text }
 
-use_amavis =
-  element use_amavis { BOOLEAN }
+postfix_mda =
+  element postfix_mda {
+    mail_SYMBOL_OR_TEXT,
+    ( "local" | "procmail" | "cyrus" )
+  }
+
+use_amavis = element use_amavis { BOOLEAN }
 
 virtual_users =
   element virtual_users {
     LIST,
-    virtual_user+
+    element virtual_user {
+      element alias { text } &
+      element destinations { text } &
+      element comment { text }?
+    }*
   }
-virtual_user = element virtual_user { alias, comment, destinations }
-# <!ELEMENT user (#PCDATA)>
