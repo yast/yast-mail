@@ -31,6 +31,6 @@ mail:
 
 ycpchook = mail
 
-EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA) $(rnc_DATA)
 
 include $(top_srcdir)/Makefile.am.common
