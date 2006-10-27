@@ -23,6 +23,9 @@ module_DATA =			\
 	MailAliases.ycp		\
 	Mail.ycp
 
+rncdir =  $(schemadir)/autoyast/rnc
+rnc_DATA = mail.rnc
+
 mail:
 	ln -sf . mail
 

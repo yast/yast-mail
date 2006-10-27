@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Oct 27 17:08:01 CEST 2006 - mvidner@suse.cz
+
+- Added schema piece for autoyast (mail.rnc).
+
+-------------------------------------------------------------------
 Mon Sep 11 13:53:04 CEST 2006 - mvidner@suse.cz
 
 - Fixed Progress nesting (#202351).
