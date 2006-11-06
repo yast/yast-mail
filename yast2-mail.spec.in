@@ -51,6 +51,8 @@ Group:		System/YaST
 @moduledir@/Mail.y*
 %dir @desktopdir@
 @desktopdir@/mail.desktop
+%dir @schemadir@/autoyast/rnc
+@schemadir@/autoyast/rnc/mail.rnc
 %dir @scrconfdir@
 @scrconfdir@/cfg_amavis.scr
 @scrconfdir@/cfg_postfix.scr

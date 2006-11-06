@@ -23,11 +23,14 @@ module_DATA =			\
 	MailAliases.ycp		\
 	Mail.ycp
 
+rncdir =  $(schemadir)/autoyast/rnc
+rnc_DATA = mail.rnc
+
 mail:
 	ln -sf . mail
 
 ycpchook = mail
 
-EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA) $(rnc_DATA)
 
 include $(top_srcdir)/Makefile.am.common

@@ -1,0 +1,104 @@
+default namespace = "http://www.suse.com/1.0/yast2ns"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace config = "http://www.suse.com/1.0/configns"
+
+mail =
+  element mail {
+    aliases? &
+    connection_type &
+    fetchmail? &
+    from_header? &
+    listen_remote? &
+    local_domains? &
+    masquerade_other_domains? &
+    masquerade_users? &
+    mta &
+    outgoing_mail_server? &
+    postfix_mda? &
+    use_amavis? &
+    virtual_users?
+  }
+
+# we have code to accept it as symbol or string
+mail_SYMBOL_OR_TEXT =
+  attribute config:type { "symbol" }? 
+
+aliases =
+  element aliases {
+    LIST,
+    element alias {
+      element alias { text } &
+      element destinations { text } &
+      element comment { text }
+    }*
+  }
+
+connection_type =
+  element connection_type {
+    mail_SYMBOL_OR_TEXT,
+    ( "permanent" | "dialup" | "none" )
+  }
+
+fetchmail =
+  element fetchmail {
+    LIST,
+    element fetchmail_entry {
+      element server { text } &
+      element protocol { text } &
+      element remote_user { text } &
+      element local_user { text } &
+      element password { text }
+    }+
+  }
+
+from_header = element from_header { text }
+
+listen_remote = element listen_remote { BOOLEAN }
+
+local_domains =
+  element local_domains {
+    LIST,
+    element domains { text }*
+  }
+
+masquerade_other_domains =
+  element masquerade_other_domains {
+    LIST,
+    element domain { text }*
+  }
+
+masquerade_users =
+  element masquerade_users {
+    LIST,
+    element masquerade_user {
+      element user { text } &
+      element address { text } &
+      element comment { text }?
+    }*
+  }
+
+mta =
+  element mta {
+    mail_SYMBOL_OR_TEXT,
+    ( "sendmail" | "postfix" )
+  }
+
+outgoing_mail_server = element outgoing_mail_server { text }
+
+postfix_mda =
+  element postfix_mda {
+    mail_SYMBOL_OR_TEXT,
+    ( "local" | "procmail" | "cyrus" )
+  }
+
+use_amavis = element use_amavis { BOOLEAN }
+
+virtual_users =
+  element virtual_users {
+    LIST,
+    element virtual_user {
+      element alias { text } &
+      element destinations { text } &
+      element comment { text }?
+    }*
+  }
