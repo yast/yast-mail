@@ -159,6 +159,14 @@ foreach my $s (split /\n/, $foo)
 }
 }
 
+# #207305
+sub get_fetchmail_user ()
+{
+    my $user = qx'. /etc/sysconfig/fetchmail; echo ${FETCHMAIL_USER:-fetchmail}';
+    chomp $user;
+    return $user;
+}
+
 sub write_string ($)
 {
     $_ = shift;
@@ -211,6 +219,13 @@ sub write_file ()
 	rename $filename, "$filename.YaST2.save" or return y2error ("Creating backup: $!"), 0;
     }
     rename "$filename.YaST2.new", $filename or return y2error ("Moving temp file: $!"), 0;
+
+    my $user = get_fetchmail_user ();
+    my $chown_out = qx"chown $user: $filename 2>&1";
+    if ($chown_out ne "")
+    {
+	return y2error ("Changing ownership to $user: $chown_out"), 0;
+    }
     return 1;
 }
 

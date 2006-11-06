@@ -108,6 +108,7 @@ define list<string> GetLocalUsers () ``{
 				    UsersCache::GetUsernames ("nis")]);
 	}
 	
+	Users::SetGUI (true);	// reenables Report
 	UI::CloseDialog ();
     }
     return local_users;

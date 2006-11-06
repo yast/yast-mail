@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Nov  6 13:43:27 CET 2006 - mvidner@suse.cz
+
+- chown /etc/fetchmailrc to $FETCHMAIL_USER (#207305).
+- display errors that occur during writing.
+- 2.14.0
+
+-------------------------------------------------------------------
 Fri Oct 27 17:43:50 CEST 2006 - mvidner@suse.cz
 
 - Added and cleaned up schema piece for autoyast (mail.rnc).
