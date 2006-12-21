@@ -10,6 +10,7 @@ mail =
     from_header? &
     listen_remote? &
     local_domains? &
+    mail_smtp_auth? &
     masquerade_other_domains? &
     masquerade_users? &
     mta &
@@ -102,3 +103,14 @@ virtual_users =
       element comment { text }?
     }*
   }
+
+mail_smtp_auth = 
+  element smtp_auth {
+    LIST,
+    element smtp_auth_entry {
+      element password { text } &
+      element server   { text } &
+      element user     { text }
+    }*
+  }
+
