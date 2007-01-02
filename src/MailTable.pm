@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 #
 # Author: Martin Vidner <mvidner@suse.cz>
-# $Id: ag_mailtable 13710 2004-01-30 16:09:34Z mvidner $
+# $Id$
 #
 #  Accessing sendmail and postfix maps described in
 #  makemap(8) and postmap(1)
