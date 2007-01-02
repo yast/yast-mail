@@ -9,7 +9,7 @@
 use strict;
 
 package MailTable;
-use YaST::YCP;
+use YaST::YCP qw(:LOGGING);
 
 # type information for YCP
 our %TYPEINFO;
