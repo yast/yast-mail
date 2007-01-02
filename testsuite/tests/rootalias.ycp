@@ -11,6 +11,10 @@
  * $Id$
  */
 {
+    // testedfiles: Mail.ycp MailAliases.ycp Package.ycp PackageSystem.ycp Require.ycp Service.ycp Testsuite.ycp
+    // FIXME remove (reduce) testedfiles and really test this case,
+    // redirecting MailTable to a different file. and the same in
+    // readwrite.ycp for generics
     include "testsuite.ycp";
     TESTSUITE_INIT ([ $[], $[], $[] ], nil);
     import "MailAliases";

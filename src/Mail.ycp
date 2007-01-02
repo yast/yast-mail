@@ -24,6 +24,7 @@
     textdomain "mail";
 
     import "MailAliases";
+    import "MailTable";
     import "Mode";
     import "Report";
     import "Service";
@@ -509,11 +510,11 @@ Configure a scanner manually."));
 	list<map> mu_raw = [];
 	if (mta == `sendmail)
 	{
-	    mu_raw = (list<map>)SCR::Read (.mail.sendmail.generics.table);
+	    mu_raw = MailTable::Read ("sendmail.generics");
 	}
 	else if (mta == `postfix)
 	{
-	    mu_raw = (list<map>)SCR::Read (.mail.postfix.sendercanonical.table);
+	    mu_raw = MailTable::Read ("postfix.sendercanonical");
 	}
 	else
 	{
@@ -573,11 +574,11 @@ a fixed format to be readable by YaST2.  For details, see
 	list<map> v_raw = [];
 	if (mta == `sendmail)
 	{
-	    v_raw = (list<map>) SCR::Read (.mail.sendmail.virtuser.table);
+	    v_raw = MailTable::Read ("sendmail.virtuser");
 	}
 	else if (mta == `postfix)
 	{
-	    v_raw = (list<map>) SCR::Read (.mail.postfix.virtual.table);
+	    v_raw = MailTable::Read ("postfix.virtual");
 	}
 	else
 	{
@@ -835,11 +836,11 @@ a fixed format to be readable by YaST2.  For details, see
 					   ]));
 	if (mta == `sendmail)
 	{
-	    SCR::Write (.mail.sendmail.generics.table, mu_raw);
+	    MailTable::Write ("sendmail.generics", mu_raw);
 	}
 	else if (mta == `postfix)
 	{
-	    SCR::Write (.mail.postfix.sendercanonical.table, mu_raw);
+	    MailTable::Write ("postfix.sendercanonical", mu_raw);
 	}
 	else
 	{
@@ -894,11 +895,11 @@ a fixed format to be readable by YaST2.  For details, see
 					  ]));
 	if (mta == `sendmail)
 	{
-	    SCR::Write (.mail.sendmail.virtuser.table, v_raw);
+	    MailTable::Write ("sendmail.virtuser", v_raw);
 	}
 	else if (mta == `postfix)
 	{
-	    SCR::Write (.mail.postfix.virtual.table, v_raw);
+	    MailTable::Write ("postfix.virtual", v_raw);
 	}
 	else
 	{
@@ -947,47 +948,30 @@ a fixed format to be readable by YaST2.  For details, see
      */
     define boolean WriteFlush () ``{
 	//flush the agents
-	if (!SCR::Write (.sysconfig.mail, nil))
-	{
-	    // Translators: error message
-	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/mail"));
-	    return false;
-	}
-	if (!SCR::Write (.sysconfig.amavis, nil))
-	{
-	    // Translators: error message
-	    Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/amavis"));
-	    return false;
-	}
-	list<path> tables = nil;
+	map<string, path> paths = $[
+	    "/etc/sysconfig/mail": .sysconfig.mail,
+	    "/etc/sysconfig/amavis": .sysconfig.amavis,
+	    ];
+	list<string> tables = nil;
+
 	if (mta == `sendmail)
 	{
-	    if (!SCR::Write (.sysconfig.sendmail, nil))
-	    {
-		// Translators: error message
-		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/sendmail"));
-		return false;
-	    }
+	    paths["/etc/sysconfig/sendmail"] = .sysconfig.sendmail;
+	    paths["/etc/mail/auth/auth-info"] = .mail.sendmail.auth;
 	    tables = [
-		.mail.sendmail.generics,
-		.mail.aliases,
-		.mail.sendmail.virtuser,
-		.mail.sendmail.auth,
+		"sendmail.generics",
+		"aliases",
+		"sendmail.virtuser",
 		];
 	}
 	else if (mta == `postfix)
 	{
-	    if (!SCR::Write (.sysconfig.postfix, nil))
-	    {
-		// Translators: error message
-		Report::Error (sformat (_("Error writing file %1"), "/etc/sysconfig/postfix"));
-		return false;
-	    }
+	    paths["/etc/sysconfig/postfix"] = .sysconfig.postfix;
+	    paths["/etc/postfix/sasl_passwd"] = .mail.postfix.auth;
 	    tables = [
-		.mail.postfix.sendercanonical,
-		.mail.aliases,
-		.mail.postfix.virtual,
-		.mail.postfix.auth,
+		"postfix.sendercanonical",
+		"aliases",
+		"postfix.virtual",
 		];
 	}
 	else
@@ -995,11 +979,19 @@ a fixed format to be readable by YaST2.  For details, see
 	    return false;
 	}
 
-	foreach (path p, tables, ``{
+	foreach (string filename, path p, paths, ``{
 	    if (!SCR::Write (p, nil))
 	    {
-		string filename =
-		    (string) SCR::Read (p + topath (".meta.filename"));
+		// Translators: error message
+		Report::Error (sformat (_("Error writing file %1"), filename));
+		return false;
+	    }
+	});
+
+	foreach (string p, tables, ``{
+	    if (!MailTable::Flush (p))
+	    {
+		string filename = MailTable::FileName (p);
 		// Translators: error message
 		Report::Error (sformat (_("Error writing file %1"), filename));
 		return false;
