@@ -81,6 +81,26 @@ sub FileName
     return ${"MailTable::$modules{$kind}::filename"};
 }
 
+# For testing purposes only
+# Sets filename, returns previous one
+BEGIN {$TYPEINFO{SetFileName} = ["function", "string", "string kind", "string new"];}
+sub SetFileName
+{
+    my $class = shift;
+    my $kind = shift;
+    my $new = shift;
+
+    if (!exists $modules{$kind}) {
+	y2internal ("No module defined for $kind");
+	return "FIXME $kind";
+    }
+    no strict "refs";
+    my $fn_ref = "MailTable::$modules{$kind}::filename";
+    my $old = ${$fn_ref};
+    ${$fn_ref} = $new;
+    return $old;
+}
+
 package MailTable::Aliases;
 
 our $filename = "/etc/aliases";

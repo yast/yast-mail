@@ -1,8 +1,8 @@
 Dump	sendmail
-Return	
-Return	false
-Return	false
+Return	leaf
+Return	true
+Return	true
 Dump	postfix
 Return	
-Return	false
-Return	false
+Return	true
+Return	true
