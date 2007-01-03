@@ -1,4 +1,17 @@
 -------------------------------------------------------------------
+Wed Jan  3 16:52:01 CET 2007 - mvidner@suse.cz
+
+- Converted ag_mailtable to a module to eliminate parsing speed
+  bottleneck. Tables of 50000 entries no longer cause hours
+  of delays (#223560).
+- 2.13.8
+
+-------------------------------------------------------------------
+Thu Dec 21 11:06:46 CET 2006 - mvidner@suse.cz
+
+- schema: added mail_smtp_auth
+
+-------------------------------------------------------------------
 Fri Oct 27 17:43:50 CEST 2006 - mvidner@suse.cz
 
 - Added and cleaned up schema piece for autoyast (mail.rnc).

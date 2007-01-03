@@ -9,7 +9,7 @@
  * $Id$
  */
 {
-    // testedfiles: Mail.ycp MailAliases.ycp Package.ycp PackageSystem.ycp Require.ycp Service.ycp Testsuite.ycp
+    // testedfiles: Mail.ycp MailTable.pm MailTableInclude.pm MailAliases.ycp Package.ycp PackageSystem.ycp Report.ycp Require.ycp Service.ycp Testsuite.ycp
 
     include "testsuite.ycp";
 
@@ -151,7 +151,11 @@
 
     import "Progress";
     import "Mail";
+    import "MailTable";
 
+    MailTable::SetFileName ("aliases", "tests/aliases.out");
+    MailTable::SetFileName ("sendmail.generics", "tests/generics.out");
+    MailTable::SetFileName ("sendmail.virtuser", "tests/virtuser.out");
 
 
 //    Pkg::FAKE (`IsProvided, $["sendmail": true, "amavis-sendmail": true,

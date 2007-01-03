@@ -13,13 +13,10 @@
 {
     include "testsuite.ycp";
     TESTSUITE_INIT ([ $[], $[], $[] ], nil);
+    import "MailTable";
     import "MailAliases";
 
-    list<map> aliases = [
-	$["key": "foo", "value": "bar", "comment": "baz",],
-	$["key": "root", "value": "leaf", "comment": "kuk",],
-	$["key": "foo2", "value": "bar2", "comment": "baz2",],
-	];
+    MailTable::SetFileName ("aliases", "tests/aliases.out");
 
     // the test data is a bit convoluted because formerly
     // the data was read from .mail.{sendmail,postfix}.aliases.table
@@ -30,12 +27,6 @@
 	    // sendmail
 	    "installed": true,
 	    ],
-	// Mail itself:
-	"mail": $[
-	    "aliases": $[
-		"table": aliases,
-		],
-	    ],
 	];
 
     map READ_p1 = $[
@@ -44,12 +35,6 @@
 	    // sendmail
 	    "installed": false,
 	    ],
-	// Mail itself:
-	"mail": $[
-	    "aliases": $[
-		"table": aliases,
-		],
-	    ],
 	];
 
     map READ_p2 = $[
@@ -57,12 +42,6 @@
 	"targetpkg": $[
 	    // postfix
 	    "installed": true,
-	    ],
-	// Mail itself:
-	"mail": $[
-	    "aliases": $[
-		"table": aliases,
-		],
 	    ],
 	];
 

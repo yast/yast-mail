@@ -13,11 +13,8 @@ Read	.sysconfig.sendmail.SENDMAIL_LOCALHOST ""
 Read	.sysconfig.sendmail.SENDMAIL_SMARTHOST ""
 Read	.sysconfig.mail.FROM_HEADER "foo.test"
 Read	.sysconfig.sendmail.MASQUERADE_DOMAINS ""
-Read	.mail.sendmail.generics.table []
 Execute	.target.bash_output "/usr/bin/id --user" $["exit":0, "stderr":"", "stdout":""]
 Read	.mail.fetchmail.accounts []
-Read	.mail.aliases.table []
-Read	.mail.sendmail.virtuser.table []
 Read	.mail.sendmail.auth.accounts [$["more":1, "password":"p", "server":"s", "user":"u"]]
 Read	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS ""
 Return	true
@@ -40,9 +37,6 @@ Write	.sysconfig.sendmail.SENDMAIL_LOCALHOST "" true
 Write	.sysconfig.sendmail.SENDMAIL_SMARTHOST "" true
 Write	.sysconfig.mail.FROM_HEADER "foo.test" true
 Write	.sysconfig.sendmail.MASQUERADE_DOMAINS "" true
-Write	.mail.sendmail.generics.table [] true
-Write	.mail.aliases.table [] true
-Write	.mail.sendmail.virtuser.table [] true
 Write	.mail.fetchmail.accounts [] true
 Write	.mail.fetchmail nil true
 Read	.init.scripts.exists "fetchmail" true
@@ -53,13 +47,10 @@ Read	.init.scripts.comment "fetchmail" $["amavis":$[], "fetchmail":$[], "postfix
 Execute	.target.bash_output "/sbin/insserv -r /etc/init.d/fetchmail" $["exit":0, "stderr":"", "stdout":""]
 Write	.mail.sendmail.auth.accounts [$["more":1, "password":"p", "server":"s", "user":"u"]] true
 Write	.sysconfig.sendmail.SMTP_AUTH_MECHANISMS "plain gssapi digest-md5 cram-md5" true
-Write	.sysconfig.mail nil true
-Write	.sysconfig.amavis nil true
-Write	.sysconfig.sendmail nil true
-Write	.mail.sendmail.generics nil true
-Write	.mail.aliases nil true
-Write	.mail.sendmail.virtuser nil true
 Write	.mail.sendmail.auth nil true
+Write	.sysconfig.amavis nil true
+Write	.sysconfig.mail nil true
+Write	.sysconfig.sendmail nil true
 Execute	.target.bash "/sbin/SuSEconfig --module sendmail" 0
 Read	.init.scripts.exists "amavis" true
 Execute	.target.bash "/etc/init.d/amavis stop" $["TERM":"raw"] 0

@@ -21,6 +21,8 @@ desktop_DATA =			\
 
 module_DATA =			\
 	MailAliases.ycp		\
+	MailTable.pm		\
+	MailTableInclude.pm	\
 	Mail.ycp
 
 rncdir =  $(schemadir)/autoyast/rnc

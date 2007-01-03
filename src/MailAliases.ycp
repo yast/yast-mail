@@ -25,6 +25,7 @@
     module "MailAliases";
 
     // no translatable strings, no textdomain.
+    import "MailTable";
 
     /* ---------------------------------------------------------------- */
 
@@ -72,7 +73,7 @@
      * @return success?
      */
     global define boolean ReadAliases () ``{
-	list<map> a_raw = (list<map>) SCR::Read (.mail.aliases.table);
+	list<map> a_raw = MailTable::Read ("aliases");
 	aliases =  maplist (map e, a_raw,
 			    ``($[
 				   "comment"		: e["comment"]: "",
@@ -145,7 +146,7 @@
      */
     global define boolean WriteAliases () ``{
 	// aliases
-	path alias_path = .mail.aliases.table;
+	string alias_path = "aliases";
 	list<map> a_raw = maplist (map e, MergeRootAlias (aliases),
 				   ``($[
 					  "comment"	: e["comment"]:"",
@@ -154,9 +155,9 @@
 					  ]));
 //	if (merge_aliases)
 //	{
-//	    a_raw = mergeTables (a_raw, SCR::Read (alias_path));
+//	    a_raw = mergeTables (a_raw, MailTable::Read (alias_path));
 //	}
-	SCR::Write (alias_path, a_raw);
+	MailTable::Write ("aliases", a_raw);
 	return true;
     }
 
@@ -200,7 +201,7 @@
 	    return false;
 	}
 
-	if (! SCR::Write (.mail.aliases, nil))
+	if (! MailTable::Flush ("aliases"))
 	{
 	    return false;
 	}
