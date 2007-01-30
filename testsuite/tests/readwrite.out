@@ -1,4 +1,4 @@
-Execute	.target.bash "rpm -q sendmail" 0
+Execute	.target.bash "rpm -q --whatprovides sendmail" 0
 Read	.sysconfig.mail.MAIL_CREATE_CONFIG "yes"
 Read	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes"
 Read	.init.scripts.exists "SuSEfirewall2_init" true
@@ -7,7 +7,7 @@ Read	.init.scripts.exists "SuSEfirewall2_init" true
 Execute	.target.bash "/etc/init.d/SuSEfirewall2_init status" $["TERM":"raw"] 0
 Read	.sysconfig.sendmail.SENDMAIL_NOCANONIFY "no"
 Read	.sysconfig.sendmail.SENDMAIL_EXPENSIVE "no"
-Execute	.target.bash "rpm -q amavisd-new" 0
+Execute	.target.bash "rpm -q --whatprovides amavisd-new" 0
 Read	.sysconfig.amavis.USE_AMAVIS "yes"
 Read	.sysconfig.sendmail.SENDMAIL_LOCALHOST ""
 Read	.sysconfig.sendmail.SENDMAIL_SMARTHOST ""

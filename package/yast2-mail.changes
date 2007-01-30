@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jan 30 18:34:41 CET 2007 - mvidner@suse.cz
+
+- Adjusted testsuite for changes in yast2-2.15.4.
+- 2.15.1
+
+-------------------------------------------------------------------
 Wed Jan  3 16:52:01 CET 2007 - mvidner@suse.cz
 
 - Converted ag_mailtable to a module to eliminate parsing speed
