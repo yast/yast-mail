@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Mar 12 12:02:00 CET 2007 - mvidner@suse.cz
+
+- Adjusted testsuite for firewall changes.
+- 2.15.2
+
+-------------------------------------------------------------------
 Tue Jan 30 18:34:41 CET 2007 - mvidner@suse.cz
 
 - Adjusted testsuite for changes in yast2-2.15.4.

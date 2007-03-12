@@ -1,6 +1,7 @@
 Execute	.target.bash "rpm -q --whatprovides sendmail" 0
 Read	.sysconfig.mail.MAIL_CREATE_CONFIG "yes"
 Read	.sysconfig.mail.SMTPD_LISTEN_REMOTE "yes"
+Execute	.target.bash "rpm -q --whatprovides SuSEfirewall2" 0
 Read	.init.scripts.exists "SuSEfirewall2_init" true
 Read	.init.scripts.runlevel "SuSEfirewall2_init" $["SuSEfirewall2_final":$["start":[]], "SuSEfirewall2_init":$["start":[]], "SuSEfirewall2_setup":$["start":[]], "amavis":$["start":["3", "5"], "stop":["3", "5"]], "fetchmail":$["start":["3", "5"], "stop":["3", "5"]], "postfix":$["start":["3", "5"], "stop":["3", "5"]], "sendmail":$["start":["3", "5"], "stop":["3", "5"]]]
 Read	.init.scripts.exists "SuSEfirewall2_init" true
