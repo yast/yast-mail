@@ -1,0 +1,34 @@
+/**
+ * $Id: mail_maincf.scr 14639 2004-02-24 09:43:28Z varkoly $
+ * Summary:
+ *   SCR Agent for reading/writing the Postfix configurations files like
+ *       main.cf virtual ... tables
+ * Authors:
+ *   Peter Varkoly <peter@varkoly.de>
+ * Access:
+ *   read/write
+ * See:
+ *   yast2-config-mail/ag_mailtable.html
+ *
+ * The file specifies a map, but we represent it as a list to preserve
+ * preceding comments and the order of entries.
+ * list entries are"
+ *  $[ "comment": " foo\n bar\n", "key": "root", "value": "joe, \\root" ]
+ *  that is, comments have the leading '#' stripped but not the newline.
+ *
+ * Example:
+ *   Read (.mail.postfix.main)
+ */
+.mail.postfix.main
+
+`ag_mailconfig (
+  `Mailconfig ($[
+    "filename"                 : "/etc/postfix/main.cf",
+    "continue_escaped_newline" : false,
+    "continue_leading_blanks"  : true,
+    "write_empty_value"        : true,
+    "separator"                : "\\s*=\\s*",
+    "oseparator"               : "=",
+    "is_postmap"               : false,
+  ])
+)

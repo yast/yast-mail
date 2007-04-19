@@ -1,0 +1,73 @@
+/**
+ * File:	clients/mail-server.ycp
+ * Package:	Configuration of mail-server
+ * Summary:	Main file
+ * Authors:	Peter Varkoly <varkoly@suse.de>
+ *
+ * $Id: mail-server.ycp 19955 2004-10-26 12:28:16Z varkoly $
+ *
+ * Main file for mail-server configuration. Uses all other files.
+ */
+
+{
+
+/***
+ * <h3>Configuration of mail-server</h3>
+ */
+
+textdomain "MailServer";
+
+/* The main () */
+y2milestone ("----------------------------------------");
+y2milestone ("MailServer module started");
+
+import "Progress";
+import "Report";
+import "Summary";
+
+import "CommandLine";
+include "mail/mail-server_wizards.ycp";
+
+map cmdline_description = $[
+    "id" 	: "mail-server",
+    /* Command line help text for the mail-server module */
+    "help"	: _("Configuration of mail server"),
+    "guihandler"        : MailServerSequence,
+    "initialize"        : MailServer::Read,
+    "finish"            : MailServer::Write,
+    "actions"           : $[
+	// FIXME TODO: fill the functionality description here
+    ],
+    "options"		: $[
+	// FIXME TODO: fill the option descriptions here
+    ],
+    "mapping"		: $[
+	// FIXME TODO: fill the mappings of actions and options here
+    ]
+];
+
+/* is this proposal or not? */
+boolean propose = false;
+list args = WFM::Args();
+if(size(args) > 0) {
+    if(is(WFM::Args(0), path) && WFM::Args(0) == .propose) {
+        y2milestone("Using PROPOSE mode");
+        propose = true;
+    }
+}
+
+/* main ui function */
+any ret = nil;
+
+if(propose) ret = MailServerAutoSequence();
+else ret = CommandLine::Run(cmdline_description);
+y2debug("ret=%1", ret);
+
+/* Finish */
+y2milestone("MailServer module finished");
+y2milestone("----------------------------------------");
+
+return ret;
+
+/* EOF */
+}

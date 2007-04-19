@@ -1,0 +1,98 @@
+#! /usr/bin/perl -w
+
+package ag_postfix_mastercf;
+# FIXME: How should that be handled?
+use lib qw(/usr/lib/YaST2/servers_non_y2);
+use strict;
+use MasterCFParser;
+use YaST::SCRAgent;
+use ycp;
+our @ISA = ("YaST::SCRAgent");
+
+my $_CFINST = undef;
+
+sub check_initialized ()
+{
+    my $class = shift;
+    if (not defined $_CFINST)
+    {
+        $class->SetError(summary => "Agent not initialized yet",
+                         code => "SCR_INIT_ERR");
+    }
+    return !!$_CFINST;
+}
+
+sub OtherCommand () {
+    my $class = shift;
+    my ($symbol, $config, @rest) = @_;
+    
+    if ($symbol ne "MasterCF") {
+        return $class->SetError(summary=> "The first command must be the configuration.(Seen '$_')",
+                                code => "SCR_INIT_ERR");
+    } else {
+        $_CFINST = new MasterCFParser( $config->{"path"}, \&y2error );
+        if( not defined $_CFINST ) {
+            return $class->SetError(summary => "Can not initialize MasterCFParser",
+                                    code => "SCR_INIT_ERR");
+        }
+	if( $_CFINST->readMasterCF() ) {
+            return $class->SetError(summary => "Can not read master.cf",
+                                    code => "SCR_INIT_ERR");
+	}
+	# FIXME: Set logging callback here
+    }
+    
+    return 1;
+}
+
+sub Read { 
+    my $class         = shift;
+    my ($path, @args) = @_;
+
+    if( $_CFINST->readMasterCF() ) {
+	# FIXME: How about $class->SetError() ???
+	return undef;
+    }
+    
+    return 1;
+}
+
+sub Write { 
+    my $class         = shift;
+    my ($path, @args) = @_;
+
+    return undef if ! $class->check_initialized();
+    if( $_CFINST->writeMasterCF() ) {
+	# FIXME: How about $class->SetError() ???
+	return undef;
+    }
+
+    return 1; 
+}
+
+sub Execute {
+    my $class         = shift;
+    my ($path, @args) = @_;
+
+    return undef if ! $class->check_initialized();
+
+    if( $path eq '.modifyService' ) {
+	my $service = $args[0];
+	return undef if $_CFINST->modifyService( $service );
+    } elsif ( $path eq '.findService' ) {
+	my $service = $args[0];
+	return $_CFINST->getServiceByAttributes( $service );
+    } elsif ( $path eq '.deleteService' ) {
+	my $service = $args[0];
+	return undef if $_CFINST->deleteService( $service );
+    } elsif ( $path eq '.addService' ) {
+	my $service = $args[0];
+	return undef if $_CFINST->addService($service);
+    }
+
+    return undef; 
+}
+  
+
+package main;
+ag_postfix_mastercf->Run;

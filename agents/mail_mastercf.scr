@@ -1,0 +1,29 @@
+/**
+ * $Id: mail_mastercf.scr 15230 2004-03-02 17:06:42Z choeger $
+ * Summary:
+ *   SCR Agent for reading/writing the Postfix configurations file
+ *       /etc/postfix/master.cf
+ * Authors:
+ *   
+ * Access:
+ *   read/write
+ * See:
+ *   
+ *
+ * The file specifies a map, but we represent it as a list to preserve
+ * preceding comments and the order of entries.
+ * list entries are"
+ *  $[ "comment": " foo\n bar\n", "key": "root", "value": "joe, \\root" ]
+ *  that is, comments have the leading '#' stripped but not the newline.
+ *
+ * Example:
+ *   Read (.mail.postfix.mastercf)
+ */
+.mail.postfix.mastercf
+
+`ag_postfix_mastercf (
+  `MasterCF ($[
+    "path"                 : "/etc/postfix",
+    "stderr"               : ">> /var/log/YaST2/pfmastercf.log",
+  ])
+)

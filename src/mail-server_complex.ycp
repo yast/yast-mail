@@ -1,0 +1,182 @@
+/**
+ * File:	include/mail/complex.ycp
+ * Package:	Configuration of mail-server
+ * Summary:	Dialogs definitions
+ * Authors:	Peter Varkoly <varkoly@suse.de>
+ *
+ * $Id: complex.ycp 19955 2004-10-26 12:28:16Z varkoly $
+ */
+
+{
+
+textdomain "MailServer";
+
+import "Label";
+import "Popup";
+import "Wizard";
+import "Wizard_hw";
+import "MailServer";
+
+include "mail/mail-server_helps.ycp";
+
+/**
+ * Return a modification status
+ * @return true if data was modified
+ */
+boolean Modified() {
+    return MailServer::Modified();
+}
+
+boolean ReallyAbort() {
+    return !MailServer::Modified() || Popup::ReallyAbort(true);
+}
+
+boolean PollAbort() {
+    return UI::PollInput() == `abort;
+}
+
+/**
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol ReadDialog() {
+    Wizard::RestoreHelp(HELPS["read"]:"");
+    // MailServer::AbortFunction = PollAbort;
+    boolean ret = MailServer::Read();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Write settings dialog
+ * @return `abort if aborted and `next otherwise
+ */
+symbol WriteDialog() {
+    Wizard::RestoreHelp(HELPS["write"]:"");
+    // MailServer::AbortFunction = PollAbort;
+    boolean ret = MailServer::Write();
+    return ret ? `next : `abort;
+}
+
+/**
+ * Summary dialog
+ * @return dialog result
+ */
+any SummaryDialog() {
+
+    /* MailServer summary dialog caption */
+    string caption = _("Mail Server Configuration");
+
+    /* FIXME */
+    list summary = MailServer::Summary();
+    list unconfigured = summary[1]:[];
+    string configured = summary[0]:"";
+
+    /* Frame label */
+    term contents = Wizard_hw::DetectedContent(_("Mail Server to Configure"),
+	    unconfigured, false, configured);
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["summary"]:"",
+	    Label::BackButton(), Label::FinishButton());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel || ret == `back) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+        /* overview dialog */
+        else if(ret == `edit_button) {
+            ret = `overview;
+            break;
+        }
+        /* configure the selected device */
+        else if(ret == `configure_button) {
+	    // TODO FIXME: check for change of the configuration
+            any selected = UI::QueryWidget(`id(`detected_selbox), `CurrentItem);
+            if(selected == `other) {
+                ret = `other;
+            }
+            else {
+                ret = `configure;
+            }
+            break;
+        }
+        else if(ret == `next) {
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
+    }
+
+    return ret;
+}
+
+/**
+ * Overview dialog
+ * @return dialog result
+ */
+any OverviewDialog() {
+
+    /* MailServer overview dialog caption */
+    string caption = _("Mail Server Overview");
+
+    list overview = MailServer::Overview();
+
+    /* FIXME table header */
+    term contents = Wizard_hw::ConfiguredContent(
+	/* Table header */
+	`header(_("Number"), _("Mail Server")),
+	overview, nil, nil, nil, nil );
+
+    contents = Wizard_hw::SpacingAround(contents, 1.5, 1.5, 1.0, 1.0);
+
+    Wizard::SetContentsButtons(caption, contents, HELPS["overview"]:"",
+	    Label::BackButton(), Label::FinishButton());
+
+    any ret = nil;
+    while(true) {
+
+	ret = UI::UserInput();
+
+	/* abort? */
+	if(ret == `abort || ret == `cancel) {
+	    if(ReallyAbort()) break;
+	    else continue;
+	}
+        /* add */
+        else if(ret == `add_button) {
+	    /* FIXME */
+            ret = `add;
+            break;
+        }
+        /* edit */
+        else if(ret == `edit_button) {
+	    /* FIXME */
+            ret = `edit;
+            break;
+        }
+        /* delete */
+        else if(ret == `delete_button) {
+	    /* FIXME */
+            continue;
+        }
+        else if(ret == `next || ret == `back) {
+            break;
+        }
+        else {
+            y2error("unexpected retcode: %1", ret);
+            continue;
+        }
+    }
+
+    return ret;
+}
+
+/* EOF */
+}

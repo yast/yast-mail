@@ -1,0 +1,112 @@
+/**
+ * File:	include/mail/wizards.ycp
+ * Package:	Configuration of mail-server
+ * Summary:	Wizards definitions
+ * Authors:	Peter Varkoly <varkoly@suse.de>
+ *
+ * $Id: wizards.ycp 19955 2004-10-26 12:28:16Z varkoly $
+ */
+
+{
+
+textdomain "MailServer";
+
+import "Sequencer";
+import "Wizard";
+
+include "mail/mail-server_complex.ycp";
+include "mail/mail-server_dialogs.ycp";
+
+
+/**
+ * Main workflow of the mail-server configuration
+ * @return sequence result
+ */
+any MainSequence() {
+
+    /* FIXME: adapt to your needs */
+    map aliases = $[
+	"complex"	:   ``( ComplexDialog() )
+    ];
+
+    /* FIXME: adapt to your needs */
+    map sequence = $[
+	"ws_start" : "complex",
+        "complex"  : $[
+            `abort      : `abort,
+            `next       : `next
+        ]
+    ];
+
+    any ret = Sequencer::Run(aliases, sequence);
+
+    return ret;
+}
+
+/**
+ * Whole configuration of mail-server
+ * @return sequence result
+ */
+any MailServerSequence() {
+
+    map aliases = $[
+	"read"	: [ ``( ReadDialog() ), true ],
+	"auth"	: [ ``( AuthorizingDialog() ), true ],
+	"main"	:   ``( MainSequence() ),
+	"write"	: [ ``( WriteDialog() ), true ]
+    ];
+
+    map sequence = $[
+	"ws_start" : "auth",
+        "auth" : $[
+	    `abort	: `abort,
+	    `next	: "read"
+        ],
+	"read" : $[
+	    `abort	: `abort,
+	    `next	: "main"
+	],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: "write"
+	],
+	"write" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("mailserver");
+
+    any ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/**
+ * Whole configuration of mail-server but without reading and writing.
+ * For use with autoinstallation.
+ * @return sequence result
+ */
+any MailServerAutoSequence() {
+
+    /* Initialization dialog caption */
+    string caption = _("Mail Server Configuration");
+    /* Initialization dialog contents */
+    term contents = `Label(_("Initializing..."));
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("mailserver");
+    Wizard::SetContentsButtons(caption, contents, "",
+	    Label::BackButton(), Label::NextButton());
+
+    any ret = MainSequence();
+
+    UI::CloseDialog();
+    return ret;
+}
+
+/* EOF */
+}

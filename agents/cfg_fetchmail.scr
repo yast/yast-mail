@@ -1,0 +1,30 @@
+/**
+ * File:
+ *   cfg_fetchmail.scr
+ * Summary:
+ *   SCR Agent for reading/writing /etc/sysconfig/fetchmail
+ *   using the sysconfig-agent
+ * Access:
+ *   read/write
+ * Authors:
+ *   Unknown <yast2-hacker@suse.de>
+ * Example:
+ *   Dir(.sysconfig.fetchmail)
+ *   (["DEVICE"])
+ **
+ *   Read(.sysconfig.fetchmail.OPTIONS)
+ *   ("-t psaux")
+ **
+ *   Write(.sysconfig.fetchmail.OPTIONS, "-t ms")
+ *   (true)
+ *
+ * $Id: cfg_fetchmail.scr 18730 2004-08-20 10:03:39Z schubi $
+ *
+ * Read/Sets the values defined in <tt>/etc/sysconfig/fetchmail</tt>
+ * in an easy manner.
+ */
+.sysconfig.fetchmail
+
+`ag_ini(
+  `SysConfigFile("/etc/sysconfig/fetchmail")
+)

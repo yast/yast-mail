@@ -1,0 +1,32 @@
+/**
+ * File:        etc_imapd_conf.scr
+ * Summary:     Agent for reading/writing /etc/imapd_conf
+ * Access:      read/write
+ * Authors:     Peter Varkoly <varkoly@suse.de>
+ * See:         imapd.conf(5)
+ *
+ * Example:
+ *   Dir(.etc.imapd_conf)
+ *   (["configdirectory", "unixhierarchysep", "quotawarn", ... ])
+ **
+ *   Read(.etc.imapd_conf.configdirectory)
+ *   ("/var/lib/imap")
+ **
+ *   Write(.etc.imapd_conf.configdirectory, "/var/lib/imap")
+ *   (true)
+ *
+ * $Id: etc_imapd_conf.scr 18730 2004-08-20 10:03:39Z schubi $
+ */
+.etc.imapd_conf
+
+`ag_ini(
+    `IniAgent( "/etc/imapd.conf",
+        $[
+            "options"   : [ "global_values", "flat" ],
+            "comments"  : [ "^#.*", "^[ \t]*$" ],
+            "params"    : [
+                $[ "match" : [ "(.*): (.*)[ \t]*$", "%s: %s" ] ]
+            ]
+        ]
+))
+

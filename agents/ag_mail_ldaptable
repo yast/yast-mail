@@ -1,0 +1,84 @@
+#!/usr/bin/perl -w
+
+use ycp;
+use File::Temp;
+use Data::Dumper;
+
+while ( <STDIN> )
+{
+    my ($command, $path, $argument) = ycp::ParseCommand ($_);
+
+    if ($command eq "Write")
+    {
+        if ($path eq "." && ref ($argument) eq "ARRAY")
+        {
+            my @a = @{$argument};
+            my $table = $a[0];
+            my %data  = %{$a[1]};
+            my $file  = "/etc/postfix/ldap$table.cf";
+
+            y2milestone ("Writing ldap table $table");
+            open (OUT, ">$file");
+	    print OUT "# This file was created by yast2-mail-server. Please do not edit it!\n";
+	    foreach(keys %data){
+	      print OUT "$_=$data{$_}\n";
+	    }
+	    close(OUT);
+            ycp::Return ("true");
+
+        }
+        else
+        {
+            y2error ("Wrong arguments");
+            ycp::Return ("false");
+        }
+
+
+    }
+    elsif ($command eq "Read")
+    {
+        if ($path eq "." && ! ref ($argument))
+        {
+            my $table   = $argument;
+            my %data    = ();
+            my $comment = "";
+
+            y2milestone ("Reading ldap table: $table");
+            my $file = "/etc/postfix/ldap$table.cf";
+
+            if (! open (IN, "$file"))
+            {
+                ycp::Return (undef);
+                next;
+            }
+            while ( <IN> )
+            {
+              if (/^\#(.*)/  || /^$/ || /^\s+(.*)/)
+              { # we ignor all kind of comments and emty lines
+	      } elsif(/^(.*?)=(.*)$/) {
+	        $data{$1} = $2;
+	      }
+
+            }
+            close (IN);
+            ycp::Return (\%data);
+        }
+        else
+        {
+            y2error ("Wrong arguments");
+            ycp::Return ("false");
+        }
+
+
+    }
+    elsif ($command eq "result")
+    {
+        exit 0;
+    }
+    else
+    {
+        y2error ("Wrong path or arguments");
+        ycp::Return ("false");
+    }
+}
+

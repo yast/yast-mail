@@ -1,0 +1,29 @@
+/**
+ * $Id: mail_cyrusconf.scr 18730 2004-08-20 10:03:39Z schubi $
+ * Summary:
+ *   SCR Agent for reading/writing the cyrus-imapd configurations file
+ *       /etc/cyrus.conf
+ * Authors:
+ *   
+ * Access:
+ *   read/write
+ * See:
+ *   
+ *
+ * The file specifies a map, but we represent it as a list to preserve
+ * preceding comments and the order of entries.
+ * list entries are"
+ *  $[ "comment": " foo\n bar\n", "key": "root", "value": "joe, \\root" ]
+ *  that is, comments have the leading '#' stripped but not the newline.
+ *
+ * Example:
+ *   Read (.mail.cyrusconf)
+ */
+.mail.cyrusconf
+
+`ag_cyrus_conf (
+  `CyrusConf ($[
+    "file"                 : "/etc/cyrus.conf",
+    "stderr"               : ">> /var/log/YaST2/pfcyrusconf.log",
+  ])
+)

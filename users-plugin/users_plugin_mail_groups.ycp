@@ -1,0 +1,459 @@
+/**
+ * File:
+ *        users_plugin_mail_groups.ycp
+ *
+ * Package:
+ *        Configuration of Mail Server
+ *
+ * Summary:
+ *        This is part GUI of UsersPluginMail - plugin for editing all LDAP
+ *        user/group attributes.
+ *
+ * $Id: users_plugin_mail_groups.ycp 28707 2006-03-08 14:39:26Z varkoly $
+ */
+
+
+{
+    textdomain "MailServer"; // use own textdomain for new plugins
+
+    import "Label";
+    import "Popup";
+    import "Report";
+    import "Wizard";
+    import "Hostname";
+
+    import "Ldap";
+    import "Users";
+    import "UsersPluginMail"; // plugin module
+
+    import "YaPI::MailServer";
+
+    any ret = nil;
+    string func                        = "";
+    map<string,any> config        = $[];
+    map<string,any> data        = $[];
+    /* Check arguments */
+    if(size(WFM::Args()) > 0 && is(WFM::Args(0), string)) {
+        func = (string) WFM::Args(0);
+        if(size(WFM::Args()) > 1 && is(WFM::Args(1), map))
+            config = (map<string,any>)WFM::Args(1);
+        if(size(WFM::Args()) > 2 && is(WFM::Args(2), map))
+            data = (map<string,any>)WFM::Args(2);
+    }
+    y2milestone("----------------------------------------");
+    y2milestone("users plugin started: Mail");
+    y2milestone("config=%1", config);
+
+    y2debug ("func=%1", func);
+    y2debug ("config=%1", config);
+    y2debug ("data=%1", data);
+
+    if (func == "Summary") {
+        ret = UsersPluginMail::Summary (config, $[]);
+    }
+    else if (func == "Name") {
+        ret = UsersPluginMail::Name (config, $[]);
+    }
+    else if (func == "Dialog") {
+        // define the dialog for this plugin and return it's contents
+
+        string          imapadmpw         = Ldap::bind_pass;
+        map<string,any> MailLocalDomains  = (map<string,any>)YaPI::MailServer::ReadMailLocalDomains(imapadmpw);
+        map<string,any> MailLocalDelivery = (map<string,any>)YaPI::MailServer::ReadMailLocalDelivery(imapadmpw);
+        boolean         deliverytomember  = true;
+        boolean         sharedfolder      = false;
+        boolean         enableImpapquota  = false;
+
+        /**
+         * See RFC 2822, 3.4
+         * But for now, no-spaces@valid_domainname
+         * @param address an address to check
+         * @return valid?check_mail_address
+         */
+        define boolean check_mail_address (string address) ``{
+            list<string> parts = splitstring (address, "@");
+            if (size (parts) != 2)
+            {
+                return false;
+            }
+            string address = parts[0]:"";
+
+            return address != "" &&
+                findfirstof (address, " ") == nil &&
+                Hostname::CheckDomain (parts[1]:"");
+        }
+
+        /**
+         * Edit EMAIL Address
+         *
+         * @param old EMAIL
+         * @return new EMAIL or old EMAIL, if the user abort the dialog
+         */
+        define string editEMAIL(string email)``{
+
+            UI::OpenDialog (`opt(`decorated ),
+                            `HBox( `HSpacing(2),
+                                   `VBox (
+                                          `VSpacing (1),
+                                          // popup window header
+                                          `Heading (_("Change E-Mail")),
+                                          `VSpacing (1),
+                                          `TextEntry( `id (`entry), _("&E-Mail Address:"), email),
+                                          `VSpacing (1),
+                                          `HBox (  // push button label
+                                                 `PushButton (`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+                                                 `HStretch(),
+                                                 `PushButton (`id(`cancel), `opt( `key_F9), Label::AbortButton())
+                                                 ),
+                                          `VSpacing (1)
+                                          ),
+                                   `HSpacing (2)
+                                   )
+                            );
+
+            UI::SetFocus (`id(`entry));
+            symbol ui = nil;
+            string newEmail = "";
+            repeat
+                {
+                    ui = (symbol) UI::UserInput ();
+                    newEmail = (string) UI::QueryWidget(`id(`entry), `Value);
+                    if (!check_mail_address (newEmail))
+                    {
+                        Popup::Error(_("Invalid e-mail format."));
+                        ui = `again;
+                    }
+                }
+            until (contains ([`ok, `cancel], ui));
+            UI::CloseDialog ();
+            if (ui == `ok
+                && size (newEmail) > 0)
+            {
+                return newEmail;
+            }
+            else
+            {
+                return email;
+            }
+        }
+
+        /**
+         * Creates EMAIL items
+         * @return a list EMAIL items formated for a UI table
+         */
+        define list<term> getEMAILList () ``{
+            list<term> result = [];
+            integer i = 0;
+
+            if( is(data["susemailforwardaddress"]:(any)"", string)
+                && size (data["susemailforwardaddress"]:"") > 0 )
+            {
+                    result = [`item (`id (i),
+                                     data["susemailforwardaddress"]:"")];
+                    // transforming to list
+                    data["susemailforwardaddress"] = [data["susemailforwardaddress"]:""];
+            }
+            else if ( is(data["susemailforwardaddress"]:(any)[], list) )
+            {
+                    foreach (string element, data["susemailforwardaddress"]:[], ``{
+                        result = add (result, `item (`id (i), element));
+                        i = i + 1;
+                    });
+            }
+
+            return result;
+        }
+
+
+        string caption = UsersPluginMail::Name (config, $[]);
+        string what    = config["what"]:"user";
+        string action  = data["what"]:"";
+
+        if( data["susemailcommand"]:"" != "" ) {
+            sharedfolder = true;
+        }
+        if(  data["susedeliverytomember"]:"no" == "yes" ) {
+            deliverytomember = true;
+	    sharedfolder     = false;
+        }
+
+        map<string, any> tmp_data        = $[];
+        list<string> object_class = (list<string>)sort (data["objectclass"]:[]);
+
+        // if this plugin wasn't present in default plugin set, we have to call
+        // BeforeAdd/BeforeEdit e.g. to get object class!
+        if (!contains (data["plugins"]:[], "UsersPluginMail"))
+        {
+            if (action == "add_user" || action == "add_group")
+                data = UsersPluginMail::AddBefore (config, data);
+            else if (action == "edit_user" || action == "edit_group")
+                data = UsersPluginMail::EditBefore (config, data);
+            object_class = (list<string>)sort (data["objectclass"]:[]);
+            tmp_data["objectclass"]        = object_class;
+        }
+
+        // helptext 1/3
+        string help_text = _("<p>In this dialog You can configure the mail settings of an user .</p>") +
+
+        // helptext 2/3
+        (_("<p>First you can set the mail addresses and aliases for the user.</p>")) +
+
+        // helptext 3/3
+        _("<p>If you have selected \"cyrus\" for the local delivery of mails, you can set the size limit for the users mail box.
+           If you do not set any value the mail box size is unlimited.</p>");
+
+        term items                        = nil;
+        list used_attributes        = [];
+        list new_attributes                = [];
+        boolean modified                = false;
+        list<term>   emailTermList = getEMAILList ();
+
+        term buttons = `VBox ();
+        // To translators: pushbutton label
+        buttons = add (buttons, `HBox ( `HWeight (1, `PushButton (`id (`deleteEmail), `opt (`key_F5), Label::DeleteButton()))));
+        buttons = add (buttons, `HBox ( `HWeight (1, `PushButton (`id (`editEmail),   `opt (`key_F4), Label::EditButton()))));
+        buttons = add (buttons, `VStretch());
+        // To translators: pushbutton label
+        buttons = add (buttons, `HBox ( `HWeight(1, `PushButton (`id (`addEmail),     `opt (`key_F3), Label::AddButton()))));
+
+        term editEmail = `VBox ();
+        editEmail = add (editEmail, `HBox(
+                                          `VSpacing(5),
+                                          `Table (`id (`table), `opt (`notify, `immediate),
+                                          `header (
+                                              // To translators: table headers
+                                              // please let the spaces
+                                              _("Forwarding E-Mail Addresses                        ")),
+                                          emailTermList)));
+        editEmail = add (editEmail, `HBox( `TextEntry (`id (`id_emailname ), " " )));
+
+        term emails = `HBox ();
+        emails = add (emails, `HWeight (3, editEmail));
+        emails = add (emails, `HWeight (1, buttons));
+
+        term    imap     = `VBox();
+        term    shared   = `VBox();
+        integer intimapquota = -1;
+        if (haskey (data, "imapquota") && data["imapquota"]:"10000" != nil)
+        {
+            intimapquota = tointeger ((string) data["imapquota"]:"-1" );
+        }
+        shared = `Frame ( _("Delivery of group Mails"),
+                   `VBox(
+                      `Left(`CheckBox( `id(`deliverytomember), _("Enable Delivery to the Members"), deliverytomember))
+                     )
+                 );
+
+        if(data["localdeliverytype"]:"local" == "cyrus" ) {
+             shared = `Frame ( _("Delivery of group Mails"),
+                            `VBox(
+                                `Left(`CheckBox( `id(`deliverytomember), `opt(`notify), _("Enable Delivery to the Members"), deliverytomember))
+                                 )
+                             );
+             imap   = `Frame ( _("IMAP Quota"),
+                        `VBox(
+                                `Left(`CheckBox( `id(`sharedfolder),      `opt(`notify), _("Enable Shared Folder"), sharedfolder)),
+                                `Left(`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"),    intimapquota >= 0)),
+                                `HBox(
+                                      `IntField (`id(`imapquota), _("in kByte"), 1, 10000000, intimapquota >= 0 ? intimapquota : 10000),
+                                      `HStretch()
+                                      ),
+                                `Left(`Label(sformat (_("IMAP quota already in use: %1 kByte"), data["imapquotaused"]:"0" != nil ? data["imapquotaused"]:"0":"0")))
+                        )
+                );
+        }
+
+
+        term contents = `HBox(`HSpacing (1.5),
+                              `VBox(
+                                  `VSpacing(0.5),
+                                  emails,
+                                  `VSpacing(0.5),
+                                  shared,
+                                  `VSpacing(0.5),
+                                  imap
+                              ),
+                              `HSpacing (1.5)
+                              );
+
+        Wizard::CreateDialog ();
+        Wizard::SetDesktopIcon("users");
+
+        // dialog caption
+        Wizard::SetContentsButtons(_("Mail Settings for the group:") + " \"" + data["cn"]:"" +"\"",
+                                   contents, help_text, Label::BackButton(), Label::NextButton());
+
+        Wizard::HideAbortButton ();
+
+        ret = `next;
+        // UI::SetFocus (`id(`table));
+        repeat
+        {
+	    enableImpapquota = (boolean) UI::QueryWidget(`id(`enableImpapquota), `Value);
+	    sharedfolder     = (boolean) UI::QueryWidget(`id(`sharedfolder), `Value);
+	    deliverytomember = (boolean) UI::QueryWidget(`id(`deliverytomember), `Value);
+
+            if (ret == `deliverytomember)
+	    {
+	       sharedfolder = !deliverytomember;
+	       UI::ChangeWidget (`id (`sharedfolder), `Value, sharedfolder);
+	    }
+            if (ret == `sharedfolder)
+	    {
+	       deliverytomember = !sharedfolder;
+	       UI::ChangeWidget (`id (`deliverytomember), `Value, deliverytomember);
+	    }
+
+            UI::ChangeWidget (`id (`deleteEmail), `Enabled, UI::QueryWidget (`id (`table), `CurrentItem) != nil);
+            UI::ChangeWidget (`id (`editEmail),   `Enabled, UI::QueryWidget (`id (`table), `CurrentItem) != nil);
+
+            if(data["localdeliverytype"]:"local" == "cyrus"  && !deliverytomember ) {
+               UI::ChangeWidget(`id(`sharedfolder),     `Enabled, true);
+	       if( sharedfolder ) {
+                  UI::ChangeWidget(`id(`enableImpapquota), `Enabled, true );
+                  UI::ChangeWidget(`id(`imapquota),        `Enabled, enableImpapquota);
+               } else {
+                  UI::ChangeWidget(`id(`enableImpapquota), `Enabled, false );
+                  UI::ChangeWidget(`id(`imapquota),        `Enabled, false );
+               }
+            }  else {
+	       // If there is no cyrus, we have only delivery to member
+	       deliverytomember = true;
+	       UI::ChangeWidget(`id(`deliverytomember), `Value, deliverytomember);
+               UI::ChangeWidget(`id(`enableImpapquota), `Enabled, false );
+               UI::ChangeWidget(`id(`imapquota),        `Enabled, false );
+	    }
+
+            ret = UI::UserInput();
+
+            if (ret == `addEmail)
+            {
+                string emailName = (string) UI::QueryWidget(`id(`id_emailname), `Value);
+
+                if (size (emailName) > 0)
+                {
+                    if (check_mail_address (emailName))
+                    {
+                        if (contains (data["susemailforwardaddress"]:[], emailName))
+                        {
+                            Popup::Error(_("Entry already exists."));
+                        }
+                        else
+                        {
+                            data["susemailforwardaddress"] = add (data["susemailforwardaddress"]:[],
+                                                                 emailName);
+                            UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
+                            UI::ChangeWidget(`id(`id_emailname), `Value, "");
+                        }
+                    }
+                    else
+                    {
+                        Popup::Error(_("Invalid e-mail format."));
+                    }
+                }
+            }
+            if (ret == `deleteEmail)
+            {
+                integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
+                data["susemailforwardaddress"] = remove (data["susemailforwardaddress"]:[],
+                                                        id);
+                UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
+            }
+            if (ret == `editEmail)
+            {
+                integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
+                string oldEMAIL = (string)((list) data["susemailforwardaddress"]:[])[id]:"";
+                string newEMAIL = editEMAIL (oldEMAIL);
+
+                if (contains (data["susemailforwardaddress"]:[], newEMAIL))
+                {
+                    Popup::Error(_("Entry already exists."));
+                }
+                else
+                {
+                    data["susemailforwardaddress"] = remove (data["susemailforwardaddress"]:[], id);
+                    data["susemailforwardaddress"] = add (data["susemailforwardaddress"]:[], newEMAIL);
+                }
+                UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
+            }
+            if ( ret == `next )
+            {
+                if((boolean) UI::QueryWidget (`id (`deliverytomember), `Value)){
+                   data["susedeliverytomember"] = "yes";
+                } else {
+                   data["susedeliverytomember"] = "no";
+                }
+// We put it everytime into the LDAP, and the ldap filter control if it is visible
+                data["susemailcommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
+//               if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
+//                   data["susemailcommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
+//               } else {
+//                   if( data["susemailcommand"]:"" != "" ) {
+//                     data = remove (data, "susemailcommand");
+//                   }
+//               }
+                string err = UsersPluginMail::Check ( config, (map<string,any>) union (data, tmp_data));
+
+                if (err != "")
+                {
+                    Report::Error (err);
+                    ret = `notnext;
+                    continue;
+                }
+
+                // if this plugin wasn't in default set, we must save its name
+                 if (!contains (data["plugins"]:[], "UsersPluginMail"))
+                 {
+                     data["plugins"] = add (data["plugins"]:[],
+                                            "UsersPluginMail");
+                 }
+                 if( size(data["susemailforwardaddress"]:[]) == 1 ) {
+                     data["susemailforwardaddress"] = ((list)data["susemailforwardaddress"]:[])[0]:"";
+                 } else if( size(data["susemailforwardaddress"]:[]) == 0 ) {
+                     remove(data,"susemailforwardaddress");
+                 }
+
+                 if(data["localdeliverytype"]:"local" == "cyrus" ) {
+                    if ((boolean) UI::QueryWidget(`id(`enableImpapquota), `Value))
+                    {
+                       data["imapquota"] = (integer) UI::QueryWidget(`id(`imapquota), `Value);
+                    }
+                    else
+                    {
+                       data["imapquota"] = -1;
+                    }
+                 }
+                 if (data["what"]:"" == "edit_user")
+                 {
+                     Users::EditUser (data);
+                 }
+                 else if (data["what"]:"" == "add_user")
+                 {
+                     Users::AddUser (data);
+                 }
+                 else if (data["what"]:"" == "edit_group")
+                 {
+                     Users::EditGroup (data);
+                 }
+                 else if (data["what"]:"" == "add_group")
+                 {
+                     Users::AddGroup (data);
+                 }
+            }
+        } until (is(ret,symbol) &&
+            contains ([`next, `abort, `back, `cancel], (symbol) ret));
+
+        Wizard::CloseDialog ();
+    }
+    /* unknown function */
+    else {
+        y2error("unknown function: %1", func);
+        ret = false;
+    }
+
+    y2debug ("ret=%1", ret);
+    y2milestone("users plugin finished");
+    y2milestone("----------------------------------------");
+
+    return ret;
+}

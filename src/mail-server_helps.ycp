@@ -1,0 +1,150 @@
+/**
+ * File:	include/mail/helps.ycp
+ * Package:	Configuration of mail-server
+ * Summary:	Help texts of all the dialogs
+ * Authors:	Peter Varkoly <varkoly@suse.de>
+ *
+ * $Id: helps.ycp 20143 2004-11-03 12:05:30Z varkoly $
+ */
+
+{
+
+textdomain "MailServer";
+
+/**
+ * All helps are here
+ */
+map HELPS = $[
+
+    /* AuthorizingDialog dialog help 1/2 */
+    "AuthorizingDialog" : _("<p><b><big>Administrator Authorization</big></b><br>
+To use the YaST2 mail server component, your system must use LDAP
+as a repository for the user and group accounts and for the DNS services.<br>
+Some of the mail server settings will be stored in the LDAP repository, too.<br></p>
+"),
+
+    /* Read dialog help 1/2 */
+    "read" : _("<p><b><big>Initializing Mail Server Configuration</big></b><br>
+Please wait...<br></p>
+") +
+
+    /* Read dialog help 2/2 */
+    _("<p><b><big>Aborting Initialization:</big></b><br>
+Safely abort the configuration utility by pressing <b>Abort</b> now.</p>
+"),
+
+    /* Write dialog help 1/2 */
+    "write" : _("<p><b><big>Saving Mail Server Configuration</big></b><br>
+Please wait...<br></p>
+") +
+
+    /* Write dialog help 2/2 */
+_("<p><b><big>Aborting Saving:</big></b><br>
+Abort the save procedure by pressing <b>Abort</b>.
+An additional dialog informs whether it is safe to do so.
+</p>
+"),
+
+    /* GlobalSettings dialog help 1/3 */
+    "GlobalSettings" : _("<p><b><big>Server Identification:</big></b><br>
+This is the SMTP server's greeting banner.</b>.
+<br></p>
+") +
+    /* GlobalSettings dialog help 2/3 */
+_("<p><b><big>Mail Size:</big></b><br>
+This parameter limits the total size in bytes of a mail (sending and getting),
+including envelope information.
+</p>")+
+    /* GlobalSettings dialog help 3/3 */
+_("<p><b><big>Outgoing Mails:</big></b><br>
+Set the transport type for outgoing mails.
+</p>
+"),
+
+    /* MailTransports dialog help 1/2 */
+    "MailTransports" : _("<p><b><big>Manage Mail Routing</big></b><br>
+Add or modify mail transport routes.
+<br></p>
+") +
+    /* MailTransports dialog help 2/2 */
+_("<p><b><big>Defined Mail Transport Routes</big></b><br>
+This is the list of the defined mail transports.
+</p>
+"),
+
+    /* MailPrevention dialog help 1/2 */
+    "MailPrevention" : _("<p><b><big>SPAM Prevention</big></b><br>
+Postfix offers a variety of parameters that limit the delivery of unsolicited commercial e-mail (UCE).
+In this dialog, configure this settings.  For example, set access lists or RBL
+(real-time blackhole list) name servers. 
+<br></p>
+") +
+    /* MailPrevention dialog help 2/2 */
+_("<p><b><big>Start Virus Scanner AMAVIS:</big></b><br>
+If you start the virus scanner AMAVIS, do not forget to install a virus scanner engine. 
+</p>
+"),
+
+    /* MailRelaying dialog help 1/2 */
+    "MailRelaying" : _("<p><b><big>Trusted Local Networks:</big></b><br>
+Clients from these networks can use your mail server for mail relaying. 
+(Sending non-local mails)
+<br></p>
+") +
+    /* MailRelaying dialog help 2/2 */
+_("<p><b><big>Require SASL Authentication:</big></b><br>
+If set to true, clients must authenticate to use
+the mail server for mail relaying. 
+<br></p>
+"),
+
+    /* MailLocalDelivery dialog help 1/2 */
+    "MailLocalDelivery" : _("<p><b><big>Local Delivery Type</big></b><br>
+In this frame, choose the local mail delivery method. 
+For clients to be able to connect to your mail server via the POP or IMAP
+protocol, choose <b>Cyrus IMAP</p>. 
+<br></p>
+") +
+    /* MailLocalDelivery dialog help 2/2 */
+_("<p>Depending on the local delivery method, you have
+different possibilities of settings.
+</p>
+"),
+
+    /* FetchingMail dialog help 1/2 */
+    "FetchingMail" : _("<p><b><big>Mail Fetching Scheduler</big></b><br>
+If you have mail boxes on an Internet provider, you can fetch this regularly
+at defined time intervals and by connecting to the Internet.
+<br></p>
+") +
+    /* FetchingMail dialog help 2/2 */
+_("<p>Note: If you have not defined any local delivery type, you cannot
+define mail fetching jobs.
+</p>
+"),
+
+    /* MailLocalDomains dialog help 1/3 */
+    "MailLocalDomains" : _("<p><b><big>Mail Server Domains</big></b><br>
+Here, define the domains for which your mail server considers itself 
+the final destination.
+<br></p>
+") +
+    /* MailLocalDomains dialog help 2/3 */
+_("<p>Note: You can create and set up the domains with the YaST2 
+DNS server module. In this module, you only can set the properties
+concerning the mail server.
+</p>
+")+
+    /* MailLocalDomains dialog help 3/3 */
+_("<p><b><big>Type:</big></b><br>
+You can define virtual and local domains. In virtual domains, only users
+assigned a mail address in the domain can receive mail.
+In local domains, all user can get mails. Assign virtual mail 
+addresses in the YaST2 user module.
+</p>
+"),
+
+];
+
+/* EOF */
+}
