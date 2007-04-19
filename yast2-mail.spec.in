@@ -21,6 +21,8 @@ Provides:	yast2-config-mail
 Obsoletes:	yast2-config-mail
 Provides:	yast2-trans-mail
 Obsoletes:	yast2-trans-mail
+Provides:	yast2-mail-server
+Obsoletes:	yast2-mail-server
 
 BuildArchitectures:	noarch
 
@@ -52,7 +54,9 @@ Group:		System/YaST
 @clientdir@/mail.ycp
 @clientdir@/mail_*.ycp
 %dir @moduledir@
-@moduledir@/Mail.y*
+%dir @moduledir@/YaPI
+@moduledir@/Mail*
+@moduledir@/YaPI/Mail*
 %dir @desktopdir@
 @desktopdir@/mail.desktop
 %dir @schemadir@/autoyast/rnc
@@ -67,20 +71,17 @@ Group:		System/YaST
 @scrconfdir@/mail_s_auth.scr
 @scrconfdir@/mail_s_generics.scr
 @scrconfdir@/mail_s_virtuser.scr
-%dir @agentdir@
-@agentdir@/ag_smtp_auth
-%doc @docdir@
-
-%files aliases
-%defattr(-,root,root)
-%dir @moduledir@
-@moduledir@/MailAliases.y*
-@moduledir@/MailTable.pm
-@moduledir@/MailTableInclude.pm
-%dir @scrconfdir@
 @scrconfdir@/cfg_mail.scr
 @scrconfdir@/mail_aliases.scr
 @scrconfdir@/mail_fetchmail.scr
 %dir @agentdir@
+@agentdir@/ag_smtp_auth
 @agentdir@/ag_fetchmailrc
 @agentdir@/ag_mailtable
+%doc @docdir@
+
+%dir /etc/openldap/schema/
+/etc/openldap/schema/suse-mailserver.schema
+/etc/permissions.d/mail-server*
+%doc @docdir@
+

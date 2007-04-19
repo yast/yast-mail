@@ -4,17 +4,29 @@
 # $Id$
 #
 
+SUBDIRS = YaPI
+
 myyncludedir = $(yncludedir)/mail
 
 client_DATA =			\
 	mail.ycp		\
-	mail_auto.ycp
+	mail_auto.ycp		\
+	\
+        mail-server.ycp         \
+        mail-server_auto.ycp    \
+        mail-server_proposal.ycp
+
 
 myynclude_DATA =		\
 	helps.ycp		\
 	wj.ycp			\
 	widgets.ycp		\
-	ui.ycp
+	ui.ycp			\
+	\
+	mail-server_helps.ycp   \
+        mail-server_wizards.ycp \
+        mail-server_dialogs.ycp \
+        mail-server_complex.ycp
 
 desktop_DATA =			\
 	mail.desktop
@@ -23,7 +35,11 @@ module_DATA =			\
 	MailAliases.ycp		\
 	MailTable.pm		\
 	MailTableInclude.pm	\
-	Mail.ycp
+	Mail.ycp		\
+	\
+	MailServer.ycp
+
+schema_DATA = suse-mailserver.schema
 
 rncdir =  $(schemadir)/autoyast/rnc
 rnc_DATA = mail.rnc
@@ -33,6 +49,7 @@ mail:
 
 ycpchook = mail
 
-EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA) $(rnc_DATA)
+EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA) $(rnc_DATA) \
+             $(schema_DATA)
 
 include $(top_srcdir)/Makefile.am.common

@@ -4,7 +4,16 @@
 # $Id$
 #
 
-agent_SCRIPTS = ag_fetchmailrc ag_smtp_auth ag_mailtable
+agent_SCRIPTS = ag_fetchmailrc \
+		ag_smtp_auth \
+		ag_mailtable \
+		\
+		ag_mailconfig \
+		ag_postfix_mastercf \
+		MasterCFParser.pm \
+		ag_mail_ldaptable \
+                ag_cyrus_conf \
+		CyrusConfParser.pm
 
 scrconf_DATA = \
 	cfg_amavis.scr		\
@@ -18,7 +27,16 @@ scrconf_DATA = \
 	mail_p_virtual.scr	\
 	mail_s_auth.scr		\
 	mail_s_generics.scr	\
-	mail_s_virtuser.scr
+	mail_s_virtuser.scr     \
+	\
+	mail_maincf.scr \
+	mail_saslpasswd.scr \
+	mail_mastercf.scr \
+	etc_imapd_conf.scr \
+        mail_ldaptable.scr \
+	mail_cyrusconf.scr \
+	cfg_fetchmail.scr
+
 
 # ag_fetchmailrc is tested in testsuite dir
 TESTS = test-mailtable
