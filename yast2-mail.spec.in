@@ -2,7 +2,7 @@
 
 @HEADER@
 BuildRequires:	perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
-BuildRequires:	yast2-perl-bindings
+BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
 # new firewall interface
 Requires:	yast2 >= 2.11.11
 Requires:	yast2-mail-aliases
@@ -51,11 +51,14 @@ Group:		System/YaST
 %dir @yncludedir@/mail
 @yncludedir@/mail/*
 %dir @clientdir@
-@clientdir@/mail.ycp
-@clientdir@/mail_*.ycp
+@clientdir@/*
 %dir @moduledir@
+@moduledir@/Mail.ybc
+@moduledir@/MailServer.ybc
+@moduledir@/UsersPluginMail.pm
+@moduledir@/MailServer.ycp
+@moduledir@/Mail.ycp
 %dir @moduledir@/YaPI
-@moduledir@/Mail*
 @moduledir@/YaPI/Mail*
 %dir @desktopdir@
 @desktopdir@/mail.desktop
@@ -71,17 +74,40 @@ Group:		System/YaST
 @scrconfdir@/mail_s_auth.scr
 @scrconfdir@/mail_s_generics.scr
 @scrconfdir@/mail_s_virtuser.scr
-@scrconfdir@/cfg_mail.scr
-@scrconfdir@/mail_aliases.scr
-@scrconfdir@/mail_fetchmail.scr
+@scrconfdir@/cfg_fetchmail.scr
+@scrconfdir@/etc_imapd_conf.scr
+@scrconfdir@/mail_cyrusconf.scr
+@scrconfdir@/mail_ldaptable.scr
+@scrconfdir@/mail_maincf.scr
+@scrconfdir@/mail_mastercf.scr
+@scrconfdir@/mail_saslpasswd.scr
 %dir @agentdir@
-@agentdir@/ag_smtp_auth
+@agentdir@/ag_cyrus_conf
 @agentdir@/ag_fetchmailrc
+@agentdir@/ag_mailconfig
+@agentdir@/ag_mail_ldaptable
 @agentdir@/ag_mailtable
-%doc @docdir@
+@agentdir@/ag_postfix_mastercf
+@agentdir@/ag_smtp_auth
+@agentdir@/CyrusConfParser.pm
+@agentdir@/MasterCFParser.pm
 
 %dir /etc/openldap/schema/
 /etc/openldap/schema/suse-mailserver.schema
 /etc/permissions.d/mail-server*
 %doc @docdir@
+
+%files aliases
+%defattr(-,root,root)
+%dir @moduledir@
+@moduledir@/MailAliases.y*
+@moduledir@/MailTable.pm
+@moduledir@/MailTableInclude.pm
+%dir @scrconfdir@
+@scrconfdir@/cfg_mail.scr
+@scrconfdir@/mail_aliases.scr
+@scrconfdir@/mail_fetchmail.scr
+%dir @agentdir@
+@agentdir@/ag_fetchmailrc
+@agentdir@/ag_mailtable
 

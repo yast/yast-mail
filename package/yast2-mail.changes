@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Apr 19 17:18:26 CEST 2007 - varkoly@suse.de
+
+- First merged version with yast2-mail-server
+- 2.15.4 
+
+-------------------------------------------------------------------
 Tue Mar 13 13:13:55 CET 2007 - mvidner@suse.cz
 
 - Added missing dependency on yast2-ldap (#253948).

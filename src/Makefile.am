@@ -7,6 +7,7 @@
 SUBDIRS = YaPI
 
 myyncludedir = $(yncludedir)/mail
+ldapschemadir  = /etc/openldap/schema
 
 client_DATA =			\
 	mail.ycp		\
@@ -39,7 +40,7 @@ module_DATA =			\
 	\
 	MailServer.ycp
 
-schema_DATA = suse-mailserver.schema
+ldapschema_DATA = suse-mailserver.schema
 
 rncdir =  $(schemadir)/autoyast/rnc
 rnc_DATA = mail.rnc
@@ -50,6 +51,6 @@ mail:
 ycpchook = mail
 
 EXTRA_DIST = $(client_DATA) $(myynclude_DATA) $(module_DATA) $(desktop_DATA) $(rnc_DATA) \
-             $(schema_DATA)
+             $(ldapschema_DATA)
 
 include $(top_srcdir)/Makefile.am.common

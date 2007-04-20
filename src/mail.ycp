@@ -37,7 +37,8 @@
     import "CommandLine";
     import "Mail";
     import "RichText";
-
+    import "Popup";
+    import "Label";
     include "mail/ui.ycp";
 
     /* The main () */
@@ -98,6 +99,31 @@
 	    "summary"	: [],
 	]
     ];
+
+    /*
+       after merging yast2-mail and yast2-mail-server we have to be
+       carefull not to corrupt the configuration of the other modul
+    */
+    map local_recipient_maps = (map) SCR::Read (.mail.ldaptable, "local_recipient_maps");
+y2milestone("local_recipient_maps: %1",local_recipient_maps);
+    if( local_recipient_maps != nil )
+    {
+	if(
+	    ! Popup::AnyQuestionRichText(
+		Label::WarningMsg(),
+		_("You have configured your MTA with LDAP support.<br>") +
+		_("This modul will configure your MTA without LDAP support.<br>")  +
+		_("This will corrupt your actuall configuration."),
+		80, 10,
+		Label::ContinueButton(),
+		Label::CancelButton(),
+		`focus_no
+	     )
+	  )
+	  {
+	     return nil;
+	  }
+    }
 
     /* main ui function */
     any ret = (preselect_connection_type == nil) ?
