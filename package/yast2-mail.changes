@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Mon Apr 23 10:19:17 CEST 2007 - varkoly@suse.de
+
+- Include the testsuite directory
+- 2.15.6 
+
+-------------------------------------------------------------------
+Fri Apr 20 22:01:28 CEST 2007 - varkoly@suse.de
+
+- we need the package yast2-mail-aliases too
+- 2.15.5
+
+-------------------------------------------------------------------
 Thu Apr 19 17:18:26 CEST 2007 - varkoly@suse.de
 
 - First merged version with yast2-mail-server
