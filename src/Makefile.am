@@ -33,7 +33,6 @@ desktop_DATA =			\
 	mail.desktop
 
 module_DATA =			\
-	MailAliases.ycp		\
 	MailTable.pm		\
 	MailTableInclude.pm	\
 	Mail.ycp		\

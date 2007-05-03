@@ -5,12 +5,9 @@ BuildRequires:	perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-t
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
 # new firewall interface
 Requires:	yast2 >= 2.11.11
-Requires:	yast2-mail-aliases
-# for listing local users as alias destinations
 Requires:	yast2-users
-# because of listing users too. probably could be hidden in
-# yast2-users easily
 Requires:	yast2-ldap
+Requires:       perl-NetxAP
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
