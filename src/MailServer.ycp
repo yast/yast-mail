@@ -161,6 +161,7 @@ global boolean cyrus_installed     = false;
 global boolean postfix_installed   = false;
 global boolean fetchmail_installed = false;
 global boolean sasl_installed      = false;
+global boolean plugins_installed   = false;
 
 /*
  * Help funktion to check the DNS Settings
@@ -311,6 +312,7 @@ global boolean Read() {
     ldap_installed      = Installed("yast2-ldap-client");
     amavis_installed    = Installed("amavisd-new");
     sasl_installed      = Installed("cyrus-sasl-plain");
+    plugins_installed   = Installed("yast2-mail-plugins");
 
     if(!ldap_installed) {
        Report::Error(_("You have not installed all needed packages.") +
@@ -334,9 +336,6 @@ global boolean Read() {
 	    return false;
 	}
     }
-    if( SCR::Read(.target.size, "/var/adm/yast2-mail-server-used") < 0) {
-      YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,MailServer::LDAPDefaults);
-    }
     if(!sasl_installed)
     {
 	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
@@ -351,6 +350,24 @@ global boolean Read() {
 	{
 	    return false;
 	}
+    }
+    if(!plugins_installed)
+    {
+	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+				  "\n yast2-mail-plugins \n",
+				  Label::InstallButton(),
+				  Label::AbortButton(),
+				  `focus_yes))
+	{
+	    Package::DoInstall(["yast2-mail-plugins"]);
+	}
+	else
+	{
+	    return false;
+	}
+    }
+    if( SCR::Read(.target.size, "/var/adm/yast2-mail-server-used") < 0) {
+      YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,MailServer::LDAPDefaults);
     }
 
     NetworkDevices::Read();

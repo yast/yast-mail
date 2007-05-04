@@ -7,7 +7,6 @@ BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
 Requires:	yast2 >= 2.11.11
 Requires:	yast2-users
 Requires:	yast2-ldap
-Requires:       perl-NetxAP
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
@@ -20,6 +19,8 @@ Provides:	yast2-trans-mail
 Obsoletes:	yast2-trans-mail
 Provides:	yast2-mail-server
 Obsoletes:	yast2-mail-server
+Provides:	yast2-mail-aliases
+Obsoletes:	yast2-mail-aliases
 
 BuildArchitectures:	noarch
 
@@ -28,11 +29,12 @@ Summary:	Configuration of mail
 %description
 -
 
-%package aliases
-Summary:	Configuration of mail, alias handling
+%package plugins
+Summary:	Plugins for the yast2 users modul for enterprise mail server configuration.
 Group:		System/YaST
+Requires:       perl-NetxAP
 
-%description aliases
+%description plugins
 -
 
 @PREP@
@@ -48,11 +50,10 @@ Group:		System/YaST
 %dir @yncludedir@/mail
 @yncludedir@/mail/*
 %dir @clientdir@
-@clientdir@/*
+@clientdir@/mail*
 %dir @moduledir@
 @moduledir@/Mail.ybc
 @moduledir@/MailServer.ybc
-@moduledir@/UsersPluginMail.pm
 @moduledir@/MailServer.ycp
 @moduledir@/Mail.ycp
 %dir @moduledir@/YaPI
@@ -94,10 +95,9 @@ Group:		System/YaST
 /etc/permissions.d/mail-server*
 %doc @docdir@
 
-%files aliases
+#%files aliases
 %defattr(-,root,root)
 %dir @moduledir@
-@moduledir@/MailAliases.y*
 @moduledir@/MailTable.pm
 @moduledir@/MailTableInclude.pm
 %dir @scrconfdir@
@@ -107,4 +107,11 @@ Group:		System/YaST
 %dir @agentdir@
 @agentdir@/ag_fetchmailrc
 @agentdir@/ag_mailtable
+
+%files plugins
+%defattr(-,root,root)
+%dir @moduledir@
+@moduledir@/UsersPluginMail.pm
+%dir @clientdir@
+@clientdir@/users*
 
