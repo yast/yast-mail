@@ -1,15 +1,13 @@
 -------------------------------------------------------------------
 Fri May  4 10:34:08 CEST 2007 - varkoly@suse.de
 
-- drop package: yast2-mail-alias
+- drop package: yast2-mail-alias move modul file MailAlias.ycp to 
+  the package yast2 (269867 - build cycle between yast2-users and yast2-mail) 
 - new package:  yast2-mail-plugins
+  This package contains the plugins for the yast2 users modul. 
+  This package is only requiered if postfix was configured to use
+  LDAP as backend.
 - 2.15.8 
-
--------------------------------------------------------------------
-Thu May  3 14:46:39 CEST 2007 - varkoly@suse.de
-
-- Add new modul file MailAlias.ycp (269867 - build cycle between yast2-users and yast2-mail) 
-- 2.15.7
 
 -------------------------------------------------------------------
 Wed May  2 19:35:54 CEST 2007 - aj@suse.de
