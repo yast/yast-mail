@@ -33,10 +33,7 @@ desktop_DATA =			\
 	mail.desktop
 
 module_DATA =			\
-	MailTable.pm		\
-	MailTableInclude.pm	\
 	Mail.ycp		\
-	\
 	MailServer.ycp
 
 ldapschema_DATA = suse-mailserver.schema
