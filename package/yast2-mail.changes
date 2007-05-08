@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue May  8 17:30:29 CEST 2007 - varkoly@suse.de
+
+- Move MailTableInclude.pm MailTable.pm to yast2. 
+
+-------------------------------------------------------------------
 Fri May  4 10:34:08 CEST 2007 - varkoly@suse.de
 
 - drop package: yast2-mail-alias move modul file MailAlias.ycp to 
