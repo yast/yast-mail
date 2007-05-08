@@ -97,9 +97,6 @@ Requires:       perl-NetxAP
 
 #%files aliases
 %defattr(-,root,root)
-%dir @moduledir@
-@moduledir@/MailTable.pm
-@moduledir@/MailTableInclude.pm
 %dir @scrconfdir@
 @scrconfdir@/cfg_mail.scr
 @scrconfdir@/mail_aliases.scr
