@@ -37,6 +37,7 @@ scrconf_DATA = \
 	mail_cyrusconf.scr \
 	cfg_fetchmail.scr
 
+fillup_DATA =  sysconfig.mail
 
 # ag_fetchmailrc is tested in testsuite dir
 TESTS = test-mailtable
@@ -49,4 +50,4 @@ testdata = \
 	test-mailtable-4.in test-mailtable-4.out \
 	test-mailtable-18487.in test-mailtable-18487.out
 
-EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata)
+EXTRA_DIST = $(agent_SCRIPTS) $(scrconf_DATA) $(TESTS) $(testdata) $(fillup_DATA)

@@ -3,6 +3,9 @@
 @HEADER@
 BuildRequires:	perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
+
+PreReq:         %fillup_prereq
+
 # new firewall interface
 Requires:	yast2 >= 2.11.11
 Requires:	yast2-users
@@ -45,6 +48,9 @@ Requires:       perl-NetxAP
 
 @CLEAN@
 
+%post
+%{fillup_only -n mail}
+
 %files
 %defattr(-,root,root)
 %dir @yncludedir@/mail
@@ -55,6 +61,7 @@ Requires:       perl-NetxAP
 @moduledir@/Mail.ybc
 @moduledir@/MailServer.ybc
 @moduledir@/MailServer.ycp
+@moduledir@/MailServerLDAP.pm
 @moduledir@/Mail.ycp
 %dir @moduledir@/YaPI
 @moduledir@/YaPI/Mail*
@@ -104,6 +111,8 @@ Requires:       perl-NetxAP
 %dir @agentdir@
 @agentdir@/ag_fetchmailrc
 @agentdir@/ag_mailtable
+
+@fillupdir@/sysconfig.mail
 
 %files plugins
 %defattr(-,root,root)
