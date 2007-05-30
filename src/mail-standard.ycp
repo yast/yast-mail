@@ -1,0 +1,110 @@
+/**
+ * File:
+ *   clients/mail.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Main file
+ *
+ * Authors:
+ *   Martin Vidner <mvidner@suse.cz>
+ *   Peter Varkoly <varkoly@novell.com>
+ *
+ * $Id: mail.ycp 37642 2007-04-20 19:06:52Z varkoly $
+ *
+ * Main file for mail configuration. Uses all other files.
+ *
+ */
+
+/**
+ * @param flag "<b>permanent</b>", "<b>dialup</b>", or "<b>screenshots</b>"<br>
+ *  <dl>
+ *  <dt>permanent<dd>preselects permanent connnection
+ *  <dt>dialup<dd>preselects dial-up connnection
+ *  <dt>screenshots
+ *   <dd>uses faked data (see Mail::Fake), enables running the module
+ *    as non-root. (Uses Mode::screen_shot().)
+ *  </dl>
+ */
+{
+    /***
+     * <h3>Configuration of the mail</h3>
+     */
+
+    textdomain "mail";
+
+    import "CommandLine";
+    import "Mail";
+    import "RichText";
+    include "mail/ui.ycp";
+
+    /* The main () */
+    y2milestone ("Mail standard module started");
+    y2milestone ("----------------------------------------");
+
+    /* parse arguments */
+    list args = WFM::Args ();
+    string first_arg = args[0]:"";
+    if (first_arg == "permanent")
+    {
+	preselect_connection_type = `permanent;
+    }
+    else if (first_arg == "dialup")
+    {
+	preselect_connection_type = `dialup;
+    }
+
+    /**
+     * CLI action handler.
+     * Print summary in command line
+     * @param options command options
+     * @return false so that Write is not called in non-interactive mode
+     */
+    define boolean MailSummaryHandler (map options) {
+
+        CommandLine::Print (RichText::Rich2Plain (Mail::Summary ()));
+        return false;
+    }
+
+    /**
+     * CLI initializer.
+     * @return whether successful
+     */
+    define boolean MailRead () {
+
+        block<boolean> callback	= ``{
+            return false;
+        };
+        return Mail::Read (callback);
+    }
+
+
+    map cmdline_description = $[
+        "id"		: "mail",
+        /* Command line help text for the mail module */
+        "help"		: _("Configuration of mail"),
+        "guihandler"	: MailSequence,
+        "initialize"    : MailRead,
+        "finish"        : Mail::Write,
+        "actions"       : $[
+            "summary"	: $[
+	"handler"	: MailSummaryHandler,
+	// command line action help
+	"help"		: _("Mail configuration summary"),
+            ],
+        ],
+        "mappings"		: $[
+            "summary"	: [],
+        ]
+    ];
+    /* main ui function */
+    any ret = (preselect_connection_type == nil) ?
+        CommandLine::Run (cmdline_description) : MailSequence ();
+    y2debug ("ret == %1", ret);
+
+    /* Finish */
+    y2milestone ("Mail standard module finished");
+    return ret;
+}

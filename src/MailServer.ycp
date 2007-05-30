@@ -366,9 +366,6 @@ global boolean Read() {
 	    return false;
 	}
     }
-    if( SCR::Read(.target.size, "/var/adm/yast2-mail-server-used") < 0) {
-      YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,MailServer::LDAPDefaults);
-    }
 
     NetworkDevices::Read();
     map<string,map> TMP = NetworkDevices::Export("modem");

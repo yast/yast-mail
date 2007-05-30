@@ -10,6 +10,7 @@
  *
  * Authors:
  *   Martin Vidner <mvidner@suse.cz>
+ *   Peter Varkoly <varkoly@novell.com>
  *
  * $Id$
  *
@@ -34,102 +35,167 @@
 
     textdomain "mail";
 
-    import "CommandLine";
-    import "Mail";
-    import "RichText";
+    import "Wizard";
     import "Popup";
     import "Label";
-    include "mail/ui.ycp";
 
     /* The main () */
     y2milestone ("Mail module started");
     y2milestone ("----------------------------------------");
 
+    /* The maske to select the type of the configuration */
+define string StartDialogHelp () ``{
+        return 
+          // Translators: start dialog help, part 1 of 4
+          _("<P><B>Email Server Configuration</B><BR>") +
+          // Translators: start dialog help, part 2 of 4
+          _("<P>This module will configure and start Postfix and if necessary the Cyrus IMAP Server.</P>")+
+          // Translators: start dialog help, part 3 of 4
+          _("<P>Be aware:\nMost home users can use the build-in 
+features of their email application to send and
+get email. They do not need this module.</P>")+
+          // Translators: start dialog help, part 4 of 4
+          _("<P>You will need Postfix only if you want to store
+the email on your local system, or in some other special cases.</P>");
+}
+
+define string StartDialog (string type) ``{
+
+    y2milestone ("Mail configuration type %1", type);
+
+    Wizard::SetScreenShotName ("mail-0-start");
+    string caption   = _("Email Server Configuration");
+    term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
+    string status    = _("Mail Server is not configured.
+Select configuration type according your personal needs");
+    if( type == "standard" )
+    {
+        status = _("The running Mail Server configuration is based on type “Standard”. 
+It's possible to change to “Advanced”, but this will overwrite all existing settings.");
+    }
+    else if( type == "advanced" )
+    {
+        status = _("The running Mail Server configuration is based on type “Advanced”.
+It's possible to change to “Standard”, but this will overwrite all existing settings.");
+    }
+    if( type != "standard" && type != "advanced" )
+    {
+       tskip_ask =  `VSpacing(1);
+    }
+    term   contents =
+        `Frame(
+                "",
+                `VBox(
+                        `Left(`Label(status)),
+                        `RadioButtonGroup( `id( `conf_type ),
+                                `VBox(
+                                        `VSpacing(1),
+                                        `Left(`RadioButton(`id("standard"),_("Standard"), type == "standard" )),
+                                        `VSpacing(1),
+                                        `Left(`RadioButton(`id("advanced"),_("Advanced"), type == "advanced" )),
+                                        `VSpacing(1)
+                                )
+                        ),
+                        tskip_ask,
+                        `VSpacing(1)
+                )
+        );
+    Wizard::CreateDialog();
+    Wizard::SetContentsButtons (caption, contents, StartDialogHelp (), Label::BackButton (), Label::NextButton ());
+
+    any     ret = nil;
+    string sret = nil;
+    while (true)
+    {
+        ret = UI::UserInput ();
+        if (ret == `cancel)
+        {
+            ret = `abort;
+        }
+
+        if (ret == `back || (ret == `abort ))
+        {
+            break;
+        }
+
+        if (ret == `next )
+        {
+            if(  (boolean) UI::QueryWidget (`id (`skip_ask), `Value) )
+            {
+               SCR::Write (.sysconfig.mail.SKIP_ASK, "yes");
+            }
+            else
+            {
+               SCR::Write (.sysconfig.mail.SKIP_ASK, "no");
+            }
+            sret =  (string) UI::QueryWidget (`id (`conf_type), `CurrentButton);
+            if( sret == nil )
+            {
+               Popup::Error(_("You have to select a configuration type"));
+               continue;
+            }
+            SCR::Write (.sysconfig.mail.CONFIG_TYPE, sret);
+            y2milestone ("Mail configuration type %1", sret);
+            break;
+        }
+    }
+    UI::CloseDialog();
+    return sret;
+
+}
+
     /* parse arguments */
     list args = WFM::Args ();
-    string first_arg = args[0]:"";
-    if (first_arg == "permanent")
-    {
-	preselect_connection_type = `permanent;
-    }
-    else if (first_arg == "dialup")
-    {
-	preselect_connection_type = `dialup;
-    }
 
-    /**
-     * CLI action handler.
-     * Print summary in command line
-     * @param options command options
-     * @return false so that Write is not called in non-interactive mode
-     */
-    define boolean MailSummaryHandler (map options) {
-
-	CommandLine::Print (RichText::Rich2Plain (Mail::Summary ()));
-	return false;
-    }
-
-    /**
-     * CLI initializer.
-     * @return whether successful
-     */
-    define boolean MailRead () {
-
-	block<boolean> callback	= ``{
-	    return false;
-	};
-	return Mail::Read (callback);
-    }
-
-    map cmdline_description = $[
-	"id"		: "mail",
-	/* Command line help text for the mail module */
-	"help"		: _("Configuration of mail"),
-	"guihandler"	: MailSequence,
-	"initialize"    : MailRead,
-	"finish"        : Mail::Write,
-	"actions"       : $[
-	    "summary"	: $[
-		"handler"	: MailSummaryHandler,
-		// command line action help
-		"help"		: _("Mail configuration summary"),
-	    ],
-	],
-	"mappings"		: $[
-	    "summary"	: [],
-	]
-    ];
-
-    /*
-       after merging yast2-mail and yast2-mail-server we have to be
-       carefull not to corrupt the configuration of the other modul
-    */
+    /* we collect some informations from the system */
+    any     ret              = nil;
+    string  skip_ask         = "no";
+    string  conf_type        = "undef";
+            skip_ask         = (string) SCR::Read (.sysconfig.mail.SKIP_ASK);
+            conf_type        = (string) SCR::Read (.sysconfig.mail.CONFIG_TYPE);
+    boolean first_start      = false;
     map local_recipient_maps = (map) SCR::Read (.mail.ldaptable, "local_recipient_maps");
-y2milestone("local_recipient_maps: %1",local_recipient_maps);
-    if( local_recipient_maps != nil )
+
+    if( conf_type != "advanced" && conf_type != "standard" )
+    { // First start of mail modul or update from < 10.3
+        y2milestone ("Warum bin i here Mail configuration type %1", conf_type);
+	if( local_recipient_maps != nil )
+	{ // Postfix configured using LDAP
+	  conf_type = "advanced";
+	}
+	else
+	{
+	  conf_type = "standard";
+	}
+	first_start = true;
+    }
+    if( skip_ask == "no" || skip_ask == nil )
     {
-	if(
-	    ! Popup::AnyQuestionRichText(
-		Label::WarningMsg(),
-		_("You have configured your MTA with LDAP support.<br>") +
-		_("This modul will configure your MTA without LDAP support.<br>")  +
-		_("This will corrupt your actuall configuration."),
-		80, 10,
-		Label::ContinueButton(),
-		Label::CancelButton(),
-		`focus_no
-	     )
-	  )
-	  {
-	     return nil;
-	  }
+	string old_conf = conf_type;
+	conf_type = StartDialog(conf_type);
+	if( conf_type == nil )
+        {
+	   y2milestone("no mail server configuration type");
+           return ret;
+        }
+	if( old_conf != conf_type )
+	{
+		first_start = true;
+	}
     }
 
-    /* main ui function */
-    any ret = (preselect_connection_type == nil) ?
-	CommandLine::Run (cmdline_description) : MailSequence ();
-
-    y2debug ("ret == %1", ret);
+    if( conf_type == "advanced" )
+    {
+        if( first_start )
+	{
+          args[size(args)] = "setup";
+	}
+	ret = WFM::CallFunction("mail-advanced",args);
+    }
+    else
+    {
+	ret = WFM::CallFunction("mail-standard",args);
+    }
 
     /* Finish */
     y2milestone ("Mail module finished");

@@ -43,13 +43,12 @@ our %TYPEINFO;
 our @CAPABILITIES = (
                      'SLES10'
                     );
-our $VERSION="1.1.0";
+our $VERSION="2.2.0";
 
 YaST::YCP::Import ("SCR");
 YaST::YCP::Import ("Service");
 YaST::YCP::Import ("Ldap");
 YaST::YCP::Import ("NetworkDevices");
-YaST::YCP::Import ("YaPI::LdapServer");
 
 ##
  #
@@ -2184,7 +2183,7 @@ Reads the LDAP Configuration:
    The LDAP Base for the DNS Configuration
    The LDAP Base for the MAIL Configuration
    The LDAP Template for the MAIL Configuration
-If the last two does not exist this will be created.
+If the last there does not exist this will be created.
 
 The result is an hash of following structur:
 
@@ -2574,65 +2573,6 @@ fi';
     SCR->Execute(".target.bash", "SuSEconfig -module postfix");
     SCR->Write(".sysconfig.mail.MAIL_CREATE_CONFIG","no");
     SCR->Write(".sysconfig.mail",undef);
-
-    # don't configure if using eDirectory server
-    Ldap->CheckNDS ();
-    if (! Ldap->nds())
-    {
-	# Now we configure the LDAP-Server to be able store the mail server configuration
-	my $schemas = YaPI::LdapServer->ReadSchemaIncludeList();
-	my $SCHEMA  = join "",@{$schemas};
-	if( $SCHEMA !~ /dnszone.schema/ )
-	{
-	    push @{$schemas},'/etc/openldap/schema/dnszone.schema';
-	}
-	if( $SCHEMA !~ /suse-mailserver.schema/ )
-	{
-	    push @{$schemas},'/etc/openldap/schema/suse-mailserver.schema';
-	    YaPI::LdapServer->WriteSchemaIncludeList($schemas);
-	    my $indices = YaPI::LdapServer->ReadIndex($ldapMap->{ldap_domain});
-	    my $SuSEMailClient = 0;
-	    my $SuSEMailDomainMasquerading = 0;
-	    my $suseTLSPerSitePeer= 0;
-	    foreach my $index (@{$indices})
-	    {
-		if( $index->{attr} eq "SuSEMailClient,SUSEMailAcceptAddress,zoneName")
-		{
-		    $SuSEMailClient = 1;
-		}
-		if( $index->{attr} eq "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType")
-		{
-		    $SuSEMailDomainMasquerading = 1;
-		}
-		if( $index->{attr} eq "suseTLSPerSitePeer,SuSEMailTransportDestination")
-		{
-		    $suseTLSPerSitePeer = 1;
-		}
-	    }
-	    if(!$SuSEMailClient)
-	    {
-		YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-					   { "attr"  => "SuSEMailClient,SUSEMailAcceptAddress,zoneName",
-					     "param" => "eq" }	
-					   );
-	      }
-	    if(!$SuSEMailDomainMasquerading)
-	    {
-		YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-					   { "attr"  => "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType",
-					     "param" => "eq" }	
-					   );
-	      }
-	    if(!$SuSEMailClient)
-	    {
-		YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-					   { "attr"  => "suseTLSPerSitePeer,SuSEMailTransportDestination",
-					     "param" => "eq" }	
-					   );
-	    }
-            YaPI::LdapServer->RecreateIndex($ldapMap->{ldap_domain});
-	}
-    }
 
     #Put user postfix into the group mail
     system($check_postfix);

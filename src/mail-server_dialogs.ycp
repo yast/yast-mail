@@ -18,7 +18,6 @@ import "Report";
 import "Service";
 import "Users";
 import "YaPI::MailServer";
-import "YaPI::LdapServer";
 
 include "mail/helps.ycp";
 
@@ -29,11 +28,24 @@ include "mail/helps.ycp";
  */
 define any AuthorizingDialog () {
 
-    string ERROR = "";
+    string ERROR = _("You must configure LDAP to use the mail server.");
     Ldap::Read();
     map LDAPSettings = Ldap::Export();
-    if(LDAPSettings["base_config_dn"]:"" == "" ) {
-       ERROR = _("You must configure LDAP to use the mail server.");
+    if(LDAPSettings["ldap_server"]:"" == "" )
+    {
+	ERROR = ERROR + "\n" + _("Now we will start the LDAP-Server setup vizard.");
+	if(Popup::YesNo(ERROR))
+	{
+	    return `ldapsetup;
+	}
+	else
+	{
+	    return `abort;
+	}
+	Ldap::Read();
+    }
+    if(LDAPSettings["base_config_dn"]:"" == "" )
+    {
        ERROR = ERROR + "\n";
     }
     Ldap::LDAPInit();
@@ -70,46 +82,7 @@ Create the certificate with the YaST2 CA management module.
        MailServer::CertExist = true;
     }
 
-
-    string caption = _("Mail Server Administrator Authorization");
-    term contents = `HBox(
-                              `HStretch(),
-                              `Password(`id(`password),  _("&Enter the Password for LDAP Server:"), ""),
-                              `HStretch()
-                         );
-
-    Wizard::SetContentsButtons(caption, contents, HELPS["AuthorizingDialog"]:"",
-	    Label::BackButton(), Label::NextButton());
-    Wizard::SetDesktopIcon("mailserver");
-    UI::WizardCommand(`SetBackButtonLabel( "" ) );
-    UI::SetFocus (`id (`password));
-
-    any ret = nil;
-    while(true) {
-
-        ret = UI::UserInput();
-
-        MailServer::AdminPassword  = (string) UI::QueryWidget(`id(`password), `Value);
-
-        /* abort? */
-        if(ret == `abort || ret == `cancel) {
-            if(ReallyAbort()) break;
-            else continue;
-        } else if(ret == `next) {
-                MailServer::LDAPDefaults = (map<string,any>) YaPI::MailServer::ReadLDAPDefaults(
-                                                                MailServer::AdminPassword);
-                if (MailServer::LDAPDefaults == nil) {
-			Popup::Error(_("Unable to Authorize the Administrator User"));
-			continue;
-		}
-                return ret;
-	} else {
-            y2error("unexpected retcode: %1", ret);
-            continue;
-        }
-    }
-
-    return ret;
+    return Ldap::LDAPAskAndBind(false);
 
 }
 

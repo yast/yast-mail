@@ -19,6 +19,31 @@ include "mail/mail-server_dialogs.ycp";
 
 
 /**
+ * Workflow of the LDAP Server/Client setup
+ * @return sequence result
+ */
+any LdapSetupSequence() {
+
+    /* FIXME: adapt to your needs */
+    map aliases = $[
+	"complex"	:   ``( ComplexDialog() )
+    ];
+
+    /* FIXME: adapt to your needs */
+    map sequence = $[
+	"ws_start" : "complex",
+        "complex"  : $[
+            `abort      : `abort,
+            `next       : `next
+        ]
+    ];
+
+    any ret = Sequencer::Run(aliases, sequence);
+
+    return ret;
+}
+
+/**
  * Main workflow of the mail-server configuration
  * @return sequence result
  */
@@ -50,10 +75,11 @@ any MainSequence() {
 any MailServerSequence() {
 
     map aliases = $[
-	"read"	: [ ``( ReadDialog() ), true ],
-	"auth"	: [ ``( AuthorizingDialog() ), true ],
-	"main"	:   ``( MainSequence() ),
-	"write"	: [ ``( WriteDialog() ), true ]
+	"read"		: [ ``( ReadDialog() ), true ],
+	"auth"		: [ ``( AuthorizingDialog() ), true ],
+	"main"		:   ``( MainSequence() ),
+	"ldapsetup"	:   ``( LdapSetupSequence() ),
+	"write"		: [ ``( WriteDialog() ), true ]
     ];
 
     map sequence = $[

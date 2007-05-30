@@ -1,0 +1,38 @@
+/**
+ * File:
+ *   clients/mail-server-ldap-setup.ycp
+ *
+ * Package:
+ *   Configuration of mail
+ *
+ * Summary:
+ *   Setup of a LDAP server to be able store the mail server datas
+ *
+ * Authors:
+ *   Peter Varkoly <varkoly@novell.com>
+ *
+ * $Id: mail.ycp 37642 2007-04-20 19:06:52Z varkoly $
+ *
+ *
+ */
+
+{
+textdomain "mail";
+import     "Ldap";
+import     "MailServerLDAP";
+import     "YaPI::MailServer";
+
+    string ERROR = "";
+
+    y2milestone("--- mail-server-ldap-setup: Detgecting if we are LDAP-Client ---");
+    Ldap::Read();
+    map LDAPSettings = Ldap::Export();
+    if(LDAPSettings["base_config_dn"]:"" == "" )
+    {
+	y2milestone("--- mail-server-ldap-setup: We are not LDAP Client ---");
+    }
+    y2milestone("--- mail-server-ldap-setup: We are LDAP Client ---");
+    Ldap::LDAPInit();
+    Ldap::LDAPAskAndBind(false);
+    YaPI::MailServer::ResetMailServer();
+}

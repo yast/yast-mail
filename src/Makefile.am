@@ -12,8 +12,8 @@ ldapschemadir  = /etc/openldap/schema
 client_DATA =			\
 	mail.ycp		\
 	mail_auto.ycp		\
-	\
-        mail-server.ycp         \
+        mail-standard.ycp       \
+        mail-advanced.ycp       \
         mail-server_auto.ycp    \
         mail-server_proposal.ycp
 
@@ -34,7 +34,8 @@ desktop_DATA =			\
 
 module_DATA =			\
 	Mail.ycp		\
-	MailServer.ycp
+	MailServer.ycp		\
+	MailServerLDAP.pm
 
 ldapschema_DATA = suse-mailserver.schema
 
