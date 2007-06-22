@@ -35,11 +35,11 @@ map cmdline_description = $[
     /* Command line help text for the mail-server module */
     "help"	: _("Configuration of mail server"),
     "guihandler"        : MailServerSequence,
-    "initialize"        : MailServer::Read,
-    "finish"            : MailServer::Write,
+    // "initialize"        : MailServer::CheckPackages,
+    // "finish"            : MailServer::Write,
     "actions"           : $[
 	"setup" : $[
-                "handler"       : MailServerSequence,
+                "handler"       : SetupSequence,
                 "help"          : _("Advanced Mail Server setup with LDAP backend"),
        ],
     ],
@@ -92,8 +92,15 @@ if( !setup && SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG)== "yes" )
 /* main ui function */
 any ret = nil;
 
-if(propose) ret = MailServerAutoSequence();
-else ret = CommandLine::Run(cmdline_description);
+if(propose)
+{
+	 ret = MailServerAutoSequence();
+}
+else
+{
+	 ret = CommandLine::Run(cmdline_description);
+}
+
 y2debug("ret=%1", ret);
 
 /* Finish */

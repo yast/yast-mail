@@ -167,7 +167,8 @@ global boolean plugins_installed   = false;
  * Help funktion to check the DNS Settings
  */
 
-void Check_Mail_Domain() {
+void Check_Mail_Domain()
+{
         map LDAPSettings  = Ldap::Export();
         string DNSWarning = _("There is no main mail domain defined. Please fix it!");
 
@@ -247,10 +248,66 @@ void Check_Mail_Domain() {
 }
 
 /**
+ * Check if all needed packages are installed
+ * @return true on success
+ */
+global boolean CheckPackages()
+{
+    procmail_installed  = Installed("procmail");
+    cyrus_installed     = Installed("cyrus-imapd");
+    postfix_installed   = Installed("postfix");
+    fetchmail_installed = Installed("fetchmail");
+    ldap_installed      = Installed("yast2-ldap-client");
+    amavis_installed    = Installed("amavisd-new");
+    sasl_installed      = Installed("cyrus-sasl-plain");
+    plugins_installed   = Installed("yast2-mail-plugins");
+    string         to_install = "";
+    list<string> l_to_install = [];
+
+    if (!ldap_installed)
+    {
+	l_to_install = add( l_to_install, "yast2-ldap-client" );
+	to_install   = to_install + "yast2-ldap-client\n";
+    }
+    if (!postfix_installed)
+    {
+	l_to_install = add( l_to_install, "postfix" );
+	to_install   = to_install + "postfix\n";
+    }
+    if(!sasl_installed)
+    {
+	l_to_install = add( l_to_install, "cyrus-sasl-plain" );
+	to_install   = to_install + "cyrus-sasl-plain\n";
+    }
+    if(!plugins_installed)
+    {
+	l_to_install = add( l_to_install, "yast2-mail-plugins" );
+	to_install   = to_install + "yast2-mail-plugins\n";
+    }
+    if(to_install != "")
+    {
+	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+				  "\n"+to_install+"\n",
+				  Label::InstallButton(),
+				  Label::AbortButton(),
+				  `focus_yes))
+	{
+	    Package::DoInstall(l_to_install);
+	}
+	else
+	{
+	    return false;
+	}
+    }
+    return true;
+}
+
+/**
  * Read all mail-server settings
  * @return true on success
  */
-global boolean Read() {
+global boolean Read()
+{
 
     /* MailServer read dialog caption */
     string caption = _("Reading the Mail Server Settings");
@@ -258,7 +315,8 @@ global boolean Read() {
     integer steps = 8;
 
     integer sl = 10;
-    sleep(sl);
+
+    y2milestone("----- Start MailServer::Read -----");
 
     // We do not set help text here, because it was set outside
     Progress::New( caption, "", steps, [
@@ -305,67 +363,11 @@ global boolean Read() {
     // read  global settings
     if(Abort()) return false;
     Progress::NextStage();
-    procmail_installed  = Installed("procmail");
-    cyrus_installed     = Installed("cyrus-imapd");
-    postfix_installed   = Installed("postfix");
-    fetchmail_installed = Installed("fetchmail");
-    ldap_installed      = Installed("yast2-ldap-client");
-    amavis_installed    = Installed("amavisd-new");
-    sasl_installed      = Installed("cyrus-sasl-plain");
-    plugins_installed   = Installed("yast2-mail-plugins");
-
-    if(!ldap_installed) {
-       Report::Error(_("You have not installed all needed packages.") +
-		     "\n" +
-		     _("You must configure LDAP to use the mail server."));
-       return false;
-    }
-
-    if (!postfix_installed)
+    if( ! CheckPackages() )
     {
-	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				  "\n postfix \n",
-				  Label::InstallButton(),
-				  Label::AbortButton(),
-				  `focus_yes))
-	{
-	    Package::DoInstall(["postfix"]);
-	}
-	else
-	{
-	    return false;
-	}
+	return false;
     }
-    if(!sasl_installed)
-    {
-	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				  "\n cyrus-sasl-plain \n",
-				  Label::InstallButton(),
-				  Label::AbortButton(),
-				  `focus_yes))
-	{
-	    Package::DoInstall(["cyrus-sasl-plain"]);
-	}
-	else
-	{
-	    return false;
-	}
-    }
-    if(!plugins_installed)
-    {
-	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				  "\n yast2-mail-plugins \n",
-				  Label::InstallButton(),
-				  Label::AbortButton(),
-				  `focus_yes))
-	{
-	    Package::DoInstall(["yast2-mail-plugins"]);
-	}
-	else
-	{
-	    return false;
-	}
-    }
+    sleep(sl);
 
     NetworkDevices::Read();
     map<string,map> TMP = NetworkDevices::Export("modem");

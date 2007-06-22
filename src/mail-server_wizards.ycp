@@ -22,32 +22,39 @@ include "mail/mail-server_dialogs.ycp";
  * Workflow of the LDAP Server/Client setup
  * @return sequence result
  */
-any LdapSetupSequence() {
-
-    /* FIXME: adapt to your needs */
+any LDAPSetupSequence()
+{
     map aliases = $[
-	"complex"	:   ``( ComplexDialog() )
+	"ldap"		:   ``( CheckLDAPDialog() ),
+//	"ldap-server"	:   ``( LDAPServerDialog() ),
+//	"ldap-client"	:   ``( LDAPClientDialog() ),
     ];
 
     /* FIXME: adapt to your needs */
     map sequence = $[
-	"ws_start" : "complex",
-        "complex"  : $[
+	"ws_start" : "ldap",
+        "ldap"  : $[
             `abort      : `abort,
             `next       : `next
-        ]
+        ],
+//        "ldap-server"  : $[
+//            `abort      : `abort,
+//            `next       : "ldap-client"
+//        ],
+//        "ldap-client"  : $[
+//            `abort      : `abort,
+//            `next       : `next
+//        ]
     ];
-
-    any ret = Sequencer::Run(aliases, sequence);
-
-    return ret;
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
  * Main workflow of the mail-server configuration
  * @return sequence result
  */
-any MainSequence() {
+any MainSequence()
+{
 
     /* FIXME: adapt to your needs */
     map aliases = $[
@@ -63,9 +70,7 @@ any MainSequence() {
         ]
     ];
 
-    any ret = Sequencer::Run(aliases, sequence);
-
-    return ret;
+    return Sequencer::Run(aliases, sequence);
 }
 
 /**
@@ -75,16 +80,21 @@ any MainSequence() {
 any MailServerSequence() {
 
     map aliases = $[
-	"read"		: [ ``( ReadDialog() ), true ],
 	"auth"		: [ ``( AuthorizingDialog() ), true ],
+	"read"		: [ ``( ReadDialog() ), true ],
 	"main"		:   ``( MainSequence() ),
-	"ldapsetup"	:   ``( LdapSetupSequence() ),
+	"ldapsetup"	:   ``( LDAPSetupSequence() ),
 	"write"		: [ ``( WriteDialog() ), true ]
     ];
 
     map sequence = $[
 	"ws_start" : "auth",
+        "ldapsetup" : $[
+	    `abort	: `abort,
+	    `next	: "auth"
+        ],
         "auth" : $[
+	    `ldapsetup	: "ldapsetup",
 	    `abort	: `abort,
 	    `next	: "read"
         ],
@@ -103,12 +113,49 @@ any MailServerSequence() {
     ];
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("mailserver");
+    Wizard::SetDesktopIcon("mail");
 
     any ret = Sequencer::Run(aliases, sequence);
 
     UI::CloseDialog();
     return ret;
+}
+
+/**
+ * Workflow of the LDAP Server/Client setup
+ * @return sequence result
+ */
+any SetupSequence()
+{
+
+    /* FIXME: adapt to your needs */
+    map aliases = $[
+	"packages"	:   ``( CheckPackagesDialog() ),
+	"ldap"		:   ``( LDAPSetupSequence() ),
+	"main"		:   ``( MailServerSequence() )
+    ];
+
+    /* FIXME: adapt to your needs */
+    map sequence = $[
+	"ws_start" : "packages",
+        "packages"  : $[
+            `abort      : `abort,
+            `next       : "ldap"
+        ],
+        "ldap"  : $[
+            `abort      : `abort,
+            `next       : "main"
+        ],
+    ];
+
+    Wizard::CreateDialog();
+    Wizard::SetDesktopIcon("mail");
+
+    any ret = Sequencer::Run(aliases, sequence);
+
+    UI::CloseDialog();
+    return ret;
+
 }
 
 /**
@@ -124,7 +171,7 @@ any MailServerAutoSequence() {
     term contents = `Label(_("Initializing..."));
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("mailserver");
+    Wizard::SetDesktopIcon("mail");
     Wizard::SetContentsButtons(caption, contents, "",
 	    Label::BackButton(), Label::NextButton());
 

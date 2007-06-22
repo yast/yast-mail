@@ -36,12 +36,21 @@ boolean PollAbort() {
 }
 
 /**
+ * Check if all needed packages are installed
+ * @return true on success
+ */
+symbol CheckPackagesDialog()
+{
+    boolean ret = MailServer::CheckPackages();
+    return ret ? `next : `abort;
+}
+
+/**
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
 symbol ReadDialog() {
     Wizard::RestoreHelp(HELPS["read"]:"");
-    // MailServer::AbortFunction = PollAbort;
     boolean ret = MailServer::Read();
     return ret ? `next : `abort;
 }
@@ -52,7 +61,6 @@ symbol ReadDialog() {
  */
 symbol WriteDialog() {
     Wizard::RestoreHelp(HELPS["write"]:"");
-    // MailServer::AbortFunction = PollAbort;
     boolean ret = MailServer::Write();
     return ret ? `next : `abort;
 }

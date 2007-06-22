@@ -21,18 +21,65 @@ textdomain "mail";
 import     "Ldap";
 import     "MailServerLDAP";
 import     "YaPI::MailServer";
+import     "Package";
 
     string ERROR = "";
+    list args = WFM::Args();
+    string         to_install = "";
+    list<string> l_to_install = [];
 
-    y2milestone("--- mail-server-ldap-setup: Detgecting if we are LDAP-Client ---");
-    Ldap::Read();
-    map LDAPSettings = Ldap::Export();
-    if(LDAPSettings["base_config_dn"]:"" == "" )
+
+    y2milestone("--- mail-server-ldap-setup ---");
+    // First we check if all requested modules are installed
+    if( !Package::Installed ( "ldap-server" )
     {
-	y2milestone("--- mail-server-ldap-setup: We are not LDAP Client ---");
+	l_to_install = add( l_to_install, "yast2-ldap-server" );
+	to_install   = to_install + "yast2-ldap-server\n";
     }
-    y2milestone("--- mail-server-ldap-setup: We are LDAP Client ---");
+    if(contains(args,"ca_mgm") )
+    {
+	if( !Package::Installed ( "yast2-ca-management" )
+	{
+		l_to_install = add( l_to_install, "yast2-ca-management" );
+		to_install   = to_install + "yast2-ca-management\n";
+	}
+    }
+    if(to_install != "")
+    {
+        if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+                                  "\n"+to_install+"\n",
+                                  Label::InstallButton(),
+                                  Label::AbortButton(),
+                                  `focus_yes))
+        {
+            Package::DoInstall(l_to_install);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    //Now we start the requested modules
+    if(contains(args,"ca_mgm") )
+	WFM::CallFunction("ca_mgm",[]);
+    }
+    if(contains(args,"setup") )
+    {
+	WFM::CallFunction("ldap-server",[]);
+    }
+    MailServerLDAP::ConfigureLDAPServer();
+    Ldap::Read();
     Ldap::LDAPInit();
-    Ldap::LDAPAskAndBind(false);
-    YaPI::MailServer::ResetMailServer();
+    string adminpw = Ldap::LDAPAskAndBind(false);
+    if( adminpw != nil )
+    {
+	map LDAPSettings = Ldap::Export();
+        YaPI::MailServer::ResetMailServer(,LDAPSettings);
+    }
+    else
+    {
+	return false;
+    }
+    return true;
 }

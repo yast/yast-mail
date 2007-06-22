@@ -22,18 +22,62 @@ import "YaPI::MailServer";
 include "mail/helps.ycp";
 
 /**
+ * CheckLDAPDialog
+ * Checking the LDAP Configuration
+ * @return dialog result
+ */
+define any CheckLDAPDialog ()
+{
+
+    boolean setup_ca_mgm           = false;
+    boolean configure_ldap_server  = false;
+    boolean setup_ldap_server      = false;
+    Ldap::Read();
+    Ldap::LDAPInit();
+    map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
+    list args = [];
+    if(LDAPSettings["bind_dn"]:"" == "" )
+    { //No LDAP-Client configuration
+	setup_ldap_server = true;
+    }
+    else
+    { //The computer is configured as LDAP-Client
+    }
+
+    if( setup_ca_mgm )
+    { // Now we setup the ca managemant
+	args = add(args, "ca_mgm");
+    }
+    if( setup_ldap_server )
+    { // Now we setup the LDAP Server
+	args = add(args, "setup");
+	WFM::CallFunction("mail-server_ldap-setup",args);
+	Ldap::Read();
+	Ldap::LDAPInit();
+	LDAPSettings = (map <string, any>) Ldap::Export();
+    }
+    string adminpw = Ldap::LDAPAskAndBind(false);
+    if( adminpw != nil )
+    {
+        YaPI::MailServer::ResetMailServer(adminpw,LDAPSettings);
+    }
+
+}
+
+/**
  * AuthorizingDialog
  * The adminstrator user will be authorized
  * @return dialog result
  */
-define any AuthorizingDialog () {
+define any AuthorizingDialog ()
+{
 
-    string ERROR = _("You must configure LDAP to use the mail server.");
     Ldap::Read();
     map LDAPSettings = Ldap::Export();
-    if(LDAPSettings["ldap_server"]:"" == "" )
+    if(LDAPSettings["bind_dn"]:"" == "" )
     {
-	ERROR = ERROR + "\n" + _("Now we will start the LDAP-Server setup vizard.");
+        string ERROR = _("You must configure LDAP to use the mail server.") +
+		"\n" + _("Now we will start the LDAP setup vizard.");
 	if(Popup::YesNo(ERROR))
 	{
 	    return `ldapsetup;
@@ -44,33 +88,7 @@ define any AuthorizingDialog () {
 	}
 	Ldap::Read();
     }
-    if(LDAPSettings["base_config_dn"]:"" == "" )
-    {
-       ERROR = ERROR + "\n";
-    }
-    Ldap::LDAPInit();
-    SCR::Execute (.ldap.bind);
-    map searchmap = $[
-			"base_dn"     :  LDAPSettings["base_config_dn"]:"",
-			"filter"      :   "objectclass=suseUserConfiguration",
-			"attrs"       :    [],
-                        "not_found_ok": false,
-			"scope"       :    2
-		     ];
-    list modulesUser = (list)SCR::Read (.ldap.search, searchmap);
-    searchmap["filter"] = "objectclass=suseGroupConfiguration";
-    list modulesGroups = (list)SCR::Read (.ldap.search, searchmap);
-    if (modulesUser == nil || modulesGroups == nil ||
-        modulesUser == []  || modulesGroups == [] )
-    {
-       ERROR = ERROR + _("You must enable \"Create Default Configuration Objects\" in\n\"Advanced Configuration\" of the \"YaST2 LDAP-Client\" module.\n") ;
-    }
 
-    if ( ERROR != "" ) {
-	ERROR =  _("Missing LDAP features !\n\n") + ERROR;
-	Popup::Error(ERROR);
-	return `abort;
-    }
     integer size1 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/servercert.pem");
     integer size2 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/serverkey.pem");
     if( size1 <= 0 || size2 <= 0) {
@@ -1126,7 +1144,8 @@ void ShowMailLocalDomain(string CID, string ACTION) {
   UI::CloseDialog();
 }
 
-boolean CheckMainDomain() {
+boolean CheckMainDomain()
+{
   integer maindomain = 0;
   integer domains    = 0;
 
@@ -1153,7 +1172,8 @@ boolean CheckMainDomain() {
   return true;
 }
 
-any ComplexDialog() {
+any ComplexDialog()
+{
 
    Wizard::CreateTreeDialog();
    list<map> Tree = GenerateTree([], "", MailServer::ModulesTreeContent) ;
@@ -1168,7 +1188,7 @@ any ComplexDialog() {
    string CIDRBL = ""; //CurrentItem
 
    Wizard::SetContents(title, content ,helptext, true, true);
-   Wizard::SetDesktopIcon("mailserver");
+   Wizard::SetDesktopIcon("mail");
    UI::WizardCommand(`SetBackButtonLabel( "" ) );
    UI::WizardCommand(`SetNextButtonLabel( _("OK") ) );
    Wizard::SelectTreeItem(FocusedContent);
@@ -1482,7 +1502,7 @@ y2milestone("event %1",ret);
 y2milestone("FocusedContent %1",FocusedContent);
         if(ret != `cancel && ret != `abort && ret != `next ) {
           Wizard::SetContents(title, content ,helptext, false, true);
-          Wizard::SetDesktopIcon("mailserver");
+          Wizard::SetDesktopIcon("mail");
           UI::WizardCommand(`SetBackButtonLabel( "" ) );
           UI::WizardCommand(`SetNextButtonLabel( _("OK") ) );
 	  if(UI::WidgetExists(`id(`table))) UI::ChangeWidget(`id(`table), `CurrentItem, CID);

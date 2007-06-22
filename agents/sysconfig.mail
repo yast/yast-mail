@@ -39,11 +39,11 @@ SMTPD_LISTEN_REMOTE="yes"
 # start with the with the vizard for asking the 
 # configuration type of the mail server.
 #
-MAIL_SKIP_ASK="no"
+SKIP_ASK="no"
 
 ## Type:        string(standard,advanced,undef)
 ## Default:     undef
 #
 # This variable contains the type of the mail server configuration.
 #
-MAIL_CONF_TYPE="undef"
+CONF_TYPE="undef"
