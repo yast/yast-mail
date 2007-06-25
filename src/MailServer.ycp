@@ -332,7 +332,7 @@ global boolean Read()
 	    _("Read mail server relaying settings"),
 	    /* Progress stage 5/7 */
 	    _("Read mail server local delivery settings"),
-	    /* Progress stage 6/3 */
+	    /* Progress stage 6/7 */
 	    _("Read mail fetching jobs"),
 	    /* Progress stage 7/7 */
 	    _("Read mail server domains")
@@ -360,7 +360,7 @@ global boolean Read()
 	""
     );
 
-    // read  global settings
+    // read  packages
     if(Abort()) return false;
     Progress::NextStage();
     if( ! CheckPackages() )

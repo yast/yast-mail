@@ -30,8 +30,20 @@ import "Label";
 import "CommandLine";
 include "mail/mail-server_wizards.ycp";
 
+/**
+ * Command line "setup" commands handler.
+ *
+ * @param options       map of options from command line
+ * @return boolean      true on success
+ */
+boolean SetupMailServer(map<string,string> options)
+{
+	any ret = SetupSequence();
+	return true;
+}
+
 map cmdline_description = $[
-    "id" 	: "mail-server",
+    "id"	: "mail-server",
     /* Command line help text for the mail-server module */
     "help"	: _("Configuration of mail server"),
     "guihandler"        : MailServerSequence,
@@ -39,7 +51,7 @@ map cmdline_description = $[
     // "finish"            : MailServer::Write,
     "actions"           : $[
 	"setup" : $[
-                "handler"       : SetupSequence,
+                "handler"       : SetupMailServer,
                 "help"          : _("Advanced Mail Server setup with LDAP backend"),
        ],
     ],

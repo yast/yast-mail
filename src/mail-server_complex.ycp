@@ -18,6 +18,7 @@ import "Wizard_hw";
 import "MailServer";
 
 include "mail/mail-server_helps.ycp";
+include "mail/mail-server_dialogs.ycp";
 
 /**
  * Return a modification status
@@ -27,22 +28,62 @@ boolean Modified() {
     return MailServer::Modified();
 }
 
-boolean ReallyAbort() {
-    return !MailServer::Modified() || Popup::ReallyAbort(true);
-}
-
 boolean PollAbort() {
     return UI::PollInput() == `abort;
 }
 
 /**
- * Check if all needed packages are installed
- * @return true on success
+ * Read settings dialog
+ * @return `abort if aborted and `next otherwise
  */
-symbol CheckPackagesDialog()
-{
-    boolean ret = MailServer::CheckPackages();
-    return ret ? `next : `abort;
+boolean SetupDialog() {
+    Wizard::RestoreHelp(HELPS["setup"]:"");
+    string caption = _("Setup the Mail Server");
+    integer steps =  3;
+    integer sl    =  3;
+
+    y2milestone("----- Start MailServer::Setup -----");
+
+    // We do not set help text here, because it was set outside
+    Progress::New( caption, "", steps, [
+            /* Progress stage 0/3 */
+            _("Read needed packages"),
+            /* Progress stage 1/3 */
+            _("Read LDAP Settings"),
+            /* Progress stage 2/3 */
+            _("Choose LDAP/CA Settings"),
+            /* Progress stage 3/3 */
+            _("Setup/Configure LDAP-Server and CA managemant")
+        ], [
+            /* Progress stage 0/7 */
+            _("Reading packages..."),
+            /* Progress stage 1/3 */
+            _("Reading LDAP Settings..."),
+            /* Progress stage 2/3 */
+            _("Choosing LDAP/CA Settings..."),
+            /* Progress stage 3/3 */
+            _("Seting up /Configuring LDAP-Server and CA managemant..."),
+            /* Progress finished */
+            _("Finished")
+        ]
+        , ""
+    );
+
+    // read  packages
+    Progress::NextStage();
+    if( ! MailServer::CheckPackages() )
+    {
+        return false;
+    }
+    sleep(sl);
+    // read  packages
+    Progress::NextStage();
+    if( CheckLDAPDialog() != `ok )
+    {
+        return false;
+    }
+    sleep(sl);
+    return true;
 }
 
 /**

@@ -17,38 +17,6 @@ import "Wizard";
 include "mail/mail-server_complex.ycp";
 include "mail/mail-server_dialogs.ycp";
 
-
-/**
- * Workflow of the LDAP Server/Client setup
- * @return sequence result
- */
-any LDAPSetupSequence()
-{
-    map aliases = $[
-	"ldap"		:   ``( CheckLDAPDialog() ),
-//	"ldap-server"	:   ``( LDAPServerDialog() ),
-//	"ldap-client"	:   ``( LDAPClientDialog() ),
-    ];
-
-    /* FIXME: adapt to your needs */
-    map sequence = $[
-	"ws_start" : "ldap",
-        "ldap"  : $[
-            `abort      : `abort,
-            `next       : `next
-        ],
-//        "ldap-server"  : $[
-//            `abort      : `abort,
-//            `next       : "ldap-client"
-//        ],
-//        "ldap-client"  : $[
-//            `abort      : `abort,
-//            `next       : `next
-//        ]
-    ];
-    return Sequencer::Run(aliases, sequence);
-}
-
 /**
  * Main workflow of the mail-server configuration
  * @return sequence result
@@ -83,7 +51,7 @@ any MailServerSequence() {
 	"auth"		: [ ``( AuthorizingDialog() ), true ],
 	"read"		: [ ``( ReadDialog() ), true ],
 	"main"		:   ``( MainSequence() ),
-	"ldapsetup"	:   ``( LDAPSetupSequence() ),
+	"ldapsetup"	: [ ``( SetupDialog() ), true ],
 	"write"		: [ ``( WriteDialog() ), true ]
     ];
 
@@ -130,19 +98,14 @@ any SetupSequence()
 
     /* FIXME: adapt to your needs */
     map aliases = $[
-	"packages"	:   ``( CheckPackagesDialog() ),
-	"ldap"		:   ``( LDAPSetupSequence() ),
+	"setup"	        : [ ``( SetupDialog() ), true ],
 	"main"		:   ``( MailServerSequence() )
     ];
 
     /* FIXME: adapt to your needs */
     map sequence = $[
-	"ws_start" : "packages",
-        "packages"  : $[
-            `abort      : `abort,
-            `next       : "ldap"
-        ],
-        "ldap"  : $[
+	"ws_start" : "setup",
+        "setup"  : $[
             `abort      : `abort,
             `next       : "main"
         ],

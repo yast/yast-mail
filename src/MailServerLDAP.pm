@@ -1,3 +1,5 @@
+#!/usr/bin/perl -w
+
 =head1 NAME
 
 MailServerLDAP
@@ -20,26 +22,27 @@ LDAP server able to store the tables of the mail server.
 
 =cut
 
-package MailServerLDAP;
-
 use strict;
 
-use YaST::YCP;
+package MailServerLDAP;
 
-textdomain("MailServer");
+use YaST::YCP;
 
 our %TYPEINFO;
 
 YaST::YCP::Import ("Ldap");
 YaST::YCP::Import ("YaPI::LdapServer");
+YaST::YCP::Import ("Service");
 
-
+BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", "any"];}
 sub ConfigureLDAPServer()
 {
 	# don't configure if using eDirectory server
 	Ldap->CheckNDS ();
 	if (! Ldap->nds())
 	{
+	    Ldap->Read();
+	    my $ldapMap = Ldap->Export();
 	    # Now we configure the LDAP-Server to be able store the mail server configuration
 	    my $schemas = YaPI::LdapServer->ReadSchemaIncludeList();
 	    my $SCHEMA  = join "",@{$schemas};
@@ -93,5 +96,6 @@ sub ConfigureLDAPServer()
 		}
 		YaPI::LdapServer->RecreateIndex($ldapMap->{ldap_domain});
 	    }
+	    Service->Restart("ldap");
 	}
 }

@@ -21,6 +21,10 @@ import "YaPI::MailServer";
 
 include "mail/helps.ycp";
 
+boolean ReallyAbort() {
+    return !MailServer::Modified() || Popup::ReallyAbort(true);
+}
+
 /**
  * CheckLDAPDialog
  * Checking the LDAP Configuration
@@ -28,10 +32,10 @@ include "mail/helps.ycp";
  */
 define any CheckLDAPDialog ()
 {
-
-    boolean setup_ca_mgm           = false;
-    boolean configure_ldap_server  = false;
-    boolean setup_ldap_server      = false;
+    boolean ca_mgm            = false;
+    boolean conf_ldap_server  = false;
+    boolean setup_ldap_server = false;
+    string  comment           = "";
     Ldap::Read();
     Ldap::LDAPInit();
     map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
@@ -39,12 +43,60 @@ define any CheckLDAPDialog ()
     if(LDAPSettings["bind_dn"]:"" == "" )
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
+	ca_mgm		  = true;
+	comment = _("Your computer is not configured as LDAP-client.") + "<br>" +
+		  _("We suggest to setup a local LDAP-server for the mail server.") + "<br>" +
+		  _("To secure your system we suggest to create certificates for the LDAP and Mail Server.") + "<br>";
     }
     else
     { //The computer is configured as LDAP-Client
+	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" )
+	{ // The LDAP-Server is local
+	comment = _("Your computer is configured as LDAP-client and the LDAP-Server is local.") + "<br>" +
+		  _("We suggest to adapt the LDAP-server configuration for the mail server.") + "<br>" +
+		  _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
+		  "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>";
+	}
+	else
+	{ // The LDAP-Server is not local
+	comment =  _("Your computer is configured as LDAP-client and the LDAP-Server is not local.") + "<br>" +
+		   _("We suggest to configure the LDAP-server for the mail server.") + "<br>" +
+		   _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
+		   "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
+		   _("Furthermore the LDAP-Server have to contain the <B>suse-mailserver.schema</B> and the correspondig index entries.");
+	}
     }
 
-    if( setup_ca_mgm )
+    // Now we create the dialog:
+    term d = `HBox (
+	`VBox (
+		`HSpacing (60),
+		`VSpacing(0.2),
+		`RichText(comment),
+		`VSpacing(0.2),
+		`Left(`CheckBox(`id(`setup_ldap_server),_("Setup an local LDAP-Server."), setup_ldap_server)),
+		`VSpacing(0.2),
+		`Left(`CheckBox(`id(`ca_mgm),           _("Create certificates."), ca_mgm)),
+		`VSpacing(0.2),
+		`Left(`CheckBox(`id(`conf_ldap_server), _("Configure dedicated LDAP-Server."), conf_ldap_server)),
+		`HBox (
+			`PushButton (`id (`abort),Label::AbortButton()),
+			`PushButton (`id (`next),Label::NextButton())
+		)
+	)
+    );
+    UI::OpenDialog (`opt (`decorated), d);
+    any ui = UI::UserInput ();
+    setup_ldap_server = (boolean)UI::QueryWidget(`id(`setup_ldap_server),`Value);
+    ca_mgm            = (boolean)UI::QueryWidget(`id(`ca_mgm),`Value);
+    conf_ldap_server  = (boolean)UI::QueryWidget(`id(`conf_ldap_server),`Value);
+    UI::CloseDialog();
+    if( ui == `abort )
+    {
+	return ui;
+    }
+
+    if( ca_mgm )
     { // Now we setup the ca managemant
 	args = add(args, "ca_mgm");
     }
@@ -61,7 +113,7 @@ define any CheckLDAPDialog ()
     {
         YaPI::MailServer::ResetMailServer(adminpw,LDAPSettings);
     }
-
+    return `ok;
 }
 
 /**

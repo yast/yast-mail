@@ -15,7 +15,8 @@ client_DATA =			\
         mail-standard.ycp       \
         mail-advanced.ycp       \
         mail-server_auto.ycp    \
-        mail-server_proposal.ycp
+        mail-server_proposal.ycp \
+	mail-server_ldap-setup.ycp
 
 
 myynclude_DATA =		\

@@ -105,7 +105,7 @@ define string StartDialog (string type, boolean first ) ``{
                 )
         );
     Wizard::CreateDialog();
-    Wizard::SetContentsButtons (caption, contents, StartDialogHelp (), Label::BackButton (), Label::NextButton ());
+    Wizard::SetContentsButtons (caption, contents, StartDialogHelp(), Label::BackButton (), Label::NextButton ());
 
     any     ret = nil;
     string sret = nil;
