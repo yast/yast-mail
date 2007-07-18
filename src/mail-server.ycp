@@ -15,7 +15,7 @@
  * <h3>Configuration of mail-server</h3>
  */
 
-textdomain "MailServer";
+textdomain "mail";
 
 /* The main () */
 y2milestone ("----------------------------------------");

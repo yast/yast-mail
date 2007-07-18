@@ -14,7 +14,7 @@
 
 
 {
-    textdomain "MailServer"; // use own textdomain for new plugins
+    textdomain "mail"; // use own textdomain for new plugins
 
     import "Label";
     import "Popup";

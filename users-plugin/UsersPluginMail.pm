@@ -20,7 +20,7 @@ use Net::IMAP;
 use Data::Dumper;
 use YaPI::MailServer;
 
-textdomain("MailServer");
+textdomain("mail");
 
 ##--------------------------------------
 ##--------------------- global imports

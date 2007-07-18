@@ -13,7 +13,7 @@
 {
 
 module "MailServer";
-textdomain "MailServer";
+textdomain "mail";
 
 import "Ldap";
 import "Label";

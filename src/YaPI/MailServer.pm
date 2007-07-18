@@ -38,7 +38,7 @@ use YaPI;
 use POSIX;     # Needed for setlocale()
 use Data::Dumper;
 
-textdomain("MailServer");
+textdomain("mail");
 our %TYPEINFO;
 our @CAPABILITIES = (
                      'SLES10'

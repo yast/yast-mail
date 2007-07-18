@@ -9,7 +9,7 @@
 
 {
 
-textdomain "MailServer";
+textdomain "mail";
 
 import "Sequencer";
 import "Wizard";
