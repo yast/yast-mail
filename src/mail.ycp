@@ -77,13 +77,13 @@ define string StartDialog (string type, boolean first ) ``{
     {
 	    if( type == "standard" )
 	    {
-		status = _("The running Mail Server configuration is based on type “Standard”.")+ "\n"+
-			 _("It's possible to change to “Advanced”, but this will overwrite all existing settings.");
+		status = _("The running Mail Server configuration is based on type \"Standard\".")+ "\n"+
+			 _("It's possible to change to \"Advanced\", but this will overwrite all existing settings.");
 	    }
 	    else if( type == "advanced" )
 	    {
-		status = _("The running Mail Server configuration is based on type “Advanced”.")+"\n"+
-			 _("It's possible to change to “Standard”, but this will overwrite all existing settings.");
+		status = _("The running Mail Server configuration is based on type \"Advanced\".")+"\n"+
+			 _("It's possible to change to \"Standard\", but this will overwrite all existing settings.");
 	    }
     }
     term   contents =
