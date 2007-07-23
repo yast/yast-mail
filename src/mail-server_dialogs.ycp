@@ -129,7 +129,7 @@ define any AuthorizingDialog ()
     if(LDAPSettings["bind_dn"]:"" == "" )
     {
         string ERROR = _("You must configure LDAP to use the mail server.") +
-		"\n" + _("Now we will start the LDAP setup vizard.");
+		"\n" + _("Now we will start the LDAP configuration.");
 	if(Popup::YesNo(ERROR))
 	{
 	    return `ldapsetup;
