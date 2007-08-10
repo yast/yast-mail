@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug 10 12:48:46 CEST 2007 - jsrain@suse.cz
+
+- conflict pre-10.3 aaa_base (#294054)
+
+-------------------------------------------------------------------
 Wed May 30 21:00:17 CEST 2007 - varkoly@suse.de
 
 - move sysconfig.mail from aaa_base

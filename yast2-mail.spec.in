@@ -25,6 +25,8 @@ Obsoletes:	yast2-mail-server
 Provides:	yast2-mail-aliases
 Obsoletes:	yast2-mail-aliases
 
+Conflicts:	aaa_base < 10.3
+
 BuildArchitectures:	noarch
 
 Summary:	Configuration of mail
