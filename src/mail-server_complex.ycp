@@ -16,6 +16,7 @@ import "Popup";
 import "Wizard";
 import "Wizard_hw";
 import "MailServer";
+import "Progress";
 
 include "mail/mail-server_helps.ycp";
 include "mail/mail-server_dialogs.ycp";

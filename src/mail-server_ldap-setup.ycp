@@ -64,6 +64,7 @@ import     "Label";
 
     //Now we start the requested modules
     if(contains(args,"ca_mgm") )
+    {
 	WFM::CallFunction("ca_mgm",[]);
     }
     if(contains(args,"setup") )
