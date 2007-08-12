@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Aug 12 15:15:38 CEST 2007 - varkoly@suse.de
+
+-  add versions to the provides/obsoletes
+
+-------------------------------------------------------------------
 Fri Aug 10 12:48:46 CEST 2007 - jsrain@suse.cz
 
 - conflict pre-10.3 aaa_base (#294054)
