@@ -71,11 +71,11 @@ import     "Label";
     {
 	WFM::CallFunction("ldap-server",[]);
     }
-    MailServerLDAP::ConfigureLDAPServer(LDAPSettings);
     Ldap::Read();
     Ldap::LDAPInit();
-    map LDAPSettings = Ldap::Export();
+    map<string, any> LDAPSettings = (map<string, any>)Ldap::Export();
     string adminpw = Ldap::LDAPAskAndBind(false);
+    MailServerLDAP::ConfigureLDAPServer(LDAPSettings);
     if( adminpw != nil )
     {
         YaPI::MailServer::ResetMailServer(adminpw,LDAPSettings);

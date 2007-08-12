@@ -2558,7 +2558,7 @@ Needed Parameters are:
       masquerade_exceptions
 
 =cut
-BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string", ["map", "string", "any"]]; }
+BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string", ["map", "string","any"]]; }
 sub ResetMailServer {
     my $self            = shift;
     my $AdminPassword   = shift;
