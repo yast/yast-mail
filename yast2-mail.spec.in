@@ -35,7 +35,7 @@ Summary:	Configuration of mail
 -
 
 %package plugins
-Summary:	Plugins for the yast2 users modul for enterprise mail server configuration.
+Summary:	Plugins for the YaST2 users modul for enterprise mail server configuration.
 Group:		System/YaST
 Requires:       perl-NetxAP
 
