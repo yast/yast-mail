@@ -638,7 +638,7 @@ sub getMainDomain {
 	        return undef;
 	}
     } elsif ( @$ret > 1 ) {
-	$error = "More then one main domain";
+	$error = "There are defined more then one main mail domain. Please fix it!";
         return undef;
     } else {
         $domain = $ret->[0]->{'zonename'}->[0];
