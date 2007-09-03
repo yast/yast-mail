@@ -162,7 +162,7 @@ foreach my $s (split /\n/, $foo)
 # #207305
 sub get_fetchmail_user ()
 {
-    my $user = qx'. /etc/sysconfig/fetchmail; echo ${FETCHMAIL_USER:-fetchmail}';
+    my $user = qx'F=/etc/sysconfig/fetchmail; test -f $F && . $F; echo ${FETCHMAIL_USER:-fetchmail}';
     chomp $user;
     return $user;
 }
