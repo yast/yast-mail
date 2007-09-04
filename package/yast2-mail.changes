@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep  4 11:15:17 CEST 2007 - varkoly@suse.de
+
+- #291378 - Enable Virus scanning does not install clamav
+- #266883 - yast2-mail attempts to parse the package database everytime although I have not selected to install more stuff.
+- #304707 - yast2 mail gives error
+
+-------------------------------------------------------------------
 Sun Aug 12 15:15:38 CEST 2007 - varkoly@suse.de
 
 -  add versions to the provides/obsoletes
