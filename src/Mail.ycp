@@ -280,8 +280,7 @@ Configure a scanner manually."));
 	    }
 	}
 
-	if (size (fetchmail) > 0 &&
-	    ! Package::Installed ("fetchmail"))
+	if (size (fetchmail) > 0 && ! Package::Installed ("fetchmail"))
 	{
 	    install_packages = add (install_packages, "fetchmail");
 	    // Translators: popup message part, ends with a newline
@@ -291,9 +290,13 @@ Configure a scanner manually."));
 	if ((postfix_mda == `cyrus) &&
 		! Package::Installed("cyrus-imapd"))
 	{
-		install_packages = add(install_packages,"cyrus-imapd");
+	    install_packages = add(install_packages,"cyrus-imapd");
 	    // Translators: popup message part, ends with a newline
 	    message = message + _("Cyrus-imapd, an IMAP server, will be installed.\n");
+	}
+	if( install_packages != [] )
+	{
+		Package::DoInstall(install_packages);
 	}
 	return message;
     }
@@ -415,8 +418,8 @@ Configure a scanner manually."));
 	// amavis
 	string amavis_pkg = "amavisd-new";
 	amavis_allowed = PackageSystem::Installed (amavis_pkg) ||
-	    Mode::commandline () ||
-	    PackageSystem::Available (amavis_pkg);
+	    Mode::commandline ();
+	    // || PackageSystem::Available (amavis_pkg);
 	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
 
 	// local_domains
@@ -730,10 +733,7 @@ a fixed format to be readable by YaST2.  For details, see
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
 	// used also in WriteServices
 	amavis_service = true;
-	if (amavis_service)
-	{
-	    Service::Adjust ("amavis", use_amavis? "enable":"disable");
-	}
+        Service::Adjust ("amavis", use_amavis? "enable":"disable");
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up
