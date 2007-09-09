@@ -6,9 +6,9 @@ Tue Sep  4 11:15:17 CEST 2007 - varkoly@suse.de
 - #304707 - yast2 mail gives error
 
 -------------------------------------------------------------------
-Sun Aug 12 15:15:38 CEST 2007 - varkoly@suse.de
+Mon Aug 13 14:32:52 CEST 2007 - coolo@suse.de
 
--  add versions to the provides/obsoletes
+- avoid provides/obsoletes without version
 
 -------------------------------------------------------------------
 Fri Aug 10 12:48:46 CEST 2007 - jsrain@suse.cz
