@@ -38,6 +38,7 @@
     import "Wizard";
     import "Popup";
     import "Label";
+    import "CommandLine";
 
     /* The main () */
     y2milestone ("Mail module started");
@@ -151,6 +152,8 @@ define string StartDialog (string type, boolean first ) ``{
 /****************/
 /* MAIN ROUTINE */
 /****************/
+
+define any Main() ``{
     /* parse arguments */
     list args = WFM::Args ();
 
@@ -202,6 +205,35 @@ define string StartDialog (string type, boolean first ) ``{
     {
 	ret = WFM::CallFunction("mail-standard",args);
     }
+
+}
+
+define boolean Setup (map<string, string> options) ``{
+	Main();
+	return true;
+}
+/**
+ * Command line definition
+ */
+map cmdline = $[
+    /* Commandline help title */
+    // configuration of hosts
+    "help"      : _("Mail Server Configuration"),
+    "id"        : "mail",
+    "guihandler": Main,
+//    "initialize": Host::Read,
+//    "finish"    : Host::Write, // FIXME
+    "actions"   : $[
+        "setup" : $[
+            /* Commandline command help */
+            "help"      : _("Setup the Mail Server Configuration"),
+            "handler"   : Setup,
+        ],
+    ],
+];
+
+any ret = CommandLine::Run(cmdline);
+y2debug("ret=%1", ret);
 
     /* Finish */
     y2milestone ("Mail module finished");

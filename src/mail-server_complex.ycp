@@ -91,7 +91,31 @@ boolean SetupDialog() {
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-symbol ReadDialog() {
+symbol ReadDialog()
+{
+    /*
+       after merging yast2-mail and yast2-mail-server we have to be
+       carefull not to corrupt the configuration of the other modul
+    */
+    if( !MailServer::setup && SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG)== "yes" )
+    {
+	if(
+	    ! Popup::AnyQuestionRichText(
+		Label::WarningMsg(),
+		_("You have configured your MTA without LDAP support.<br>") +
+		_("This modul will configure your MTA with LDAP support.<br>")  +
+		_("This will corrupt your actuall configuration."),
+		80, 10,
+		Label::ContinueButton(),
+		Label::CancelButton(),
+		`focus_no
+	     )
+	  )
+	  {
+	     return `abort;
+	  }
+    }
+
     Wizard::RestoreHelp(HELPS["read"]:"");
     boolean ret = MailServer::Read();
     return ret ? `next : `abort;
@@ -101,7 +125,8 @@ symbol ReadDialog() {
  * Write settings dialog
  * @return `abort if aborted and `next otherwise
  */
-symbol WriteDialog() {
+symbol WriteDialog()
+{
     Wizard::RestoreHelp(HELPS["write"]:"");
     boolean ret = MailServer::Write();
     return ret ? `next : `abort;

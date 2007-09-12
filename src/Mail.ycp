@@ -308,6 +308,7 @@ Configure a scanner manually."));
      */
     define void ReadMta () ``{
 	// so that AY cloning works, #45071
+	y2milestone ("========== Reading MTA ==========");
 	if (PackageSystem::Installed ("sendmail"))
 	{
 	    mta = `sendmail;
@@ -320,6 +321,7 @@ Configure a scanner manually."));
 	{
 	    mta = `other;
 	}
+	y2milestone ("Read MTA: %1", mta);
     }
 
     /**

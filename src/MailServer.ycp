@@ -65,6 +65,11 @@ global define boolean Abort() ``{
 
 // Settings: Define all variables needed for configuration of mail-server
 /**
+ * True if the modul was started with the option 'setup'.
+ */
+global boolean setup = false;
+
+/**
  * True if there is server certificate.
  */
 global boolean CertExist = false;
