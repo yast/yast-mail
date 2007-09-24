@@ -1112,7 +1112,11 @@ a fixed format to be readable by YaST2.  For details, see
 	    // Write them unconditionally, because it is now possible to
 	    // enter them also in the Permanent mode. Bug #17417.
 	    // Translators: progress label
-	    stages = add (stages, [ _("Writing downloading settings"), WriteDownloading ]);
+            if (size (fetchmail) > 0 || Package::Installed ("fetchmail"))
+	    {
+               stages = add (stages, [ _("Writing downloading settings"), WriteDownloading ]);
+	    }
+
 	    // Translators: progress label
 	    stages = add (stages, [ _("Writing authentication settings..."), WriteSmtpAuth ]);
 	}
