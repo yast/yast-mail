@@ -32,6 +32,7 @@ boolean ReallyAbort() {
  */
 define any CheckLDAPDialog ()
 {
+    y2milestone("--Start CheckLDAPDialog ---");
     boolean ca_mgm            = false;
     boolean conf_ldap_server  = false;
     boolean setup_ldap_server = false;
@@ -44,6 +45,7 @@ define any CheckLDAPDialog ()
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
 	ca_mgm		  = true;
+	conf_ldap_server  = true;
 	comment = _("Your computer is not configured as LDAP-client.") + "<br>" +
 		  _("We suggest to setup a local LDAP-server for the mail server.") + "<br>" +
 		  _("To secure your system we suggest to create certificates for the LDAP and Mail Server.") + "<br>";
@@ -52,14 +54,14 @@ define any CheckLDAPDialog ()
     { //The computer is configured as LDAP-Client
 	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" )
 	{ // The LDAP-Server is local
-	comment = _("Your computer is configured as LDAP-client and the LDAP-Server is local.") + "<br>" +
+	  comment = _("Your computer is configured as LDAP-client and the LDAP-Server is local.") + "<br>" +
 		  _("We suggest to adapt the LDAP-server configuration for the mail server.") + "<br>" +
 		  _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
 		  "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>";
 	}
 	else
 	{ // The LDAP-Server is not local
-	comment =  _("Your computer is configured as LDAP-client and the LDAP-Server is not local.") + "<br>" +
+	   comment =  _("Your computer is configured as LDAP-client and the LDAP-Server is not local.") + "<br>" +
 		   _("We suggest to configure the LDAP-server for the mail server.") + "<br>" +
 		   _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
 		   "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
@@ -108,12 +110,30 @@ define any CheckLDAPDialog ()
 	Ldap::LDAPInit();
 	LDAPSettings = (map <string, any>) Ldap::Export();
     }
-    string adminpw = Ldap::LDAPAskAndBind(false);
-    if( adminpw != nil )
+    MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
+    if( MailServer::AdminPassword != nil )
     {
-        YaPI::MailServer::ResetMailServer(adminpw,LDAPSettings);
+        block<boolean> abort = ``{
+            if (UI::PollInput () == `abort &&
+                // popup text
+                Popup::YesNo (_("Really abort the writing process?")))
+                return true;
+            return false;
+        };
+
+	//tell Ldap module to create the default objects:
+	LDAPSettings [ "create_ldap" ] = true;
+	Ldap::Import(LDAPSettings);
+	//write the settings: 
+	Ldap::Write(abort);
+	//create default mail-server configuration
+        YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,LDAPSettings);
+	return `next;
     }
-    return `ok;
+    else
+    {
+       return `abort;
+    }
 }
 
 /**
@@ -124,6 +144,7 @@ define any CheckLDAPDialog ()
 define any AuthorizingDialog ()
 {
 
+    y2milestone("--Start AuthorizingDialog ---");
     Ldap::Read();
     map LDAPSettings = Ldap::Export();
     if(LDAPSettings["bind_dn"]:"" == "" )
@@ -140,6 +161,7 @@ define any AuthorizingDialog ()
 	}
 	Ldap::Read();
     }
+    Ldap::LDAPInit();
 
     integer size1 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/servercert.pem");
     integer size2 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/serverkey.pem");
@@ -152,11 +174,16 @@ Create the certificate with the YaST2 CA management module.
        MailServer::CertExist = true;
     }
 
-    return Ldap::LDAPAskAndBind(false);
-
+    MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
+    if( MailServer::AdminPassword == nil )
+    {
+	return `abort;
+    }
+    return `next;
 }
 
-list<map> GenerateTree(list<map> Tree, string parent, list<list> input) {
+list<map> GenerateTree(list<map> Tree, string parent, list<list> input)
+{
 
     foreach(list i, input, ``{
             string title  = i[0]:"";
@@ -170,7 +197,9 @@ list<map> GenerateTree(list<map> Tree, string parent, list<list> input) {
     return Tree;
 }
 
-term GlobalSettingsDialog() {
+term GlobalSettingsDialog()
+{
+  y2milestone("--Start GlobalSettingsDialog ---");
   boolean limit     = ((string)MailServer::GlobalSettings["MaximumMailSize"]:"0" != "0");
   boolean is_DNS    = ((string)MailServer::GlobalSettings["SendingMail","Type"]:"" == "DNS");
   boolean is_NONE   = ((string)MailServer::GlobalSettings["SendingMail","Type"]:"" == "NONE");
@@ -302,7 +331,8 @@ term GlobalSettingsDialog() {
   return content;
 }
 
-list<term> MakeSelectedList(list<string> items, string value ) {
+list<term> MakeSelectedList(list<string> items, string value )
+{
    list<term> SelectedList = [];
    foreach(string i, items, ``{
       if( i == value ) {
@@ -314,7 +344,9 @@ list<term> MakeSelectedList(list<string> items, string value ) {
    return SelectedList;
 }
 
-void ShowMailTransport(string CID, string ACTION) {
+void ShowMailTransport(string CID, string ACTION)
+{
+  y2milestone("--Start ShowMailTransport ---");
   list<map<string,string> > Transports      = (list<map<string,string> >) MailServer::MailTransports["Transports"]:[];
   map<string,string>        TLSSites        = (map<string,string>)        MailServer::MailTransports["TLSSites"]:$[];
   map<string,list>          SASLAccounts    = (map<string,list>)          MailServer::MailTransports["SASLAccounts"]:$[];
@@ -549,7 +581,9 @@ void ShowMailTransport(string CID, string ACTION) {
    return;
 }
 
-term MailTransportsDialog() {
+term MailTransportsDialog()
+{
+  y2milestone("--Start MailTransportsDialog ---");
   list<map<string,string> > Transports      = (list<map<string,string> >) MailServer::MailTransports["Transports"]:[];
   map<string,string>        TLSSites        = (map<string,string>)        MailServer::MailTransports["TLSSites"]:$[];
   list      Transport_items = [];
@@ -595,7 +629,9 @@ term MailTransportsDialog() {
   return content;
 }
 
-term MailPreventionDialog(string CID, string CIDRBL) {
+term MailPreventionDialog(string CID, string CIDRBL)
+{
+  y2milestone("--Start MailTransportsDialog ---");
   list<term>     AccessItems= [];
   list<term>     RBLItems   = [];
   string  BasicProtection   =  (string)MailServer::MailPrevention["BasicProtection"]:"";
@@ -678,7 +714,8 @@ term MailPreventionDialog(string CID, string CIDRBL) {
    return content;
 }
 
-string RBLAdd () {
+string RBLAdd ()
+{
     UI::OpenDialog(`opt(`decorated ), `Frame(_("Add New RBL Server"),
             `VBox(
               `TextEntry(`id(`server),  "",  ""),
@@ -703,7 +740,8 @@ string RBLAdd () {
     return server;
 }
 
-map AccessAdd () {
+map AccessAdd ()
+{
    UI::OpenDialog(`opt(`decorated ),  `Frame(_("Add New Sender Restriction"),
             `VBox(
               `TextEntry(`id(`NewSender),  _("Sender Address"),  ""),
@@ -737,7 +775,9 @@ map AccessAdd () {
     return SenderRestriction;
 }
 
-term MailRelayingDialog() {
+term MailRelayingDialog()
+{
+  y2milestone("--Start MailRelayingDialog ---");
 //  boolean UserRestriction = ((string)MailServer::MailRelaying["UserRestriction"]:"0" == "1");
   boolean RequireSASL     = ((string)MailServer::MailRelaying["RequireSASL"]:"0" == "1");
   boolean SMTPDTLSnone    = ((string)MailServer::MailRelaying["SMTPDTLSMode"]:"none" == "none");
@@ -795,7 +835,9 @@ term MailRelayingDialog() {
   return content;
 }
 
-term MailLocalDeliveryDialog() {
+term MailLocalDeliveryDialog()
+{
+  y2milestone("--Start MailLocalDeliveryDialog ---");
   boolean TypeCYRUS    = ((string)MailServer::MailLocalDelivery["Type"]:"" == "cyrus");
   boolean TypePROCMAIL = ((string)MailServer::MailLocalDelivery["Type"]:"" == "procmail");
   boolean TypeLOCAL    = ((string)MailServer::MailLocalDelivery["Type"]:"" == "local");
@@ -933,7 +975,9 @@ term MailLocalDeliveryDialog() {
   return content;
 }
 
-term FetchingMailDialog() {
+term FetchingMailDialog()
+{
+  y2milestone("--Start FetchingMailDialog ---");
   list<term>  table_items       = [];
   integer     IID               = 0;
   list<map<string,string> > entries = (list<map<string,string> >) MailServer::FetchingMail["Items"]:[];
@@ -1017,7 +1061,9 @@ term FetchingMailDialog() {
   return content;
 }
 
-map FetchmailAddItem(){
+map FetchmailAddItem()
+{
+   y2milestone("--Start FetchmailAddItem ---");
    UI::OpenDialog(`opt(`decorated ),  `Frame(_("Add New Fetchmail Job"),
             `VBox(
               `TextEntry(`id(`server),       _("Server Address"),  ""),
@@ -1070,7 +1116,9 @@ Try again."));
 
 }
 
-term MailLocalDomainsDialog(string CID) {
+term MailLocalDomainsDialog(string CID)
+{
+  y2milestone("--Start MailLocalDomainsDialog ---");
   list<term> Domains = [];
   boolean     NoLocalDelivery   = ((string)MailServer::MailLocalDelivery["Type"]:"" == "none");
   if(NoLocalDelivery) {
@@ -1122,8 +1170,9 @@ term MailLocalDomainsDialog(string CID) {
   return content;
 }
 
-void ShowMailLocalDomain(string CID, string ACTION) {
-
+void ShowMailLocalDomain(string CID, string ACTION)
+{
+  y2milestone("--Start ShowMailLocalDomain ---");
   string  Name         = "";
   string  Type         = "local";
   boolean Masquerading = true;
@@ -1198,6 +1247,7 @@ void ShowMailLocalDomain(string CID, string ACTION) {
 
 boolean CheckMainDomain()
 {
+  y2milestone("--Start CheckMainDomain ---");
   integer maindomain = 0;
   integer domains    = 0;
 
@@ -1226,7 +1276,7 @@ boolean CheckMainDomain()
 
 any ComplexDialog()
 {
-
+   y2milestone("--Start ComplexDialog ---");
    Wizard::CreateTreeDialog();
    list<map> Tree = GenerateTree([], "", MailServer::ModulesTreeContent) ;
    Wizard::CreateTree(Tree, _("Mail Server Configuration"));

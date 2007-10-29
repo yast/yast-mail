@@ -33,7 +33,7 @@ import     "Label";
 
     y2milestone("--- mail-server-ldap-setup ---");
     // First we check if all requested modules are installed
-    if( !Package::Installed ( "ldap-server" ) )
+    if( !Package::Installed ( "yast2-ldap-server" ) )
     {
 	l_to_install = add( l_to_install, "yast2-ldap-server" );
 	to_install   = to_install + "yast2-ldap-server\n";
@@ -74,19 +74,6 @@ import     "Label";
     if(contains(args,"setup") )
     {
 	WFM::CallFunction("ldap",[]);
-    }
-    Ldap::Read();
-    Ldap::LDAPInit();
-    map<string, any> LDAPSettings = (map<string, any>)Ldap::Export();
-    string adminpw = Ldap::LDAPAskAndBind(false);
-    MailServerLDAP::ConfigureLDAPServer(LDAPSettings);
-    if( adminpw != nil )
-    {
-        YaPI::MailServer::ResetMailServer(adminpw,LDAPSettings);
-    }
-    else
-    {
-	return false;
     }
     return true;
 }

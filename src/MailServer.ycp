@@ -216,7 +216,7 @@ void Check_Mail_Domain()
         if(! is_main_domain )
         {
                 y2milestone("no main mail domain");
-                LDAPSettings["bind_pw"] = MailServer::AdminPassword;
+                LDAPSettings["bind_pw"] = AdminPassword;
                 SCR::Execute (.ldap.bind,LDAPSettings);
                 integer counter = 0;
                 map lastDomain = $[];

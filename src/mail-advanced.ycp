@@ -36,13 +36,14 @@ include "mail/mail-server_wizards.ycp";
  * @param options       map of options from command line
  * @return boolean      true on success
  */
-boolean SetupMailServer(map<string,string> options)
+boolean SetupMailServer()
 {
 	any ret = SetupSequence();
 	return true;
 }
 
-map cmdline_description = $[
+map cmdline_description =
+$[
     "id"	: "mail-server",
     /* Command line help text for the mail-server module */
     "help"	: _("Configuration of mail server"),
@@ -84,6 +85,10 @@ any ret = nil;
 if(propose)
 {
 	 ret = MailServerAutoSequence();
+}
+else if(setup)
+{
+	 ret = SetupSequence();
 }
 else
 {

@@ -139,7 +139,6 @@ define string StartDialog (string type, boolean first ) ``{
                Popup::Error(_("You have to select a configuration type"));
                continue;
             }
-            SCR::Write (.sysconfig.mail.CONFIG_TYPE, sret);
             y2milestone ("Mail configuration type %1", sret);
             break;
         }
@@ -205,7 +204,10 @@ define any Main() ``{
     {
 	ret = WFM::CallFunction("mail-standard",args);
     }
-
+    if( ret != nil && ret != `cancel && ret != `abort )
+    {
+        SCR::Write (.sysconfig.mail.CONFIG_TYPE, conf_type);
+    }
 }
 
 define boolean Setup (map<string, string> options) ``{
