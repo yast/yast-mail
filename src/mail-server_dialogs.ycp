@@ -41,7 +41,8 @@ define any CheckLDAPDialog ()
     Ldap::LDAPInit();
     map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
     list args = [];
-    if(LDAPSettings["ldap_domain"]:"" == "" )
+    y2milestone(" LDAPSettings %1", LDAPSettings);
+    if( ! LDAPSettings["start_ldap"]:false )
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
 	ca_mgm		  = true;
@@ -102,6 +103,7 @@ define any CheckLDAPDialog ()
     { // Now we setup the ca managemant
 	args = add(args, "ca_mgm");
     }
+    Progress::NextStage();
     if( setup_ldap_server )
     { // Now we setup the LDAP Server
 	args = add(args, "setup");
@@ -110,6 +112,7 @@ define any CheckLDAPDialog ()
 	Ldap::LDAPInit();
 	LDAPSettings = (map <string, any>) Ldap::Export();
     }
+    Progress::NextStage();
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
     if( MailServer::AdminPassword != nil )
     {
@@ -124,11 +127,12 @@ define any CheckLDAPDialog ()
 	//tell Ldap module to create the default objects:
 	LDAPSettings [ "create_ldap" ] = true;
 	Ldap::Import(LDAPSettings);
+y2milestone("after LDAPSettings %1", LDAPSettings);
 	//write the settings: 
 	Ldap::Write(abort);
 	//create default mail-server configuration
         YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,LDAPSettings);
-	return `next;
+	return `ok;
     }
     else
     {

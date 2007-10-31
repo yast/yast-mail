@@ -204,6 +204,8 @@ define any Main() ``{
     {
 	ret = WFM::CallFunction("mail-standard",args);
     }
+    y2milestone ("Mail module %1 returned %2", conf_type, ret);
+
     if( ret != nil && ret != `cancel && ret != `abort )
     {
         SCR::Write (.sysconfig.mail.CONFIG_TYPE, conf_type);
