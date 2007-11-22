@@ -70,6 +70,7 @@ import     "Label";
     if(contains(args,"setup") )
     {
 	WFM::CallFunction("ldap-server",[]);
+	MailServerLDAP::ConfigureLDAPServer();
     }
     if(contains(args,"setup") )
     {
