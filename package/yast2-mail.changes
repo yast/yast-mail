@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Nov 27 11:53:53 CET 2007 - pv@suse.de
+
+- #337398 - Long time bug in yast mail transfer agent module regarding
+  relayhost port setting
+- #335524 Advanced Mail Transfer Agent cannot access LDAP server
+- fixing the return values of wizard elements
+- 2.15.24
+ 
+
+-------------------------------------------------------------------
 Mon Sep 24 16:54:32 CEST 2007 - pv@suse.de
 
 - #327550 - yast2-mail fetchmail error

@@ -1,7 +1,7 @@
 @HEADER-COMMENT@
 
 @HEADER@
-BuildRequires:	perl-XML-Writer update-desktop-files yast2 yast2-devtools yast2-testsuite
+BuildRequires:	perl-XML-Writer update-desktop-files yast2-devtools yast2-testsuite
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
 
 PreReq:         %fillup_prereq

@@ -34,7 +34,7 @@ YaST::YCP::Import ("Ldap");
 YaST::YCP::Import ("YaPI::LdapServer");
 YaST::YCP::Import ("Service");
 
-BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", "any", [ "map","string","any"]];}
+BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", "any"];}
 sub ConfigureLDAPServer()
 {
 	# don't configure if using eDirectory server

@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 #
 # $Id: CyrusConfParser.pm 23262 2005-05-03 11:30:49Z choeger $
 #
