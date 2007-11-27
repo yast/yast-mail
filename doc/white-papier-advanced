@@ -1,0 +1,38 @@
+Steps in CA Management
+Create Root CA 
+Enter CA 
+  Certificates
+  Add Server Certificate
+     Common Name: FQHN of yoour server
+     Valid Period (days): 365 Default -> 3649
+  Export as Common Server Certificate
+
+Steps to Setup LDAP-Server
+  Start LDAP Server Yes
+   Configure... 
+   ┬─Global Settings
+   └──TLS Settings
+	TLS Active Yes
+	Select Certificate...
+		(x) Use Common Server Certificate
+   ───Databases
+	[Add Database...]
+	Root DN
+	cn=Administrator▒▒▒▒▒▒▒▒ [x] Append Base DN
+
+LDAP Client Configuration
+	User Authentication:
+		(x) Use LDAP or ( ) Use LDAP but Disable Logins
+	LDAP Client:
+		Addresses of LDAP Servers: 127.0.0.1
+		LDAP Base DN : [Fetch DN]
+
+	[Advanced Configuration...]
+		[Administration Settings]
+			Configuration Base DN
+			ou=ldapconfig,dc=varkoly,dc=de
+			Administrator DN
+			cn=Administrator▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒[x] Append Base DN
+
+			[x] Create Default Configuration Objects
+			[ ] Home Directories on This Machine 	
