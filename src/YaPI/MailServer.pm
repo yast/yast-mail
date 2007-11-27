@@ -2669,6 +2669,8 @@ fi';
     write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
     write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
     write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps.cf, ldap:/etc/postfix/ldapalias_maps_member.cf');
+    check_ldap_configuration('transport_maps',$ldapMap);
+    check_ldap_configuration('smtp_tls_per_site',$ldapMap);
     check_ldap_configuration('masquerade_domains',$ldapMap);
     check_ldap_configuration('mydestination',$ldapMap);
     check_ldap_configuration('local_recipient_maps',$ldapMap);

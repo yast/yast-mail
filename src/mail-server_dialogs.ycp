@@ -667,6 +667,8 @@ term MailPreventionDialog(string CID, string CIDRBL)
   });
 
   term content = `VBox (
+        `Left(`CheckBox (`id(`VirusScanning), `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
+	`VSpacing (1),
 	`Frame(_("SPAM Prevention"),
 	  `HBox(
 	    `HWeight(7,
@@ -712,8 +714,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
 		      )
                  )
              )
-	),
-        `Left(`CheckBox (`id(`VirusScanning), `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning))
+	)
    );
    return content;
 }

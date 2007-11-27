@@ -560,8 +560,9 @@ global boolean Write() {
 				    `focus_yes))
 	  {
 	      Package::DoInstall(["clamav","amavisd-new"]);
-	      Service::Start("amavis");
 	      Service::Start("clamd");
+	      Service::Start("freshclam");
+	      Service::Start("amavis");
 	      y2milestone("Installing amavis");
 	  }
 	  else
@@ -571,6 +572,7 @@ global boolean Write() {
       }
       Service::Enable("amavis");
       Service::Enable("clamd");
+      Service::Enable("freshclam");
     }
     if( (boolean)MailPrevention["Changed"]:false ) {
       if( ! YaPI::MailServer::WriteMailPrevention(MailPrevention,AdminPassword) ) {
@@ -578,6 +580,7 @@ global boolean Write() {
       }
       if((boolean)MailPrevention["VirusScanning"]:false) {
 	 Service::Restart("clamd");
+	 Service::Restart("freshclam");
 	 Service::Restart("amavis");
       }
     }
