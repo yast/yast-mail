@@ -107,10 +107,12 @@ define any CheckLDAPDialog ()
     if( setup_ldap_server )
     { // Now we setup the LDAP Server
 	args = add(args, "setup");
+    }
+    if( setup_ldap_server || ca_mgm || conf_ldap_server )
+    {
 	WFM::CallFunction("mail-server_ldap-setup",args);
 	Ldap::Read();
 	Ldap::LDAPInit();
-	LDAPSettings = (map <string, any>) Ldap::Export();
     }
     Progress::NextStage();
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);

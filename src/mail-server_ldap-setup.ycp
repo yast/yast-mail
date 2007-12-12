@@ -33,10 +33,15 @@ import     "Label";
 
     y2milestone("--- mail-server-ldap-setup ---");
     // First we check if all requested modules are installed
-    if( !Package::Installed ( "yast2-ldap-server" ) )
+    if( contains(args,"setup") && !Package::Installed ( "yast2-ldap-server" ) )
     {
 	l_to_install = add( l_to_install, "yast2-ldap-server" );
 	to_install   = to_install + "yast2-ldap-server\n";
+    }
+    if( contains(args,"setup") && !Package::Installed ( "bind-utils" ) )
+    {
+	l_to_install = add( l_to_install, "bind-utils" );
+	to_install   = to_install + "bind-utils\n";
     }
     if(contains(args,"ca_mgm") )
     {
