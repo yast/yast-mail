@@ -87,7 +87,7 @@ sub ConfigureLDAPServer()
 						 "param" => "eq" }
 					       );
 		  }
-		if(!$SuSEMailClient)
+		if(!$suseTLSPerSitePeer)
 		{
 		    YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
 					       { "attr"  => "suseTLSPerSitePeer,SuSEMailTransportDestination",
