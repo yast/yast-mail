@@ -1,12 +1,16 @@
 -------------------------------------------------------------------
-Tue Nov 27 11:53:53 CET 2007 - pv@suse.de
+Sun Dec 30 19:29:49 CET 2007 - pv@suse.de
 
+- #278535 - YaST2 mail dialog does not offer help on the "No connection" setting 
+- bugfix: it was not possible to connect to an existen LDAP-server during
+  the configuration
+- bugfix: check if bind-utils is installed. We need the dnsZone.schema
+  file
 - #337398 - Long time bug in yast mail transfer agent module regarding
   relayhost port setting
 - #335524 Advanced Mail Transfer Agent cannot access LDAP server
 - fixing the return values of wizard elements
 - 2.15.24
- 
 
 -------------------------------------------------------------------
 Mon Sep 24 16:54:32 CEST 2007 - pv@suse.de
