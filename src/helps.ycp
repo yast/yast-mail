@@ -79,7 +79,9 @@ to install.</p>");
 <p>How are you connected to the Internet? With a dial-up connection,
 mails will not be sent immediately but rather after invoking
 <b>sendmail&nbsp;-q</b>.</p>
-");
+") +
+_("<p>Choosing <b>No connection</b> the mail server will be started 
+but only local mail transport is possible. The MTA listens on localhost.</p>");
 	return s;
     }
 
