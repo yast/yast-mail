@@ -23,7 +23,7 @@ import "Progress";
 import "Report";
 import "Summary";
 import "YaPI::MailServer";
-import "NetworkDevices";
+import "NetworkInterfaces";
 import "Service";
 import "Users";
 
@@ -388,16 +388,16 @@ global boolean Read()
     }
     sleep(sl);
 
-    NetworkDevices::Read();
-    map<string,map> TMP = NetworkDevices::Export("modem");
+    NetworkInterfaces::Read();
+    map<string,map> TMP = NetworkInterfaces::Export("modem");
     foreach(string k, map v, (map<string,map>)TMP["ppp"]:$[], {
        PPPCards = add(PPPCards, "ppp"+k);
     });
-    TMP = NetworkDevices::Export("isdn");
+    TMP = NetworkInterfaces::Export("isdn");
     foreach(string k, map v, (map<string,map>)TMP["ipp"]:$[], {
        PPPCards = add(PPPCards, "ipp"+k);
     });
-    TMP = NetworkDevices::Export("dsl");
+    TMP = NetworkInterfaces::Export("dsl");
     foreach(string k, map v, (map<string,map>)TMP["dsl"]:$[], {
        PPPCards = add(PPPCards, "dsl"+k);
     });

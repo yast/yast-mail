@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 24 15:36:49 CET 2008 - mzugec@suse.de
+
+- replace deprecated NetworkDevices by NetworkInterfaces (from yast2) 
+- 2.16.0
+
+-------------------------------------------------------------------
 Sun Dec 30 19:29:49 CET 2007 - pv@suse.de
 
 - #278535 - YaST2 mail dialog does not offer help on the "No connection" setting 

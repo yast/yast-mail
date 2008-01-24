@@ -48,7 +48,7 @@ our $VERSION="2.2.0";
 YaST::YCP::Import ("SCR");
 YaST::YCP::Import ("Service");
 YaST::YCP::Import ("Ldap");
-YaST::YCP::Import ("NetworkDevices");
+YaST::YCP::Import ("NetworkInterfaces");
 
 ##
  #
@@ -1959,16 +1959,16 @@ sub WriteFetchingMail {
 #print STDERR Dumper([$FetchingMail]);  
     if($FetchingMail->{'Interface'} ne '')
     {
-       NetworkDevices->Read();
+       NetworkInterfaces->Read();
        if($FetchingMail->{'FetchByDialIn'})
        {
-          NetworkDevices->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','yes');
+          NetworkInterfaces->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','yes');
        }
        else
        {
-          NetworkDevices->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','no');
+          NetworkInterfaces->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','no');
        }
-       NetworkDevices->Write('ppp|ipp|dsl');
+       NetworkInterfaces->Write('ppp|ipp|dsl');
     }
     if($FetchingMail->{'FetchMailSteady'})
     {
