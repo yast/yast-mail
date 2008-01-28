@@ -122,6 +122,24 @@ attributetype ( MailAT:18 NAME ( 'suseImapQuota' 'imapQuota')
         SYNTAX 1.3.6.1.4.1.1466.115.121.1.27
         SINGLE-VALUE )
 
+attributetype ( MailAT:19 NAME ( 'tableKey')
+        DESC 'Shows the imap quota of a user.'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256}
+        SINGLE-VALUE )
+
+attributetype ( MailAT:20 NAME ( 'tableValue')
+        DESC 'Shows the imap quota of a user.'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256}
+        SINGLE-VALUE )
+
+attributetype ( MailAT:21 NAME ( 'valueType')
+        DESC 'Shows the imap quota of a user.'
+        EQUALITY caseIgnoreMatch
+        SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{16}
+        SINGLE-VALUE )
+
 ##
 ## Objectclass Section
 ##
@@ -153,4 +171,9 @@ objectclass ( MailOC:5 NAME ( 'suseMailMyNetworks' 'mailMyNetworks' ) SUP top ST
 objectclass ( MailOC:6 NAME ( 'suseTLSPerSiteContainer' 'TLSPerSiteContainer' ) SUP top STRUCTURAL
         DESC 'To build TLS per side maps'
         MUST ( suseTLSPerSiteMode $ suseTLSPerSitePeer ) )
+
+objectclass ( MailOC:7 NAME ( 'suseCanonicalTable' 'CanonicalTable' ) SUP top STRUCTURAL
+        DESC 'To build canonical maps'
+        MUST ( tableKey  $ tableValue )
+	MAY  ( valueType $ description ) )
 
