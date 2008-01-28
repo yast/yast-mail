@@ -453,7 +453,7 @@ sub ReadCanonical
     my $MainCf           = SCR->Read('.mail.postfix.main.table');
     my $CanonicalClasses = read_attribute($MainCf,'transport_maps');
     $CanonicalClasses    =~ s/ //g;
-    $Canonical{CanonicalClasses} = split /,/,$CanonicalClasses;
+    push @{$Canonicals{CanonicalClasses}}, split /,/,$CanonicalClasses;
 
     my %SearchMap       = (
                                'base_dn'    => $ldapMap->{'mail_config_dn'},
@@ -479,7 +479,7 @@ sub ReadCanonical
        $Canonical->{'type'}    = $ret->{$dn}->{'valuetype'}->[0];
        if( defined $ret->{$dn}->{'description'}->[0] )
        {
-         ($Canonical->{'description'} = $ret->{$dn}->{'description'}->[0];
+         $Canonical->{'description'} = $ret->{$dn}->{'description'}->[0];
        }
        push @{$Canonicals{'CanonicalTable'}}, $Canonical;
     }
