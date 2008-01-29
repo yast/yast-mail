@@ -48,7 +48,7 @@ our $VERSION="2.2.0";
 YaST::YCP::Import ("SCR");
 YaST::YCP::Import ("Service");
 YaST::YCP::Import ("Ldap");
-YaST::YCP::Import ("NetworkDevices");
+YaST::YCP::Import ("NetworkInterfaces");
 
 ##
  #
@@ -420,6 +420,71 @@ sub WriteGlobalSettings {
     SCR->Write('.mail.postfix.mastercf',undef);
 
     return 1;
+}
+
+=item *
+C<$Canonical = ReadCanonical($AdminPassword)>
+
+  Dump the mail-server Mail Transport to a single hash
+  @return hash Dumped settings (later acceptable by WriteCanonical ())
+
+=cut
+
+BEGIN { $TYPEINFO{ReadCanonical}  =["function", ["map", "string", "any"]  , "string"]; }
+sub ReadCanonical
+{
+    my $self            = shift;
+    my $AdminPassword   = shift;
+
+
+    my %Canonicals       = ( 
+                           'Changed'          => YaST::YCP::Boolean(0),
+                           'CanonicalTable'   => [], 
+                           'CanonicalClasses' => [] 
+                          );
+
+
+    # Make LDAP Connection 
+    my $ldapMap = $self->ReadLDAPDefaults($AdminPassword);
+    if( !$ldapMap )
+    {
+         return undef;
+    }
+    my $MainCf           = SCR->Read('.mail.postfix.main.table');
+    my $CanonicalClasses = read_attribute($MainCf,'transport_maps');
+    $CanonicalClasses    =~ s/ //g;
+    push @{$Canonicals{CanonicalClasses}}, split /,/,$CanonicalClasses;
+
+    my %SearchMap       = (
+                               'base_dn'    => $ldapMap->{'mail_config_dn'},
+                               'filter'     => "ObjectClass=suseCanonicalTable",
+                               'scope'      => 2,
+                               'map'        => 1,
+                               'attributes' => ['tableKey',
+			                        'tableValue',
+						'valueType',
+						'description' ]
+                          );
+
+                             
+    # Searching all the transport lists
+    my $ret = SCR->Read('.ldap.search',\%SearchMap);
+
+    # filling up our array
+    foreach my $dn (keys %{$ret})
+    {
+       my $Canonical       = {};
+       $Canonical->{'key'}     = $ret->{$dn}->{'tablekey'}->[0];
+       $Canonical->{'value'}   = $ret->{$dn}->{'tablevalue'}->[0];
+       $Canonical->{'type'}    = $ret->{$dn}->{'valuetype'}->[0];
+       if( defined $ret->{$dn}->{'description'}->[0] )
+       {
+         $Canonical->{'description'} = $ret->{$dn}->{'description'}->[0];
+       }
+       push @{$Canonicals{'CanonicalTable'}}, $Canonical;
+    }
+    #now we return the result
+    return \%Canonicals;
 }
 
 =item *
@@ -1959,16 +2024,16 @@ sub WriteFetchingMail {
 #print STDERR Dumper([$FetchingMail]);  
     if($FetchingMail->{'Interface'} ne '')
     {
-       NetworkDevices->Read();
+       NetworkInterfaces->Read();
        if($FetchingMail->{'FetchByDialIn'})
        {
-          NetworkDevices->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','yes');
+          NetworkInterfaces->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','yes');
        }
        else
        {
-          NetworkDevices->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','no');
+          NetworkInterfaces->SetValue($FetchingMail->{'Interface'},'RUN_POLL_TCPIP','no');
        }
-       NetworkDevices->Write('ppp|ipp|dsl');
+       NetworkInterfaces->Write('ppp|ipp|dsl');
     }
     if($FetchingMail->{'FetchMailSteady'})
     {
@@ -2669,6 +2734,8 @@ fi';
     write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
     write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
     write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps.cf, ldap:/etc/postfix/ldapalias_maps_member.cf');
+    check_ldap_configuration('transport_maps',$ldapMap);
+    check_ldap_configuration('smtp_tls_per_site',$ldapMap);
     check_ldap_configuration('masquerade_domains',$ldapMap);
     check_ldap_configuration('mydestination',$ldapMap);
     check_ldap_configuration('local_recipient_maps',$ldapMap);
@@ -2809,7 +2876,10 @@ sub check_ldap_configuration {
                         'mynetworks'          => '(&(objectclass=suseMailMyNetworks)(suseMailClient=%s))',
                         'masquerade_domains'  => '(&(objectclass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
                         'mydestination'       => '(&(objectclass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
-                        'virtual_alias_maps'  => '(&(objectclass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))'
+                        'virtual_alias_maps'  => '(&(objectclass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
+                        'canonical_maps'      => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
+                        'recipient_canonical_maps' => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
+                        'sender_canonical_maps' => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
                        );
     my %result_attribute = (
                         'transport_maps'      => 'suseMailTransportNexthop',
@@ -2821,7 +2891,10 @@ sub check_ldap_configuration {
                         'mynetworks'          => 'suseMailClient',
                         'masquerade_domains'  => 'zoneName',
                         'mydestination'       => 'zoneName',
-                        'virtual_alias_maps'  => 'zoneName'
+                        'virtual_alias_maps'  => 'zoneName',
+                        'canonical_maps'      => 'tableValue',
+                        'recipient_canonical_maps' => 'tableValue',
+                        'sender_canonical_maps'    => 'tableValue'
                        );
     my %scope            = (
                         'transport_maps'      => 'one',
@@ -2833,7 +2906,10 @@ sub check_ldap_configuration {
                         'mynetworks'          => 'one',
                         'masquerade_domains'  => 'sub',
                         'mydestination'       => 'sub',
-                        'virtual_alias_maps'  => 'sub'
+                        'virtual_alias_maps'  => 'sub',
+                        'canonical_maps'      => 'one',
+                        'recipient_canonical_maps' => 'one',
+                        'sender_canonical_maps'    => 'one'
                        );
     my %base            = (
                         'transport_maps'      => $ldapMap->{'mail_config_dn'},
@@ -2845,7 +2921,10 @@ sub check_ldap_configuration {
                         'mynetworks'          => $ldapMap->{'mail_config_dn'},
                         'masquerade_domains'  => $ldapMap->{'dns_config_dn'},
                         'mydestination'       => $ldapMap->{'dns_config_dn'},
-                        'virtual_alias_maps'  => $ldapMap->{'dns_config_dn'}
+                        'virtual_alias_maps'  => $ldapMap->{'dns_config_dn'},
+                        'canonical_maps'      => $ldapMap->{'mail_config_dn'},
+                        'recipient_canonical_maps' => $ldapMap->{'mail_config_dn'},
+                        'sender_canonical_maps'    => $ldapMap->{'mail_config_dn'}
                        );
     my %special_result_attribute = (
                         'alias_maps_member'   => 'member',

@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 #
 # $Id: MasterCFParser.pm 30394 2006-04-24 10:12:22Z varkoly $
 #

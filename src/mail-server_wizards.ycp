@@ -109,6 +109,10 @@ any SetupSequence()
             `abort      : `abort,
             `next       : "main"
         ],
+	"main" : $[
+	    `abort	: `abort,
+	    `next	: `next
+	]
     ];
 
     Wizard::CreateDialog();

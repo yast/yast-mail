@@ -159,6 +159,8 @@ define boolean Installed (string package) ``{
     return Package::Installed (package);
 }
 
+global boolean pam_ldap_installed  = false;
+global boolean nss_ldap_installed  = false;
 global boolean procmail_installed  = false;
 global boolean amavis_installed    = false;
 global boolean ldap_installed      = false;
@@ -216,7 +218,7 @@ void Check_Mail_Domain()
         if(! is_main_domain )
         {
                 y2milestone("no main mail domain");
-                LDAPSettings["bind_pw"] = MailServer::AdminPassword;
+                LDAPSettings["bind_pw"] = AdminPassword;
                 SCR::Execute (.ldap.bind,LDAPSettings);
                 integer counter = 0;
                 map lastDomain = $[];
@@ -258,6 +260,8 @@ void Check_Mail_Domain()
  */
 global boolean CheckPackages()
 {
+    pam_ldap_installed  = Installed("pam_ldap");
+    nss_ldap_installed  = Installed("nss_ldap");
     procmail_installed  = Installed("procmail");
     cyrus_installed     = Installed("cyrus-imapd");
     postfix_installed   = Installed("postfix");
@@ -269,15 +273,25 @@ global boolean CheckPackages()
     string         to_install = "";
     list<string> l_to_install = [];
 
-    if (!ldap_installed)
+    if (!pam_ldap_installed)
     {
-	l_to_install = add( l_to_install, "yast2-ldap-client" );
-	to_install   = to_install + "yast2-ldap-client\n";
+	l_to_install = add( l_to_install, "pam_ldap" );
+	to_install   = to_install + "pam_ldap\n";
+    }
+    if (!nss_ldap_installed)
+    {
+	l_to_install = add( l_to_install, "nss_ldap" );
+	to_install   = to_install + "nss_ldap\n";
     }
     if (!postfix_installed)
     {
 	l_to_install = add( l_to_install, "postfix" );
 	to_install   = to_install + "postfix\n";
+    }
+    if (!ldap_installed)
+    {
+	l_to_install = add( l_to_install, "yast2-ldap-client" );
+	to_install   = to_install + "yast2-ldap-client\n";
     }
     if(!sasl_installed)
     {
@@ -546,8 +560,9 @@ global boolean Write() {
 				    `focus_yes))
 	  {
 	      Package::DoInstall(["clamav","amavisd-new"]);
-	      Service::Start("amavis");
 	      Service::Start("clamd");
+	      Service::Start("freshclam");
+	      Service::Start("amavis");
 	      y2milestone("Installing amavis");
 	  }
 	  else
@@ -557,6 +572,7 @@ global boolean Write() {
       }
       Service::Enable("amavis");
       Service::Enable("clamd");
+      Service::Enable("freshclam");
     }
     if( (boolean)MailPrevention["Changed"]:false ) {
       if( ! YaPI::MailServer::WriteMailPrevention(MailPrevention,AdminPassword) ) {
@@ -564,6 +580,7 @@ global boolean Write() {
       }
       if((boolean)MailPrevention["VirusScanning"]:false) {
 	 Service::Restart("clamd");
+	 Service::Restart("freshclam");
 	 Service::Restart("amavis");
       }
     }

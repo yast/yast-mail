@@ -46,4 +46,4 @@ SKIP_ASK="no"
 #
 # This variable contains the type of the mail server configuration.
 #
-CONF_TYPE="undef"
+CONFIG_TYPE="undef"

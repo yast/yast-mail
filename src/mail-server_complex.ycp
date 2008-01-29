@@ -37,7 +37,7 @@ boolean PollAbort() {
  * Read settings dialog
  * @return `abort if aborted and `next otherwise
  */
-boolean SetupDialog() {
+symbol SetupDialog() {
     Wizard::RestoreHelp(HELPS["setup"]:"");
     string caption = _("Setup the Mail Server");
     integer steps =  3;
@@ -74,17 +74,17 @@ boolean SetupDialog() {
     Progress::NextStage();
     if( ! MailServer::CheckPackages() )
     {
-        return false;
+        return `abort;
     }
     sleep(sl);
     // read  packages
     Progress::NextStage();
     if( CheckLDAPDialog() != `ok )
     {
-        return false;
+        return `abort;
     }
     sleep(sl);
-    return true;
+    return `next;
 }
 
 /**

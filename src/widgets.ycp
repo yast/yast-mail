@@ -221,8 +221,16 @@ define boolean Validate_outgoing_mail_server(symbol id) ``{
     // when validating: may be enclosed in brackets (prevents mx lookups)
     string oms = (string) UI::QueryWidget (`id (id), `Value);
     // watch this: "[", no brackets, "]"
-    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?
-	regexpsub (oms, ".(.*).", "\\1") : oms;
+    string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]:.*") ? regexpsub (oms, ".(.*).:.*", "\\1") : oms;
+
+    if( oms_no_brackets == oms )
+    {
+        oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?  regexpsub (oms, ".(.*).", "\\1") : oms;
+    }
+    if( oms_no_brackets == oms )
+    {
+        oms_no_brackets = regexpmatch (oms, ".*:.*") ?  regexpsub (oms, "(.*):.*", "\\1") : oms;
+    }
 
     if (oms_no_brackets != "" &&
 	! Address::Check (oms_no_brackets)
