@@ -38,6 +38,11 @@ import     "Label";
 	l_to_install = add( l_to_install, "yast2-ldap-server" );
 	to_install   = to_install + "yast2-ldap-server\n";
     }
+    if( contains(args,"setup") && !Package::Installed ( "openldap2" ) )
+    {
+	l_to_install = add( l_to_install, "openldap2" );
+	to_install   = to_install + "openldap2\n";
+    }
     if( contains(args,"setup") && !Package::Installed ( "bind-utils" ) )
     {
 	l_to_install = add( l_to_install, "bind-utils" );
@@ -70,11 +75,11 @@ import     "Label";
     //Now we start the requested modules
     if(contains(args,"ca_mgm") )
     {
-	WFM::CallFunction("ca_mgm_proposal",[]);
+	WFM::CallFunction("ca_mgm",[]);
     }
     if(contains(args,"setup") )
     {
-	WFM::CallFunction("ldap-server",[ .propose ]);
+	WFM::CallFunction("ldap-server",[]);
 	MailServerLDAP::ConfigureLDAPServer();
     }
     if(contains(args,"setup") )
