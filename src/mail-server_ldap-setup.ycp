@@ -70,11 +70,11 @@ import     "Label";
     //Now we start the requested modules
     if(contains(args,"ca_mgm") )
     {
-	WFM::CallFunction("ca_mgm",[]);
+	WFM::CallFunction("ca_mgm_proposal",[]);
     }
     if(contains(args,"setup") )
     {
-	WFM::CallFunction("ldap-server",[]);
+	WFM::CallFunction("ldap-server",[ .propose ]);
 	MailServerLDAP::ConfigureLDAPServer();
     }
     if(contains(args,"setup") )

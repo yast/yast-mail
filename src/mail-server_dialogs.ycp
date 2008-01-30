@@ -77,9 +77,9 @@ define any CheckLDAPDialog ()
 		`VSpacing(0.2),
 		`RichText(comment),
 		`VSpacing(0.2),
-		`Left(`CheckBox(`id(`setup_ldap_server),_("Setup an local LDAP-Server."), setup_ldap_server)),
-		`VSpacing(0.2),
 		`Left(`CheckBox(`id(`ca_mgm),           _("Create certificates."), ca_mgm)),
+		`VSpacing(0.2),
+		`Left(`CheckBox(`id(`setup_ldap_server),_("Setup an local LDAP-Server."), setup_ldap_server)),
 		`VSpacing(0.2),
 		`Left(`CheckBox(`id(`conf_ldap_server), _("Configure dedicated LDAP-Server."), conf_ldap_server)),
 		`HBox (
