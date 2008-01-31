@@ -80,11 +80,11 @@ import     "Label";
     if(contains(args,"setup") )
     {
 	WFM::CallFunction("ldap-server",[]);
+    }
+    if(contains(args,"conf") )
+    {
 	MailServerLDAP::ConfigureLDAPServer();
     }
-    if(contains(args,"setup") )
-    {
-	WFM::CallFunction("ldap",[]);
-    }
+    WFM::CallFunction("ldap",[]);
     return true;
 }

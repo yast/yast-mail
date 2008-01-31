@@ -68,6 +68,7 @@ define any CheckLDAPDialog ()
 		   "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
 		   _("Furthermore the LDAP-Server have to contain the <B>suse-mailserver.schema</B> and the correspondig index entries.");
 	}
+	conf_ldap_server  = true;
     }
 
     // Now we create the dialog:
@@ -107,6 +108,10 @@ define any CheckLDAPDialog ()
     if( setup_ldap_server )
     { // Now we setup the LDAP Server
 	args = add(args, "setup");
+    }
+    if( conf_ldap_server )
+    { // Now we setup the LDAP Server
+	args = add(args, "conf");
     }
     if( setup_ldap_server || ca_mgm || conf_ldap_server )
     {
