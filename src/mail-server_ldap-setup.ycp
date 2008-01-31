@@ -81,10 +81,10 @@ import     "Label";
     {
 	WFM::CallFunction("ldap-server",[]);
     }
+    WFM::CallFunction("ldap",[]);
     if(contains(args,"conf") || contains(args,"setup") )
     {
 	MailServerLDAP::ConfigureLDAPServer();
     }
-    WFM::CallFunction("ldap",[]);
     return true;
 }
