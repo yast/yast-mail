@@ -27,7 +27,7 @@ import     "Label";
 
     WFM::CallFunction("ca_mgm",[]);
     WFM::CallFunction("ldap-server",[]);
-    MailServerLDAP::ConfigureLDAPServer();
     WFM::CallFunction("ldap",[]);
+    MailServerLDAP::ConfigureLDAPServer();
     return true;
 }
