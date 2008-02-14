@@ -34,8 +34,9 @@ define any CheckLDAPDialog ()
 {
     y2milestone("--Start CheckLDAPDialog ---");
     boolean ca_mgm            = false;
-    boolean conf_ldap_server  = false;
+    boolean conf_ldap_client  = false;
     boolean setup_ldap_server = false;
+    boolean ldap_server_local = false;
     string  comment           = "";
     Ldap::Read();
     Ldap::LDAPInit();
@@ -46,7 +47,8 @@ define any CheckLDAPDialog ()
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
 	ca_mgm		  = true;
-	conf_ldap_server  = true;
+	conf_ldap_client  = true;
+	ldap_server_local = true;
 	comment = _("Your computer is not configured as LDAP-client.") + "<br>" +
 		  _("We suggest to setup a local LDAP-server for the mail server.") + "<br>" +
 		  _("To secure your system we suggest to create certificates for the LDAP and Mail Server.") + "<br>";
@@ -59,6 +61,7 @@ define any CheckLDAPDialog ()
 		  _("We suggest to adapt the LDAP-server configuration for the mail server.") + "<br>" +
 		  _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
 		  "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>";
+	  ldap_server_local = true;
 	}
 	else
 	{ // The LDAP-Server is not local
@@ -68,7 +71,6 @@ define any CheckLDAPDialog ()
 		   "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
 		   _("Furthermore the LDAP-Server have to contain the <B>suse-mailserver.schema</B> and the correspondig index entries.");
 	}
-	conf_ldap_server  = true;
     }
 
     // Now we create the dialog:
@@ -82,7 +84,7 @@ define any CheckLDAPDialog ()
 		`VSpacing(0.2),
 		`Left(`CheckBox(`id(`setup_ldap_server),_("Setup an local LDAP-Server."), setup_ldap_server)),
 		`VSpacing(0.2),
-		`Left(`CheckBox(`id(`conf_ldap_server), _("Configure dedicated LDAP-Server."), conf_ldap_server)),
+		`Left(`CheckBox(`id(`conf_ldap_client), _("Configure Server as LDAP client of dedicated LDAP-Server."), conf_ldap_client)),
 		`HBox (
 			`PushButton (`id (`abort),Label::AbortButton()),
 			`PushButton (`id (`next),Label::NextButton())
@@ -93,7 +95,7 @@ define any CheckLDAPDialog ()
     any ui = UI::UserInput ();
     setup_ldap_server = (boolean)UI::QueryWidget(`id(`setup_ldap_server),`Value);
     ca_mgm            = (boolean)UI::QueryWidget(`id(`ca_mgm),`Value);
-    conf_ldap_server  = (boolean)UI::QueryWidget(`id(`conf_ldap_server),`Value);
+    conf_ldap_client  = (boolean)UI::QueryWidget(`id(`conf_ldap_client),`Value);
     UI::CloseDialog();
     if( ui == `abort )
     {
@@ -109,11 +111,15 @@ define any CheckLDAPDialog ()
     { // Now we setup the LDAP Server
 	args = add(args, "setup");
     }
-    if( conf_ldap_server )
-    { // Now we setup the LDAP Server
+    if( conf_ldap_client )
+    { // Now we setup the server as LDAP Server
 	args = add(args, "conf");
     }
-    if( setup_ldap_server || ca_mgm || conf_ldap_server )
+    if( ldap_server_local )
+    { // The LDAP server is local we can configure the schemas
+	args = add(args, "local");
+    }
+    if( setup_ldap_server || ca_mgm || conf_ldap_client || ldap_server_local )
     {
 	WFM::CallFunction("mail-server_ldap-setup",args);
 	Ldap::Read();
