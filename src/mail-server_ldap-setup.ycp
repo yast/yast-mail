@@ -18,7 +18,10 @@
 
 {
 textdomain "mail";
+import     "Label";
 import     "MailServerLDAP";
+import     "Package";
+import     "Report";
 
     string ERROR = "";
     list args = WFM::Args();
