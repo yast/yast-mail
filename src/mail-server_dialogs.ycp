@@ -119,13 +119,14 @@ define any CheckLDAPDialog ()
     { // The LDAP server is local we can configure the schemas
 	args = add(args, "local");
     }
+    Progress::NextStage();
     if( setup_ldap_server || ca_mgm || conf_ldap_client || ldap_server_local )
     {
 	WFM::CallFunction("mail-server_ldap-setup",args);
 	Ldap::Read();
 	Ldap::LDAPInit();
+	LDAPSettings =  (map <string, any>) Ldap::Export();
     }
-    Progress::NextStage();
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
     if( MailServer::AdminPassword != nil )
     {
@@ -176,7 +177,6 @@ define any AuthorizingDialog ()
 	{
 	    return `abort;
 	}
-	Ldap::Read();
     }
     Ldap::LDAPInit();
 
@@ -191,7 +191,10 @@ Create the certificate with the YaST2 CA management module.
        MailServer::CertExist = true;
     }
 
-    MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
+    if( MailServer::AdminPassword == nil )
+    {
+        MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
+    }
     if( MailServer::AdminPassword == nil )
     {
 	return `abort;
