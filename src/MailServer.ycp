@@ -137,7 +137,7 @@ global list<string> PPPCards = [];
 /**
  * Some additional parameter needed for the configuration.
  */
-global string AdminPassword = "";
+global string AdminPassword = nil;
 
 /**
  * List of the Configuration Modules
