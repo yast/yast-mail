@@ -303,6 +303,13 @@ global boolean CheckPackages()
 	l_to_install = add( l_to_install, "yast2-mail-plugins" );
 	to_install   = to_install + "yast2-mail-plugins\n";
     }
+    if(!amavis_installed)
+    {
+	l_to_install = add( l_to_install, "amavisd-new" );
+	to_install   = to_install + "amavisd-new\n";
+	l_to_install = add( l_to_install, "clamav" );
+	to_install   = to_install + "clamav\n";
+    }
     if(to_install != "")
     {
 	if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +

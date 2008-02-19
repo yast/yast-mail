@@ -145,7 +145,7 @@ y2milestone("after LDAPSettings %1", LDAPSettings);
 	//write the settings: 
 	Ldap::Write(abort);
 	//create default mail-server configuration
-        YaPI::MailServer::ResetMailServer(MailServer::AdminPassword,LDAPSettings);
+        YaPI::MailServer::ResetMailServer(MailServer::AdminPassword);
 	return `ok;
     }
     else
