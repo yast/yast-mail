@@ -1,12 +1,7 @@
 -------------------------------------------------------------------
-Thu Jan 24 15:36:49 CET 2008 - mzugec@suse.de
+Wed Mar 12 18:50:02 CET 2008 - pv@suse.de
 
-- replace deprecated NetworkDevices by NetworkInterfaces (from yast2) 
-- 2.16.0
-
--------------------------------------------------------------------
-Sun Dec 30 19:29:49 CET 2007 - pv@suse.de
-
+- #337365 - YaST2 Mail (Mailserver) Module is not working
 - #278535 - YaST2 mail dialog does not offer help on the "No connection" setting 
 - bugfix: it was not possible to connect to an existen LDAP-server during
   the configuration
