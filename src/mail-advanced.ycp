@@ -53,7 +53,7 @@ $[
     "actions"           : $[
 	"setup" : $[
                 "handler"       : SetupMailServer,
-                "help"          : _("Advanced Mail Server setup with LDAP backend"),
+                "help"          : _("Advanced mail server setup with LDAP back-end"),
        ],
     ],
     "options"		: $[

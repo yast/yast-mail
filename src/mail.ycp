@@ -50,15 +50,17 @@ define string StartDialogHelp () ``{
           // Translators: start dialog help, part 1 of 4
           _("<P><B>Email Server Configuration</B><BR>") +
           // Translators: start dialog help, part 2 of 4
-          _("<P>This module will configure and start Postfix and if necessary the Cyrus IMAP Server.</P>")+
+          _("<P>This module will configure and start Postfix and, if necessary, the Cyrus IMAP server.</P>")+
           // Translators: start dialog help, part 3 of 4
-          _("<P><B>Be aware:</B><BR>
+          _("<p><b>Warning:</b><p>
 Most home users can use the build-in 
 features of their email application to send and
-get email. They do not need this module.</P>")+
+receive e-mail. They do not need this module.</P>
+")+
           // Translators: start dialog help, part 4 of 4
-          _("<P>You will need Postfix only if you want to store
-the email on your local system, or in some other special cases.</P>");
+          _("<P>You need Postfix only to store
+the e-mail on your local system, or for some special cases.</P>
+");
 }
 
 define string StartDialog (string type, boolean first ) ``{
@@ -66,9 +68,9 @@ define string StartDialog (string type, boolean first ) ``{
     y2milestone ("Mail configuration type %1", type);
 
     Wizard::SetScreenShotName ("mail-0-start");
-    string caption   =  _("Email Server Configuration");
+    string caption   =  _("E-Mail Server Configuration");
     term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
-    string status    =  _("Mail Server is not configured.")+"\n"+
+    string status    =  _("Mail server is not configured.")+"\n"+
 			_("Select configuration type according your personal needs");
     if( first )
     {
@@ -78,13 +80,13 @@ define string StartDialog (string type, boolean first ) ``{
     {
 	    if( type == "standard" )
 	    {
-		status = _("The running Mail Server configuration is based on type \"Standard\".")+ "\n"+
-			 _("It's possible to change to \"Advanced\", but this will overwrite all existing settings.");
+		status = _("The running mail server configuration is based on the <b>Standard</b> type.")+ "\n"+
+			 _("It is possible to change to <b>Advanced</b>. This will overwrite all existing settings.");
 	    }
 	    else if( type == "advanced" )
 	    {
-		status = _("The running Mail Server configuration is based on type \"Advanced\".")+"\n"+
-			 _("It's possible to change to \"Standard\", but this will overwrite all existing settings.");
+		status = _("The running mail server configuration is based on the <b>Advanced</b> type.")+"\n"+
+			 _("It is possible to change to <b>Standard</b>. This will overwrite all existing settings.");
 	    }
     }
     term   contents =
@@ -230,7 +232,7 @@ map cmdline = $[
     "actions"   : $[
         "setup" : $[
             /* Commandline command help */
-            "help"      : _("Setup the Mail Server Configuration"),
+            "help"      : _("Set Up the Mail Server Configuration"),
             "handler"   : Setup,
         ],
     ],

@@ -24,7 +24,7 @@ Some of the mail server settings will be stored in the LDAP repository, too.<br>
 "),
 
     /* Setup dialog help 1/1 */
-    "setup" : _("<p><b><big>Setup Mail Server Configuration</big></b><br>
+    "setup" : _("<p><b><big>Set Up Mail Server Configuration</big></b><br>
 Please wait...<br></p>
 ") ,
     /* Read dialog help 1/2 */

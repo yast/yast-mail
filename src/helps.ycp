@@ -80,8 +80,9 @@ to install.</p>");
 mails will not be sent immediately but rather after invoking
 <b>sendmail&nbsp;-q</b>.</p>
 ") +
-_("<p>Choosing <b>No connection</b> the mail server will be started 
-but only local mail transport is possible. The MTA listens on localhost.</p>");
+_("<p>If choosing <b>No Connection</b>, the mail server will be started.
+However, only local mail transport is possible. The MTA listens to the localhost.</p>
+");
 	return s;
     }
 

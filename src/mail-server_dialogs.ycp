@@ -47,26 +47,26 @@ define any CheckLDAPDialog ()
 	setup_ldap_server = true;
 	ca_mgm		  = true;
 	conf_ldap_server  = true;
-	comment = _("Your computer is not configured as LDAP-client.") + "<br>" +
-		  _("We suggest to setup a local LDAP-server for the mail server.") + "<br>" +
-		  _("To secure your system we suggest to create certificates for the LDAP and Mail Server.") + "<br>";
+	comment = _("Your computer is not configured as an LDAP client.") + "<br>" +
+		  _("We suggest to set up a local LDAP server for the mail server.") + "<br>" +
+		  _("Create certificates for the LDAP and mail server in order to secure your system.") + "<br>";
     }
     else
     { //The computer is configured as LDAP-Client
 	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" )
 	{ // The LDAP-Server is local
-	  comment = _("Your computer is configured as LDAP-client and the LDAP-Server is local.") + "<br>" +
-		  _("We suggest to adapt the LDAP-server configuration for the mail server.") + "<br>" +
-		  _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
+	  comment = _("Your computer is configured as an LDAP client and the LDAP server is local.") + "<br>" +
+		  _("We suggest to adapt the LDAP server configuration for the mail server.") + "<br>" +
+		  _("For this reason you have to know the password of the LDAP administrator account:") + "<br>" +
 		  "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>";
 	}
 	else
 	{ // The LDAP-Server is not local
-	   comment =  _("Your computer is configured as LDAP-client and the LDAP-Server is not local.") + "<br>" +
-		   _("We suggest to configure the LDAP-server for the mail server.") + "<br>" +
-		   _("For this reason you have to know the password of the LDAP-administrator account:") + "<br>" +
+	   comment =  _("Your computer is configured as LDAP client and the LDAP server is not local.") + "<br>" +
+		   _("We suggest to configure the LDAP server for the mail server.") + "<br>" +
+		   _("For this reason you have to know the password of the LDAP administrator account:") + "<br>" +
 		   "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
-		   _("Furthermore the LDAP-Server have to contain the <B>suse-mailserver.schema</B> and the correspondig index entries.");
+		   _("Furthermore, the LDAP server has to contain the <b>suse-mailserver.schema</b> and the corresponding index entries.");
 	}
     }
 
@@ -77,11 +77,11 @@ define any CheckLDAPDialog ()
 		`VSpacing(0.2),
 		`RichText(comment),
 		`VSpacing(0.2),
-		`Left(`CheckBox(`id(`setup_ldap_server),_("Setup an local LDAP-Server."), setup_ldap_server)),
+		`Left(`CheckBox(`id(`setup_ldap_server),_("Set up a local LDAP server."), setup_ldap_server)),
 		`VSpacing(0.2),
 		`Left(`CheckBox(`id(`ca_mgm),           _("Create certificates."), ca_mgm)),
 		`VSpacing(0.2),
-		`Left(`CheckBox(`id(`conf_ldap_server), _("Configure dedicated LDAP-Server."), conf_ldap_server)),
+		`Left(`CheckBox(`id(`conf_ldap_server), _("Configure dedicated LDAP server."), conf_ldap_server)),
 		`HBox (
 			`PushButton (`id (`abort),Label::AbortButton()),
 			`PushButton (`id (`next),Label::NextButton())
@@ -156,7 +156,7 @@ define any AuthorizingDialog ()
     if(LDAPSettings["bind_dn"]:"" == "" )
     {
         string ERROR = _("You must configure LDAP to use the mail server.") +
-		"\n" + _("Now we will start the LDAP configuration.");
+		"\n" + _(" The LDAP configuration starts now.");
 	if(Popup::YesNo(ERROR))
 	{
 	    return `ldapsetup;
