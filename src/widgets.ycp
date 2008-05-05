@@ -231,7 +231,7 @@ define boolean Validate_outgoing_mail_server(symbol id) ``{
     {
         oms_no_brackets = regexpmatch (oms, ".*:.*") ?  regexpsub (oms, "(.*):.*", "\\1") : oms;
     }
-
+y2milestone("outgoing: %1",oms_no_brackets);
     if (oms_no_brackets != "" &&
 	! Address::Check (oms_no_brackets)
 	||
