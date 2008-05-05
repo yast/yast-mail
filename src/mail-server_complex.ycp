@@ -52,18 +52,18 @@ symbol SetupDialog() {
             /* Progress stage 1/3 */
             _("Read LDAP settings"),
             /* Progress stage 2/3 */
-            _("Choose LDAP/CA settings"),
+            _("Choose LDAP and CA settings"),
             /* Progress stage 3/3 */
-            _("Set up/Configure LDAP server and CA managemant")
+            _("Configure LDAP server and CA managemant")
         ], [
             /* Progress stage 0/7 */
             _("Reading packages..."),
             /* Progress stage 1/3 */
             _("Reading LDAP settings..."),
             /* Progress stage 2/3 */
-            _("Choosing LDAP/CA settings..."),
+            _("Choosing LDAP and CA settings..."),
             /* Progress stage 3/3 */
-            _("Seting up /Configuring LDAP server and CA managemant..."),
+            _("Configuring LDAP server and CA managemant..."),
             /* Progress finished */
             _("Finished")
         ]
@@ -104,7 +104,7 @@ symbol ReadDialog()
 		Label::WarningMsg(),
 		_("You have configured your MTA without LDAP support.<br>") +
 		_("This modul will configure your MTA with LDAP support.<br>")  +
-		_("This will corrupt your actual configuration."),
+		_("This will corrupt your current configuration."),
 		80, 10,
 		Label::ContinueButton(),
 		Label::CancelButton(),

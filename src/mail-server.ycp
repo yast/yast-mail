@@ -59,7 +59,7 @@ if( SCR::Read (.sysconfig.mail.MAIL_CREATE_CONFIG)== "yes" )
 		Label::WarningMsg(),
 		_("You have configured your MTA without LDAP support.<br>") +
 		_("This modul will configure your MTA with LDAP support.<br>")  +
-		_("This will corrupt your actual configuration."),
+		_("This will corrupt your current configuration."),
 		80, 10,
 		Label::ContinueButton(),
 		Label::CancelButton(),
