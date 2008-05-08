@@ -1000,7 +1000,7 @@ define symbol OutgoingAuthOptions() ``{
 	    }
 
 	    // validity checks: reuse fetchmail widgets
-	    if (Validate_fm_server (`server) &&
+	    if (Validate_outgoing_mail_server (`server) &&
 		Validate_fm_remote_user (`user))
 	    {
 		break;

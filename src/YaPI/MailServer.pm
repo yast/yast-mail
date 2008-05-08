@@ -2605,12 +2605,11 @@ sub AutoPackages {
 
 =item *
 
-C<boolean = ResetMailServer($AdminPassword,$LDAPMap)>
+C<boolean = ResetMailServer($AdminPassword)>
 
 Funktion to reset the mail server configuration:
 Needed Parameters are:
    $AdminPassword the Adminstrator Psssword
-   $LDAPMap the LDAP map returned by ReadLDAPDefaults
 
    Sets Maximum Mail Size to 10MB
    Sets Sending Mail Type to DNS
@@ -2623,11 +2622,11 @@ Needed Parameters are:
       masquerade_exceptions
 
 =cut
-BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string", ["map", "string","any"]]; }
+BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string"]; }
 sub ResetMailServer {
     my $self            = shift;
     my $AdminPassword   = shift;
-    my $ldapMap         = shift;
+    my $ldapMap         = $self->ReadLDAPDefaults($AdminPassword);
     my $check_postfix = 'if [ -z "$(id postfix | grep -E \'groups=.*mail\')" ]; then
 usermod -G mail postfix
 fi';

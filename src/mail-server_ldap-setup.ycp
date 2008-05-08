@@ -18,12 +18,10 @@
 
 {
 textdomain "mail";
-import     "Ldap";
+import     "Label";
 import     "MailServerLDAP";
-import     "YaPI::MailServer";
 import     "Package";
 import     "Report";
-import     "Label";
 
     string ERROR = "";
     list args = WFM::Args();
@@ -37,6 +35,11 @@ import     "Label";
     {
 	l_to_install = add( l_to_install, "yast2-ldap-server" );
 	to_install   = to_install + "yast2-ldap-server\n";
+    }
+    if( contains(args,"setup") && !Package::Installed ( "openldap2" ) )
+    {
+	l_to_install = add( l_to_install, "openldap2" );
+	to_install   = to_install + "openldap2\n";
     }
     if( contains(args,"setup") && !Package::Installed ( "bind-utils" ) )
     {
@@ -75,11 +78,14 @@ import     "Label";
     if(contains(args,"setup") )
     {
 	WFM::CallFunction("ldap-server",[]);
-	MailServerLDAP::ConfigureLDAPServer();
     }
-    if(contains(args,"setup") )
+    if(contains(args,"conf") )
     {
-	WFM::CallFunction("ldap",[]);
+        WFM::CallFunction("ldap",[]);
+    }
+    if(contains(args,"local"))
+    {
+	MailServerLDAP::ConfigureLDAPServer();
     }
     return true;
 }

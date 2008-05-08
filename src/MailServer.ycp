@@ -137,7 +137,7 @@ global list<string> PPPCards = [];
 /**
  * Some additional parameter needed for the configuration.
  */
-global string AdminPassword = "";
+global string AdminPassword = nil;
 
 /**
  * List of the Configuration Modules
@@ -302,6 +302,13 @@ global boolean CheckPackages()
     {
 	l_to_install = add( l_to_install, "yast2-mail-plugins" );
 	to_install   = to_install + "yast2-mail-plugins\n";
+    }
+    if(!amavis_installed)
+    {
+        l_to_install = add( l_to_install, "amavisd-new" );
+        to_install   = to_install + "amavisd-new\n";
+        l_to_install = add( l_to_install, "clamav" );
+        to_install   = to_install + "clamav\n";
     }
     if(to_install != "")
     {
