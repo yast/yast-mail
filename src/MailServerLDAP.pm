@@ -36,65 +36,59 @@ YaST::YCP::Import ("Service");
 BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", "any"];}
 sub ConfigureLDAPServer()
 {
-	# don't configure if using eDirectory server
-	Ldap->CheckNDS ();
-	if (! Ldap->nds())
-	{
-	    Ldap->Read();
-	    my $ldapMap = Ldap->Export();
-	    # Now we configure the LDAP-Server to be able store the mail server configuration
-	    my $schemas = YaPI::LdapServer->ReadSchemaIncludeList();
-	    my $SCHEMA  = join "",@{$schemas};
-	    if( $SCHEMA !~ /dnszone.schema/ )
-	    {
-		push @{$schemas},'/etc/openldap/schema/dnszone.schema';
-	    }
-	    if( $SCHEMA !~ /suse-mailserver.schema/ )
-	    {
-		push @{$schemas},'/etc/openldap/schema/suse-mailserver.schema';
-		YaPI::LdapServer->WriteSchemaIncludeList($schemas);
-	    }
-	    my $indices = YaPI::LdapServer->ReadIndex($ldapMap->{ldap_domain});
-	    my $SuSEMailClient = 0;
-	    my $SuSEMailDomainMasquerading = 0;
-	    my $suseTLSPerSitePeer= 0;
-	    foreach my $index (@{$indices})
-	    {
-	        if( $index->{attr} eq "SuSEMailClient,SUSEMailAcceptAddress,zoneName")
-	        {
-	    	$SuSEMailClient = 1;
-	        }
-	        if( $index->{attr} eq "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType")
-	        {
-	    	$SuSEMailDomainMasquerading = 1;
-	        }
-	        if( $index->{attr} eq "suseTLSPerSitePeer,SuSEMailTransportDestination")
-	        {
-	    	$suseTLSPerSitePeer = 1;
-	        }
-	    }
-	    if(!$SuSEMailClient)
-	    {
-	        YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-	    			       { "attr"  => "SuSEMailClient,SUSEMailAcceptAddress,zoneName",
-	    				 "param" => "eq" }
-	    			       );
-	      }
-	    if(!$SuSEMailDomainMasquerading)
-	    {
-	        YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-	    			       { "attr"  => "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType",
-	    				 "param" => "eq" }
-	    			       );
-	      }
-	    if(!$suseTLSPerSitePeer)
-	    {
-	        YaPI::LdapServer->AddIndex($ldapMap->{ldap_domain},
-	    			       { "attr"  => "suseTLSPerSitePeer,SuSEMailTransportDestination",
-	    				 "param" => "eq" }
-	    			       );
-	    }
-	    YaPI::LdapServer->RecreateIndex($ldapMap->{ldap_domain});
-	    Service->Restart("ldap");
-	}
+    my $ldapMap = YaPI::LdapServer->ReadDatabaseList();
+    # Now we configure the LDAP-Server to be able store the mail server configuration
+    my $schemas = YaPI::LdapServer->ReadSchemaIncludeList();
+    my $SCHEMA  = join "",@{$schemas};
+    if( $SCHEMA !~ /dnszone.schema/ )
+    {
+        push @{$schemas},'/etc/openldap/schema/dnszone.schema';
+    }
+    if( $SCHEMA !~ /suse-mailserver.schema/ )
+    {
+        push @{$schemas},'/etc/openldap/schema/suse-mailserver.schema';
+        YaPI::LdapServer->WriteSchemaIncludeList($schemas);
+    }
+    my $indices = YaPI::LdapServer->ReadIndex($ldapMap->[0]);
+    my $SuSEMailClient = 0;
+    my $SuSEMailDomainMasquerading = 0;
+    my $suseTLSPerSitePeer= 0;
+    foreach my $index (@{$indices})
+    {
+        if( $index->{attr} eq "SuSEMailClient,SUSEMailAcceptAddress,zoneName")
+        {
+    	$SuSEMailClient = 1;
+        }
+        if( $index->{attr} eq "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType")
+        {
+    	$SuSEMailDomainMasquerading = 1;
+        }
+        if( $index->{attr} eq "suseTLSPerSitePeer,SuSEMailTransportDestination")
+        {
+    	$suseTLSPerSitePeer = 1;
+        }
+    }
+    if(!$SuSEMailClient)
+    {
+        YaPI::LdapServer->AddIndex($ldapMap->[0],
+    			       { "attr"  => "SuSEMailClient,SUSEMailAcceptAddress,zoneName",
+    				 "param" => "eq" }
+    			       );
+      }
+    if(!$SuSEMailDomainMasquerading)
+    {
+        YaPI::LdapServer->AddIndex($ldapMap->[0],
+    			       { "attr"  => "SuSEMailDomainMasquerading,relativeDomainName,suseMailDomainType",
+    				 "param" => "eq" }
+    			       );
+      }
+    if(!$suseTLSPerSitePeer)
+    {
+        YaPI::LdapServer->AddIndex($ldapMap->[0],
+    			       { "attr"  => "suseTLSPerSitePeer,SuSEMailTransportDestination",
+    				 "param" => "eq" }
+    			       );
+    }
+    YaPI::LdapServer->RecreateIndex($ldapMap->[0]);
+    Service->Restart("ldap");
 }
