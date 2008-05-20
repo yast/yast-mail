@@ -71,7 +71,7 @@ define string StartDialog (string type, boolean first ) ``{
     string caption   =  _("E-Mail Server Configuration");
     term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
     string status    =  _("Mail server is not configured.")+"\n"+
-			_("Select configuration type according your personal needs");
+			_("Select configuration type according your personal needs")+
 			_("If you want to use <b>sendmail</b> as MTA you have to use <b>Standard</b> configuration.");
     if( first )
     {
