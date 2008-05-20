@@ -33,10 +33,10 @@ our %TYPEINFO;
 YaST::YCP::Import ("YaPI::LdapServer");
 YaST::YCP::Import ("Service");
 
-BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", "any"];}
+BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", [ "map" , "string", "any" ] ];}
 sub ConfigureLDAPServer()
 {
-    my $ldapMap = YaPI::LdapServer->ReadDatabaseList();
+    my $ldapMap  = YaPI::LdapServer->ReadDatabaseList();
     # Now we configure the LDAP-Server to be able store the mail server configuration
     my $schemas = YaPI::LdapServer->ReadSchemaIncludeList();
     my $SCHEMA  = join "",@{$schemas};
@@ -91,4 +91,5 @@ sub ConfigureLDAPServer()
     }
     YaPI::LdapServer->RecreateIndex($ldapMap->[0]);
     Service->Restart("ldap");
+    return YaPI::LdapServer->ReadDatabase($ldapMap->[0]);
 }
