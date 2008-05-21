@@ -7,15 +7,15 @@ Fri May 16 16:40:22 CEST 2008 - jsrain@suse.cz
 -------------------------------------------------------------------
 Thu May  8 12:42:14 CEST 2008 - varkoly@suse.de
 
-- #337365 - YaST2 Mail (Mailserver) Module is not working
-- #278535 - YaST2 mail dialog does not offer help on the "No connection" setting
+- (bnc#337365) - YaST2 Mail (Mailserver) Module is not working
+- (bnc#278535) - YaST2 mail dialog does not offer help on the "No connection" setting
 - bugfix: it was not possible to connect to an existen LDAP-server during
   the configuration
 - bugfix: check if bind-utils is installed. We need the dnsZone.schema
   file
-- #337398 - Long time bug in yast mail transfer agent module regarding
+- (bnc#337398) - Long time bug in yast mail transfer agent module regarding
   relayhost port setting
-- #335524 Advanced Mail Transfer Agent cannot access LDAP server
+- (bnc#335524) Advanced Mail Transfer Agent cannot access LDAP server
 - fixing the return values of wizard elements
 - 2.16.3
 
