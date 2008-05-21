@@ -330,7 +330,7 @@ term GlobalSettingsDialog()
 				      `VBox(
 					    `HBox(
 						  `Left(`RadioButton(`id("DNS"),       `opt (`notify), _("Direct Delivery (DNS)"), is_DNS)),
-						  `Left(`RadioButton(`id("NONE"),      `opt (`notify), _("No Outgoing Mail"), is_NONE))
+						  `Left(`RadioButton(`id("NOOUT"),      `opt (`notify), _("No Outgoing Mail"), is_NONE))
 						  ),
 					    `Left(`RadioButton(`id("relayhost"), `opt (`notify), _("Use Relay Host"), is_RELAY)),
 					    relayhost
@@ -1344,6 +1344,11 @@ any ComplexDialog()
              MailServer::GlobalSettings["MaximumMailSize"]    = "0";
            }
            MailServer::GlobalSettings["Banner"]             = UI::QueryWidget(`id(`Banner), `Value);
+	   string SMT = (string)UI::QueryWidget(`id(`SendingMailType), `CurrentButton);
+	   if( SMT == "NOOUT" )
+	   {
+	       SMT = "NONE";
+	   }
            MailServer::GlobalSettings["SendingMail","Type"] = UI::QueryWidget(`id(`SendingMailType), `CurrentButton);
            MailServer::GlobalSettings["SendingMail","TLS"]  = UI::QueryWidget(`id(`SendingMailTLS), `CurrentButton);
            MailServer::GlobalSettings["SendingMail","RelayHost","Name"]     = "";
@@ -1636,10 +1641,10 @@ y2milestone("FocusedContent %1",FocusedContent);
 	    MailServer::MailLocalDelivery["Security"] = "0";
 	    MailServer::MailRelaying["SMTPDTLSMode"]  = "none";
 	  }
-	  if (focus_changed)
+/*	  if (focus_changed)
 	  {
 	      UI::SetFocus (`id (`wizardTree));
-	  }
+	  } */
         }
    }
    UI::CloseDialog();

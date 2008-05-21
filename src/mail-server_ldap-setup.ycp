@@ -86,8 +86,7 @@ import     "Report";
     if(contains(args,"local"))
     {
 	map<string,any> LDB = MailServerLDAP::ConfigureLDAPServer();
-        SCR::Write(.sysconfig.ldap.BASE_CONFIG_DN,LDB["suffix"]);
-        SCR::Write(.sysconfig.ldap.BIND_DN,LDB["rootdn"]:"");
+        SCR::Write(.sysconfig.ldap.BASE_CONFIG_DN,LDB["suffix"]:"");
         SCR::Write(.sysconfig.ldap.BIND_DN,LDB["rootdn"]:"");
         SCR::Write(.sysconfig.ldap,nil);
     }
