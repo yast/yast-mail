@@ -43,7 +43,8 @@ define any CheckLDAPDialog ()
     map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
     list args = [];
     y2milestone(" LDAPSettings %1", LDAPSettings);
-    if( ! LDAPSettings["start_ldap"]:false )
+    //if( ! LDAPSettings["start_ldap"]:false )
+    if( LDAPSettings["bind_dn"]:"" == "" )
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
 	ca_mgm		  = true;
