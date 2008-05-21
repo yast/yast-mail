@@ -3,6 +3,9 @@ Fri May 16 16:40:22 CEST 2008 - jsrain@suse.cz
 
 - added categories Settings and System into desktop file
   (bnc #382778)
+- fixing some GUI bugs
+- fixing ldap client detection
+- (bnc#389144) - LDAP Client crash 
 
 -------------------------------------------------------------------
 Thu May  8 12:42:14 CEST 2008 - varkoly@suse.de
