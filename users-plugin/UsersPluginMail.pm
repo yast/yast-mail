@@ -754,7 +754,7 @@ sub cond_IMAP_OP {
 	    #return undef;
 	}
 	
-	$ret = $imap->setacl($fname, $imapadm, "lrswipcda");
+	$ret = $imap->setacl($fname, $imapadm, "lrswipkxtea");
 	if($$ret{Status} ne "ok") {
 	    y2internal("setacl failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
 	    $errtxt .= "setacl failed: Serverresponse:$$ret{Status} => $$ret{Text}\n";
@@ -770,7 +770,7 @@ sub cond_IMAP_OP {
 	
         if( $config->{'what'} eq 'group' ) {
             # Make acl for the group member
-            $ret = $imap->setacl($fname, 'group:'.$data->{cn}, "lrswipcd");
+            $ret = $imap->setacl($fname, 'group:'.$data->{cn}, "lrswipkxtea");
             if($$ret{Status} ne "ok") {
                 y2internal("setacl for group failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
                 $errtxt .= "setacl for group failed: Serverresponse:$$ret{Status} => $$ret{Text}\n";
@@ -848,7 +848,7 @@ sub cond_IMAP_OP {
                     #return undef;
                 }
                 
-                $ret = $imap->setacl($fname, $imapadm, "lrswipcda");
+                $ret = $imap->setacl($fname, $imapadm, "lrswipkxtea");
                 if($$ret{Status} ne "ok") {
                     y2internal("setacl failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
                     $errtxt .= "setacl failed: Serverresponse:$$ret{Status} => $$ret{Text}\n";
@@ -864,7 +864,7 @@ sub cond_IMAP_OP {
                 
                 if( $config->{'what'} eq 'group' ) {
                     # Make acl for the group member
-                    $ret = $imap->setacl($fname, 'group:'.$data->{cn}, "lrswipcd");
+                    $ret = $imap->setacl($fname, 'group:'.$data->{cn}, "lrswipkxtea");
                     if($$ret{Status} ne "ok") {
                         y2internal("setacl for group failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
                         $errtxt .= "setacl for group failed: Serverresponse:$$ret{Status} => $$ret{Text}\n";
