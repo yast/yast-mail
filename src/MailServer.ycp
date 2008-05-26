@@ -649,14 +649,14 @@ global boolean Write() {
        SCR::Write(.target.passwd.cyrus, crypted);
 
       list Values = SCR::Dir(.etc.imapd_conf);
+      SCR::Write(.etc.imapd_conf.allowplaintext,"yes");
       if(!contains(Values,"unixhierarchysep")) {
 	SCR::Write(.etc.imapd_conf.unixhierarchysep,"yes");
-	SCR::Write(.etc.imapd_conf,nil);
       }
       if(!contains(Values,"allowplainwithouttls")) {
 	SCR::Write(.etc.imapd_conf.allowplainwithouttls,"yes");
-	SCR::Write(.etc.imapd_conf,nil);
       }
+      SCR::Write(.etc.imapd_conf,nil);
       if(Service::Status("cyrus") > 0) {
          Service::Start("cyrus");
          Service::Enable("cyrus");
