@@ -231,9 +231,9 @@
                                               _("E-Mail Addresses                        ")),
                                           emailTermList)));
         editEmail = add (editEmail, `HBox(
-                                        `TextEntry (`id (`id_emailname ), " " ),
-                                        `VBox(`Label(" "),`Label("@")),
-                                        `ComboBox(`id(`domain), "", DomainList)
+                                        `HWeight(10, `TextEntry (`id (`id_emailname ), " " )),
+                                        `HWeight(1,  `VBox(`Label(" "),`Label("@"))),
+                                        `HWeight(10, `ComboBox(`id(`domain), " ", DomainList))
                                     )
                         );
 
