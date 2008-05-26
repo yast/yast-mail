@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Mon May 26 19:22:13 CEST 2008 - varkoly@suse.de
+
+- adapt the new acls
+- allow plaitext login method for cyrus imapd
+- (bnc#394302) - YaST User Module Mail-Setting
+ 
+
+-------------------------------------------------------------------
 Fri May 21 14:40:22 CEST 2008 - varkoly@suse.de
 
 - fixing some GUI bugs
