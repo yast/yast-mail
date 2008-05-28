@@ -669,7 +669,7 @@ sub cond_IMAP_OP {
     }
     
     if ( $data->{'suseimapquota'} ) {
-        $imapquota = $data->{'imapquota'};
+        $imapquota = $data->{'suseimapquota'};
     }
 
     # we need to ensure, that imapadmpw == rootdnpw!
