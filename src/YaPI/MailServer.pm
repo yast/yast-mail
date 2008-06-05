@@ -1327,16 +1327,16 @@ sub WriteMailPrevention {
              SCR->Execute('.mail.postfix.mastercf.modifyService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '100',
-		  'options' => { 'content_filter' => 'smtp:[localhost]:10024' } } );
+		  'maxproc' => '30',
+		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	else
 	{
              SCR->Execute('.mail.postfix.mastercf.addService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '100',
-		  'options' => { 'content_filter' => 'smtp:[localhost]:10024' } } );
+		  'maxproc' => '30',
+		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
 				 { 'service' => 'smtps', 'command' => 'smtpd' });
@@ -2771,6 +2771,7 @@ sub activate_virus_scanner {
    my $aconf = "/etc/amavisd.conf";
    my $cconf = "/etc/clamd.conf";
    my $clamsock = '/var/lib/clamav/clamd-socket';
+   my @CONF = ();
    
    if( ! open(IN,$aconf) )
    {
@@ -2780,8 +2781,10 @@ sub activate_virus_scanner {
    close(IN);
    
    my $isclam = 0;
+   my $ismax  = 0;
    foreach my $l ( @ACONF )
    {
+	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = 30/;
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
 	{
@@ -2793,12 +2796,17 @@ sub activate_virus_scanner {
    		$l =~ s/^(.*\").*(\".*)$/$1$clamsock$2/;
             }
    	}
+	push @CONF, $l;
+   }
+   if( !$ismax )
+   {
+       push @CONF, '$max_servers = 30;'
    }
    if( ! open(OUT,">$aconf.new") )
    {
        return "Error: $!";
    }
-   print OUT @ACONF;
+   print OUT @CONF;
    close(OUT);
    
    if( ! open(IN,$cconf) )
@@ -2807,18 +2815,20 @@ sub activate_virus_scanner {
    }
    my @CCONF = <IN>;
    close(IN);
+   @CONF = ();
    
    foreach my $l ( @CCONF )
    {
    	$l = "LocalSocket $clamsock\n" if $l =~ /LocalSocket/;
    	$l =~ s/(.*)/#$1/ if $l =~ /^TCPSocket/;
    	$l =~ s/(.*)/#$1/ if $l =~ /^TCPAddr/;
+	push @CONF, $l;
    }
    if( ! open(OUT,">$cconf.new") )
    {
        return "Error: $!";
    }
-   print OUT @CCONF;
+   print OUT @CONF;
    close(OUT);
    copy($aconf,"$aconf.bak");
    copy($cconf,"$cconf.bak");
