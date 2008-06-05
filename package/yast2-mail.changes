@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Jun  5 14:35:14 CEST 2008 - varkoly@suse.de
+
+- the variable $max_servers in /etc/amavisd.conf must be equal to the max
+  processes in /etc/postfix/master.cf for amavisd.
+- typo in UsersPlugin 
+
+-------------------------------------------------------------------
 Mon May 26 19:22:13 CEST 2008 - varkoly@suse.de
 
 - adapt the new acls
