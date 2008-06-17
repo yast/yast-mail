@@ -54,7 +54,7 @@ symbol SetupDialog() {
             /* Progress stage 2/3 */
             _("Choose LDAP and CA settings"),
             /* Progress stage 3/3 */
-            _("Configure LDAP server and CA managemant")
+            _("Configure LDAP server and CA management")
         ], [
             /* Progress stage 0/7 */
             _("Reading packages..."),
@@ -63,7 +63,7 @@ symbol SetupDialog() {
             /* Progress stage 2/3 */
             _("Choosing LDAP and CA settings..."),
             /* Progress stage 3/3 */
-            _("Configuring LDAP server and CA managemant..."),
+            _("Configuring LDAP server and CA management..."),
             /* Progress finished */
             _("Finished")
         ]

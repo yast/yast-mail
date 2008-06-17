@@ -104,7 +104,7 @@ define any CheckLDAPDialog ()
     }
 
     if( ca_mgm )
-    { // Now we setup the ca managemant
+    { // Now we setup the ca management
 	args = add(args, "ca_mgm");
     }
     Progress::NextStage();
