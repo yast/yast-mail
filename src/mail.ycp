@@ -52,8 +52,8 @@ define string StartDialogHelp () ``{
           // Translators: start dialog help, part 2 of 4
           _("<P>This module will configure and start Postfix and, if necessary, the Cyrus IMAP server.</P>")+
           // Translators: start dialog help, part 3 of 4
-          _("<p><b>Warning:</b><p>
-Most home users can use the build-in 
+          _("<P><B>Warning:</B></P>
+<P>Most home users can use the build-in 
 features of their email application to send and
 receive e-mail. They do not need this module.</P>
 ")+
