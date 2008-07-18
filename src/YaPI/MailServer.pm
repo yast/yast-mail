@@ -37,6 +37,7 @@ use YaPI;
 
 use POSIX;     # Needed for setlocale()
 use Data::Dumper;
+use Net::IMAP;
 
 textdomain("mail");
 our %TYPEINFO;
@@ -53,6 +54,11 @@ YaST::YCP::Import ("NetworkInterfaces");
 ##
  #
 my $proposal_valid = 0;
+
+##
+ # Some global variables for cyrus-imapd
+my $imapadm    = "cyrus";
+my $imaphost   = "localhost";
 
 ##
  # Write only, used during autoinstallation.
@@ -1041,7 +1047,8 @@ C<$MailPrevention = ReadMailPrevention($adminpwd)>
            'BasicProtection'       => 'hard',
            'RBLList'               => [],
            'AccessList'            => [],
-           'VirusScanning'         => 1
+           'VirusScanning'         => 1,
+           'SpamLearning'          => 1
                           );
 
    AccessList is a pointer to an array of %AccessEntry hashes.
@@ -1086,7 +1093,8 @@ sub ReadMailPrevention {
 			       'BasicProtection'            => 'hard',
 			       'RBLList'                    => [],
 			       'AccessList'                 => [],
-			       'VirusScanning'              => YaST::YCP::Boolean(0)
+			       'VirusScanning'              => YaST::YCP::Boolean(0),
+			       'SpamLearning'               => YaST::YCP::Boolean(0)
                           );
 
     # Make LDAP Connection 
@@ -1161,6 +1169,19 @@ sub ReadMailPrevention {
 	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[localhost]:10024' && $vscan )
 	{
 	    $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
+	}
+    }
+    # make IMAP connection
+    my $imap = new Net::IMAP($imaphost, Debug => 0);
+    if( $imap )
+    {
+        $ret = $imap->login($imapadm, $AdminPassword);
+	if($$ret{Status} eq "ok") {
+	    $ret = $imap->select('NEWSPAM'); 
+	    if( $ret->{Status} eq 'ok' )
+	    {
+	        $MailPrevention{'SpamLearning'} = YaST::YCP::Boolean(1);
+	    }
 	}
     }
     
@@ -1391,6 +1412,24 @@ sub WriteMailPrevention {
     SCR->Write('.mail.postfix.main',undef);
     SCR->Write('.mail.postfix.mastercf',undef);
 
+    # make IMAP connection
+    my $imap = new Net::IMAP($imaphost, Debug => 0);
+    if( $imap )
+    {
+        my $ret = $imap->login($imapadm, $AdminPassword);
+	if($$ret{Status} eq "ok")
+	{
+    	    if( $MailPrevention->{'SpamLearning'} )
+	    {
+	        $ret = $imap->create('NewSpam'); 
+	        $ret = $imap->create('NoSpam'); 
+		$ret = $imap->setacl('NewSpam', $imapadm, "lrswipkxtea");
+		$ret = $imap->setacl('NoSpam',  $imapadm, "lrswipkxtea");
+		$ret = $imap->setacl('NewSpam', 'anyone', "lrswi");
+		$ret = $imap->setacl('NoSpam',  'anyone', "lsi");
+	    }
+	}
+    }
     return  1;
 }
 
