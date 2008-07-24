@@ -145,17 +145,17 @@
             list<term> result = [];
             integer i = 0;
 
-            if( is(data["susemailforwardaddress"]:(any)"", string)
-                && size (data["susemailforwardaddress"]:"") > 0 )
+            if( is(data["suseMailForwardAaddress"]:(any)"", string)
+                && size (data["suseMailForwardAaddress"]:"") > 0 )
             {
                     result = [`item (`id (i),
-                                     data["susemailforwardaddress"]:"")];
+                                     data["suseMailForwardAaddress"]:"")];
                     // transforming to list
-                    data["susemailforwardaddress"] = [data["susemailforwardaddress"]:""];
+                    data["suseMailForwardAaddress"] = [data["suseMailForwardAaddress"]:""];
             }
-            else if ( is(data["susemailforwardaddress"]:(any)[], list) )
+            else if ( is(data["suseMailForwardAaddress"]:(any)[], list) )
             {
-                    foreach (string element, data["susemailforwardaddress"]:[], ``{
+                    foreach (string element, data["suseMailForwardAaddress"]:[], ``{
                         result = add (result, `item (`id (i), element));
                         i = i + 1;
                     });
@@ -169,16 +169,16 @@
         string what    = config["what"]:"user";
         string action  = data["what"]:"";
 
-        if( data["susemailcommand"]:"" != "" ) {
+        if( data["suseMailCommand"]:"" != "" ) {
             sharedfolder = true;
         }
-        if(  data["susedeliverytomember"]:"no" == "yes" ) {
+        if(  data["suseDeliveryToMember"]:"no" == "yes" ) {
             deliverytomember = true;
 	    sharedfolder     = false;
         }
 
         map<string, any> tmp_data        = $[];
-        list<string> object_class = (list<string>)sort (data["objectclass"]:[]);
+        list<string> object_class = (list<string>)sort (data["objectClass"]:[]);
 
         // if this plugin wasn't present in default plugin set, we have to call
         // BeforeAdd/BeforeEdit e.g. to get object class!
@@ -188,8 +188,8 @@
                 data = UsersPluginMail::AddBefore (config, data);
             else if (action == "edit_user" || action == "edit_group")
                 data = UsersPluginMail::EditBefore (config, data);
-            object_class = (list<string>)sort (data["objectclass"]:[]);
-            tmp_data["objectclass"]        = object_class;
+            object_class = (list<string>)sort (data["objectClass"]:[]);
+            tmp_data["objectClass"]        = object_class;
         }
 
         // helptext 1/3
@@ -233,10 +233,10 @@
 
         term    imap     = `VBox();
         term    shared   = `VBox();
-        integer intimapquota = -1;
-        if (haskey (data, "imapquota") && data["imapquota"]:"10000" != nil)
+        integer intimapQuota = -1;
+        if (haskey (data, "imapQuota") && data["imapQuota"]:"10000" != nil)
         {
-            intimapquota = tointeger ((string) data["imapquota"]:"-1" );
+            intimapQuota = tointeger ((string) data["imapQuota"]:"-1" );
         }
         shared = `Frame ( _("Delivery of group Mails"),
                    `VBox(
@@ -253,12 +253,12 @@
              imap   = `Frame ( _("IMAP Quota"),
                         `VBox(
                                 `Left(`CheckBox( `id(`sharedfolder),      `opt(`notify), _("Enable Shared Folder"), sharedfolder)),
-                                `Left(`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"),    intimapquota >= 0)),
+                                `Left(`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"),    intimapQuota >= 0)),
                                 `HBox(
-                                      `IntField (`id(`imapquota), _("in kByte"), 1, 10000000, intimapquota >= 0 ? intimapquota : 10000),
+                                      `IntField (`id(`imapQuota), _("in kByte"), 1, 10000000, intimapQuota >= 0 ? intimapQuota : 10000),
                                       `HStretch()
                                       ),
-                                `Left(`Label(sformat (_("IMAP quota already in use: %1 kByte"), data["imapquotaused"]:"0" != nil ? data["imapquotaused"]:"0":"0")))
+                                `Left(`Label(sformat (_("IMAP quota already in use: %1 kByte"), data["imapQuotaused"]:"0" != nil ? data["imapQuotaused"]:"0":"0")))
                         )
                 );
         }
@@ -311,17 +311,17 @@
                UI::ChangeWidget(`id(`sharedfolder),     `Enabled, true);
 	       if( sharedfolder ) {
                   UI::ChangeWidget(`id(`enableImpapquota), `Enabled, true );
-                  UI::ChangeWidget(`id(`imapquota),        `Enabled, enableImpapquota);
+                  UI::ChangeWidget(`id(`imapQuota),        `Enabled, enableImpapquota);
                } else {
                   UI::ChangeWidget(`id(`enableImpapquota), `Enabled, false );
-                  UI::ChangeWidget(`id(`imapquota),        `Enabled, false );
+                  UI::ChangeWidget(`id(`imapQuota),        `Enabled, false );
                }
             }  else {
 	       // If there is no cyrus, we have only delivery to member
 	       deliverytomember = true;
 	       UI::ChangeWidget(`id(`deliverytomember), `Value, deliverytomember);
                UI::ChangeWidget(`id(`enableImpapquota), `Enabled, false );
-               UI::ChangeWidget(`id(`imapquota),        `Enabled, false );
+               UI::ChangeWidget(`id(`imapQuota),        `Enabled, false );
 	    }
 
             ret = UI::UserInput();
@@ -334,13 +334,13 @@
                 {
                     if (check_mail_address (emailName))
                     {
-                        if (contains (data["susemailforwardaddress"]:[], emailName))
+                        if (contains (data["suseMailForwardAaddress"]:[], emailName))
                         {
                             Popup::Error(_("Entry already exists."));
                         }
                         else
                         {
-                            data["susemailforwardaddress"] = add (data["susemailforwardaddress"]:[],
+                            data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[],
                                                                  emailName);
                             UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
                             UI::ChangeWidget(`id(`id_emailname), `Value, "");
@@ -355,41 +355,41 @@
             if (ret == `deleteEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                data["susemailforwardaddress"] = remove (data["susemailforwardaddress"]:[],
+                data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[],
                                                         id);
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
             if (ret == `editEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                string oldEMAIL = (string)((list) data["susemailforwardaddress"]:[])[id]:"";
+                string oldEMAIL = (string)((list) data["suseMailForwardAaddress"]:[])[id]:"";
                 string newEMAIL = editEMAIL (oldEMAIL);
 
-                if (contains (data["susemailforwardaddress"]:[], newEMAIL))
+                if (contains (data["suseMailForwardAaddress"]:[], newEMAIL))
                 {
                     Popup::Error(_("Entry already exists."));
                 }
                 else
                 {
-                    data["susemailforwardaddress"] = remove (data["susemailforwardaddress"]:[], id);
-                    data["susemailforwardaddress"] = add (data["susemailforwardaddress"]:[], newEMAIL);
+                    data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[], id);
+                    data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[], newEMAIL);
                 }
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
             if ( ret == `next )
             {
                 if((boolean) UI::QueryWidget (`id (`deliverytomember), `Value)){
-                   data["susedeliverytomember"] = "yes";
+                   data["suseDeliveryToMember"] = "yes";
                 } else {
-                   data["susedeliverytomember"] = "no";
+                   data["suseDeliveryToMember"] = "no";
                 }
 // We put it everytime into the LDAP, and the ldap filter control if it is visible
-                data["susemailcommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
+                data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
 //               if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
-//                   data["susemailcommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
+//                   data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
 //               } else {
-//                   if( data["susemailcommand"]:"" != "" ) {
-//                     data = remove (data, "susemailcommand");
+//                   if( data["suseMailCommand"]:"" != "" ) {
+//                     data = remove (data, "suseMailCommand");
 //                   }
 //               }
                 string err = UsersPluginMail::Check ( config, (map<string,any>) union (data, tmp_data));
@@ -407,20 +407,20 @@
                      data["plugins"] = add (data["plugins"]:[],
                                             "UsersPluginMail");
                  }
-                 if( size(data["susemailforwardaddress"]:[]) == 1 ) {
-                     data["susemailforwardaddress"] = ((list)data["susemailforwardaddress"]:[])[0]:"";
-                 } else if( size(data["susemailforwardaddress"]:[]) == 0 ) {
-                     remove(data,"susemailforwardaddress");
+                 if( size(data["suseMailForwardAaddress"]:[]) == 1 ) {
+                     data["suseMailForwardAaddress"] = ((list)data["suseMailForwardAaddress"]:[])[0]:"";
+                 } else if( size(data["suseMailForwardAaddress"]:[]) == 0 ) {
+                     remove(data,"suseMailForwardAaddress");
                  }
 
                  if(data["localdeliverytype"]:"local" == "cyrus" ) {
                     if ((boolean) UI::QueryWidget(`id(`enableImpapquota), `Value))
                     {
-                       data["imapquota"] = (integer) UI::QueryWidget(`id(`imapquota), `Value);
+                       data["imapQuota"] = (integer) UI::QueryWidget(`id(`imapQuota), `Value);
                     }
                     else
                     {
-                       data["imapquota"] = -1;
+                       data["imapQuota"] = -1;
                     }
                  }
                  if (data["what"]:"" == "edit_user")

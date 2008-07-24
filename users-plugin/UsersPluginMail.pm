@@ -170,7 +170,7 @@ sub PluginPresent {
     my $data      = shift;
 
     y2internal ("PluginPresent Mail called");
-    if ( grep /^suseMailRecipient$/i, @{$data->{'objectclass'}} ) {
+    if ( grep /^suseMailRecipient$/i, @{$data->{'objectClass'}} ) {
         y2milestone( "MailPlugin: Plugin Present");
         return 1;
     } else {
@@ -194,8 +194,8 @@ sub Check {
     # attribute conversion
     my @required_attrs		= ();
     my @object_classes		= ();
-    if (defined $data->{"objectclass"} && ref ($data->{"objectclass"}) eq "ARRAY") {
-	@object_classes		= @{$data->{"objectclass"}};
+    if (defined $data->{"objectClass"} && ref ($data->{"objectClass"}) eq "ARRAY") {
+	@object_classes		= @{$data->{"objectClass"}};
     }
 
     # get the attributes required for entry's object classes
@@ -269,7 +269,7 @@ sub AddBefore {
     $data->{'localdeliverytype'} = $MailLocalDelivery->{'Type'};
     if($data->{'localdeliverytype'} eq 'cyrus' ) {
         #setting default quota
-        $data->{'suseimapquota'} =  $ldapret->[0]->{'suseimapdefaultquota'}->[0];
+        $data->{'suseImapQuota'} =  $ldapret->[0]->{'suseImapDefaultQuota'}->[0];
     }
 
     # looking for the main mail domain and returns
@@ -292,15 +292,15 @@ sub Add {
    
     if( grep /^UsersPluginMail$/, @{$data->{'plugins_to_remove'}} ) {
         my @updated_oc;
-        foreach my $oc ( @{$data->{'objectclass'}} ) {
-            if ( lc($oc) ne "susemailrecipient" ) {
+        foreach my $oc ( @{$data->{'objectClass'}} ) {
+            if ( lc($oc) ne "suseMailRecipient" ) {
                 push @updated_oc, $oc;
             }
         }
-        delete( $data->{'suseimapquota'});
+        delete( $data->{'suseImapQuota'});
         delete( $data->{'imapquotaused'});
 
-        $data->{'objectclass'} = \@updated_oc;
+        $data->{'objectClass'} = \@updated_oc;
         y2debug ("Removed Mail plugin");
         y2debug ( Data::Dumper->Dump( [ $data ] ) );
         return $data;
@@ -325,7 +325,7 @@ sub EditBefore {
 
     # Only change objectclasses if they are already present (sometimes EditBefore 
     # is called with an empty $data hash)
-    if ( $data->{'objectclass'} ) {
+    if ( $data->{'objectClass'} ) {
         $data	= update_object_classes ($config, $data);
 
         my $ldapret = get_LDAP_Config();
@@ -357,7 +357,7 @@ sub Edit {
     y2internal ("Edit Mail called");
     y2debug(Dumper($data));
 
-    if ( ! $data->{'suseimapquota'} ) {
+    if ( ! $data->{'suseImapQuota'} ) {
         my $tmp_data = cond_IMAP_OP($config, $data, "getquota");
 	if( $tmp_data ) {
 		$data = $tmp_data;
@@ -366,15 +366,15 @@ sub Edit {
     # Has the plugin been removed?
     if( grep /^UsersPluginMail$/, @{$data->{'plugins_to_remove'}} ) {
         my @updated_oc;
-        foreach my $oc ( @{$data->{'objectclass'}} ) {
-            if ( lc($oc) ne "susemailrecipient" ) {
+        foreach my $oc ( @{$data->{'objectClass'}} ) {
+            if ( lc($oc) ne "suseMailRecipient" ) {
                 push @updated_oc, $oc;
             }
         }
-        delete( $data->{'suseimapquota'});
+        delete( $data->{'suseImapQuota'});
         delete( $data->{'imapquotaused'});
 
-        $data->{'objectclass'} = \@updated_oc;
+        $data->{'objectClass'} = \@updated_oc;
 
         y2milestone ("Removed Mail plugin");
         y2debug ( Data::Dumper->Dump( [ $data ] ) );
@@ -484,7 +484,7 @@ sub Write {
     elsif ( ($data->{'what'} =~ /^edit_/ ) && $self->PluginPresent($config, $data) )
     {
         # create Folder if plugin has been added
-        if ( ! grep /^suseMailRecipient$/i, @{$data->{'org_user'}->{'objectclass'}} ) {
+        if ( ! grep /^suseMailRecipient$/i, @{$data->{'org_user'}->{'objectClass'}} ) {
             y2milestone("creating INBOX");
             cond_IMAP_OP($config, $data, "add") if $action eq "edited";
             return;
@@ -520,9 +520,9 @@ sub update_object_classes {
 
     # define the object class for new user/groupa
     my @orig_object_class	= ();
-    if (defined $data->{"objectclass"} && ref $data->{"objectclass"} eq "ARRAY")
+    if (defined $data->{"objectClass"} && ref $data->{"objectClass"} eq "ARRAY")
     {
-	@orig_object_class	= @{$data->{"objectclass"}};
+	@orig_object_class	= @{$data->{"objectClass"}};
     }
     foreach my $oc (@default_object_class) {
 	if (!contains (\@orig_object_class, $oc, 1)) {
@@ -530,7 +530,7 @@ sub update_object_classes {
 	}
     }
 
-    $data->{"objectclass"}	= \@orig_object_class;
+    $data->{"objectClass"}	= \@orig_object_class;
 
     return $data;
 }
@@ -539,8 +539,8 @@ sub addRequiredMailData {
     my $config = shift;
     my $data   = shift;
 
-    if( ! contains( $data->{objectclass}, "susemailrecipient", 1) ) {
-	push @{$data->{'objectclass'}}, "susemailrecipient";
+    if( ! contains( $data->{objectClass}, "suseMailRecipient", 1) ) {
+	push @{$data->{'objectClass'}}, "suseMailRecipient";
     }
 
     if( $config->{'what'} eq 'group' ) {
@@ -553,19 +553,19 @@ sub addRequiredMailData {
        return $data;
     }
     my $mailaddress = $data->{'uid'}."\@".$data->{mainmaildomain};
-    if( defined $data->{susemailacceptaddress} ) {
-	if( ref($data->{susemailacceptaddress}) eq "ARRAY" &&
-	    ! contains( $data->{susemailacceptaddress}, $mailaddress, 1) ) {
-	    push @{$data->{'susemailacceptaddress'}}, $mailaddress;
-	} elsif ( ref($data->{susemailacceptaddress}) ne "ARRAY" &&
-		  $data->{susemailacceptaddress} ne $mailaddress ) {
-	    my $tmp = $data->{'susemailacceptaddress'};
-	    $data->{'susemailacceptaddress'} = [];
-	    push @{$data->{'susemailacceptaddress'}}, $tmp;
-	    push @{$data->{'susemailacceptaddress'}}, $mailaddress;
+    if( defined $data->{suseMailAcceptAddress} ) {
+	if( ref($data->{suseMailAcceptAddress}) eq "ARRAY" &&
+	    ! contains( $data->{suseMailAcceptAddress}, $mailaddress, 1) ) {
+	    push @{$data->{'suseMailAcceptAddress'}}, $mailaddress;
+	} elsif ( ref($data->{suseMailAcceptAddress}) ne "ARRAY" &&
+		  $data->{suseMailAcceptAddress} ne $mailaddress ) {
+	    my $tmp = $data->{'suseMailAcceptAddress'};
+	    $data->{'suseMailAcceptAddress'} = [];
+	    push @{$data->{'suseMailAcceptAddress'}}, $tmp;
+	    push @{$data->{'suseMailAcceptAddress'}}, $mailaddress;
 	}
     } else {
-	$data->{susemailacceptaddress} = $mailaddress;
+	$data->{suseMailAcceptAddress} = $mailaddress;
     }
 
     return $data;
@@ -577,7 +577,7 @@ sub get_LDAP_Config {
     # Read mail specific ldapconfig object
     my $ldapret = SCR->Read(".ldap.search", {
 	"base_dn"      => $ldapMap->{'base_config_dn'},
-	"filter"       => '(objectclass=suseMailConfiguration)',
+	"filter"       => '(objectClass=suseMailConfiguration)',
 	"scope"        => 2,
 	"not_found_ok" => 1,
 	"attrs"        => [ 'suseImapServer', 'suseImapAdmin', 'suseImapDefaultQuota' ]
@@ -598,7 +598,7 @@ sub getMainDomain {
     # read dns configuration data
     my $ret = SCR->Read(".ldap.search", {
         "base_dn"      => $ldapMap->{'base_config_dn'},
-        "filter"       => '(objectclass=suseDnsConfiguration)',
+        "filter"       => '(objectClass=suseDnsConfiguration)',
         "scope"        => 2,
         "not_found_ok" => 1,
         "attrs"        => [ 'suseDefaultBase' ]
@@ -609,7 +609,7 @@ sub getMainDomain {
         return undef;
     }
     if(@$ret > 0) {
-        $ldapMap->{'dns_config_dn'} = $ret->[0]->{'susedefaultbase'}->[0];
+        $ldapMap->{'dns_config_dn'} = $ret->[0]->{'suseDefaultBase'}->[0];
     } else {
         my $ldapERR = SCR->Read(".ldap.error");
 	$error = "DNS Setup Error: ".$ldapERR->{'code'}." : ".$ldapERR->{'msg'};
@@ -641,7 +641,7 @@ sub getMainDomain {
 	$error = "There are defined more then one main mail domain. Please fix it!";
         return undef;
     } else {
-        $domain = $ret->[0]->{'zonename'}->[0];
+        $domain = $ret->[0]->{'zoneName'}->[0];
     }
     $data->{'mainmaildomain'} = $domain;
     return $data;
@@ -663,13 +663,13 @@ sub cond_IMAP_OP {
     my $ldapret = get_LDAP_Config();
 
     if(@$ldapret > 0) {
-	$imapadm    = $ldapret->[0]->{'suseimapadmin'}->[0];
-	$imaphost   = $ldapret->[0]->{'suseimapserver'}->[0];
-	#$imapquota  = $ldapret->[0]->{'suseimapdefaultquota'}->[0];
+	$imapadm    = $ldapret->[0]->{'suseImapAdmin'}->[0];
+	$imaphost   = $ldapret->[0]->{'suseImapServer'}->[0];
+	#$imapquota  = $ldapret->[0]->{'suseImapDefaultQuota'}->[0];
     }
     
-    if ( $data->{'suseimapquota'} ) {
-        $imapquota = $data->{'suseimapquota'};
+    if ( $data->{'suseImapQuota'} ) {
+        $imapquota = $data->{'suseImapQuota'};
     }
 
     # we need to ensure, that imapadmpw == rootdnpw!
@@ -909,8 +909,8 @@ sub cond_IMAP_OP {
                     $proxy_imap->logout();
                 }
              } else {
-                 if( defined $data->{'suseimapquota'} && $data->{'suseimapquota'} > 0 ) {
-                     $ret = $imap->setquota($fname, ("STORAGE", $data->{'suseimapquota'} ) );
+                 if( defined $data->{'suseImapQuota'} && $data->{'suseImapQuota'} > 0 ) {
+                     $ret = $imap->setquota($fname, ("STORAGE", $data->{'suseImapQuota'} ) );
                      if($$ret{Status} ne "ok") {
                          y2internal("setquota failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
                          $error = "setquota failed: Serverresponse:$$ret{Status} => $$ret{Text}";
@@ -933,7 +933,7 @@ sub cond_IMAP_OP {
 	    my $self = shift;
 	    my $resp = shift;
 	    
-	    $data->{'suseimapquota'} = $resp->limit("STORAGE");
+	    $data->{'suseImapQuota'} = $resp->limit("STORAGE");
 	    $data->{'imapquotaused'} = $resp->usage("STORAGE");
 	};
 	

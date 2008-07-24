@@ -143,17 +143,17 @@
             list<term> result = [];
             integer i = 0;
 
-            if( is(data["susemailacceptaddress"]:(any)"", string)
-                && size (data["susemailacceptaddress"]:"") > 0 )
+            if( is(data["suseMailAcceptAddress"]:(any)"", string)
+                && size (data["suseMailAcceptAddress"]:"") > 0 )
             {
                     result = [`item (`id (i),
-                                     data["susemailacceptaddress"]:"")];
+                                     data["suseMailAcceptAddress"]:"")];
                     // transforming to list
-                    data["susemailacceptaddress"] = [data["susemailacceptaddress"]:""];
+                    data["suseMailAcceptAddress"] = [data["suseMailAcceptAddress"]:""];
             }
-            else if ( is(data["susemailacceptaddress"]:(any)[], list) )
+            else if ( is(data["suseMailAcceptAddress"]:(any)[], list) )
             {
-                    foreach (string element, data["susemailacceptaddress"]:[], ``{
+                    foreach (string element, data["suseMailAcceptAddress"]:[], ``{
                         result = add (result, `item (`id (i), element));
                         i = i + 1;
                     });
@@ -182,7 +182,7 @@
         string action        = data["what"]:"";
 
         map<string, any> tmp_data        = $[];
-        list<string> object_class = (list<string>)sort (data["objectclass"]:[]);
+        list<string> object_class = (list<string>)sort (data["objectClass"]:[]);
 
         // if this plugin wasn't present in default plugin set, we have to call
         // BeforeAdd/BeforeEdit e.g. to get object class!
@@ -192,8 +192,8 @@
                 data = UsersPluginMail::AddBefore (config, data);
             else if (action == "edit_user" || action == "edit_group")
                 data = UsersPluginMail::EditBefore (config, data);
-            object_class = (list<string>)sort (data["objectclass"]:[]);
-            tmp_data["objectclass"]        = object_class;
+            object_class = (list<string>)sort (data["objectClass"]:[]);
+            tmp_data["objectClass"]        = object_class;
         }
 
         // helptext 1/3
@@ -243,10 +243,10 @@
 
         term    imap     = `VBox();
         integer intimapquota = -1;
-        if (haskey (data, "suseimapquota")
-            && data["suseimapquota"]:"10000" != nil)
+        if (haskey (data, "suseImapQuota")
+            && data["suseImapQuota"]:"10000" != nil)
         {
-            intimapquota = tointeger ((string) data["suseimapquota"]:"10000" );
+            intimapquota = tointeger ((string) data["suseImapQuota"]:"10000" );
         }
 
         if(data["localdeliverytype"]:"local" == "cyrus" ) {
@@ -306,13 +306,13 @@
                 {
                     if (check_mail_address (emailName))
                     {
-                        if (contains (data["susemailacceptaddress"]:[], emailName))
+                        if (contains (data["suseMailAcceptAddress"]:[], emailName))
                         {
                             Popup::Error(_("Entry already exists."));
                         }
                         else
                         {
-                            data["susemailacceptaddress"] = add (data["susemailacceptaddress"]:[],
+                            data["suseMailAcceptAddress"] = add (data["suseMailAcceptAddress"]:[],
                                                                  emailName);
                             UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
                             UI::ChangeWidget(`id(`id_emailname), `Value, "");
@@ -327,25 +327,25 @@
             if (ret == `deleteEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                data["susemailacceptaddress"] = remove (data["susemailacceptaddress"]:[],
+                data["suseMailAcceptAddress"] = remove (data["suseMailAcceptAddress"]:[],
                                                         id);
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
             if (ret == `editEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                string oldEMAIL = (string)((list) data["susemailacceptaddress"]:[])[id]:"";
+                string oldEMAIL = (string)((list) data["suseMailAcceptAddress"]:[])[id]:"";
                 string newEMAIL = editEMAIL (oldEMAIL);
 
-                if (contains (data["susemailacceptaddress"]:[], newEMAIL))
+                if (contains (data["suseMailAcceptAddress"]:[], newEMAIL))
                 {
                     Popup::Error(_("Entry already exists."));
                 }
                 else
                 {
-                    data["susemailacceptaddress"] = remove (data["susemailacceptaddress"]:[],
+                    data["suseMailAcceptAddress"] = remove (data["suseMailAcceptAddress"]:[],
                                                             id);
-                    data["susemailacceptaddress"] = add (data["susemailacceptaddress"]:[],
+                    data["suseMailAcceptAddress"] = add (data["suseMailAcceptAddress"]:[],
                                                          newEMAIL);
                 }
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
@@ -370,20 +370,20 @@
                      data["plugins"] = add (data["plugins"]:[],
                                             "UsersPluginMail");
                  }
-                 if( size(data["susemailacceptaddress"]:[]) == 1 ) {
-                     data["susemailacceptaddress"] = ((list)data["susemailacceptaddress"]:[])[0]:"";
-                 } else if( size(data["susemailacceptaddress"]:[]) == 0 ) {
-                     remove(data,"susemailacceptaddress");
+                 if( size(data["suseMailAcceptAddress"]:[]) == 1 ) {
+                     data["suseMailAcceptAddress"] = ((list)data["suseMailAcceptAddress"]:[])[0]:"";
+                 } else if( size(data["suseMailAcceptAddress"]:[]) == 0 ) {
+                     remove(data,"suseMailAcceptAddress");
                  }
 
                  if(data["localdeliverytype"]:"local" == "cyrus" ) {
                     if ((boolean) UI::QueryWidget(`id(`enableImpapquota), `Value))
                     {
-                       data["suseimapquota"] = (integer) UI::QueryWidget(`id(`imapquota), `Value);
+                       data["suseImapQuota"] = (integer) UI::QueryWidget(`id(`imapquota), `Value);
                     }
                     else
                     {
-                       data["suseimapquota"] = -1;
+                       data["suseImapQuota"] = -1;
                     }
                  }
                  if (data["what"]:"" == "edit_user")

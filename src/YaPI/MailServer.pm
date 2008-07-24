@@ -463,7 +463,7 @@ sub ReadCanonical
 
     my %SearchMap       = (
                                'base_dn'    => $ldapMap->{'mail_config_dn'},
-                               'filter'     => "ObjectClass=suseCanonicalTable",
+                               'filter'     => "objectClass=suseCanonicalTable",
                                'scope'      => 2,
                                'map'        => 1,
                                'attributes' => ['tableKey',
@@ -480,9 +480,9 @@ sub ReadCanonical
     foreach my $dn (keys %{$ret})
     {
        my $Canonical       = {};
-       $Canonical->{'key'}     = $ret->{$dn}->{'tablekey'}->[0];
-       $Canonical->{'value'}   = $ret->{$dn}->{'tablevalue'}->[0];
-       $Canonical->{'type'}    = $ret->{$dn}->{'valuetype'}->[0];
+       $Canonical->{'key'}     = $ret->{$dn}->{'tableKey'}->[0];
+       $Canonical->{'value'}   = $ret->{$dn}->{'tableValue'}->[0];
+       $Canonical->{'type'}    = $ret->{$dn}->{'valueType'}->[0];
        if( defined $ret->{$dn}->{'description'}->[0] )
        {
          $Canonical->{'description'} = $ret->{$dn}->{'description'}->[0];
@@ -665,7 +665,7 @@ sub ReadMailTransports {
 
     my %SearchMap       = (
                                'base_dn'    => $ldapMap->{'mail_config_dn'},
-                               'filter'     => "ObjectClass=suseMailTransport",
+                               'filter'     => "objectClass=suseMailTransport",
                                'scope'      => 2,
                                'map'        => 1,
                                'attributes' => ['suseMailTransportDestination',
@@ -680,14 +680,14 @@ sub ReadMailTransports {
     foreach my $dn (keys %{$ret})
     {
        my $Transport       = {};
-       $Transport->{'Destination'}     = $ret->{$dn}->{'susemailtransportdestination'}->[0];
-       if( $ret->{$dn}->{'susemailtransportnexthop'}->[0] =~ /:/)
+       $Transport->{'Destination'}     = $ret->{$dn}->{'suseMailTransportDestination'}->[0];
+       if( $ret->{$dn}->{'suseMailTransportNexthop'}->[0] =~ /:/)
        {
-         ($Transport->{'Transport'},$Transport->{'Nexthop'}) = split /:/,$ret->{$dn}->{'susemailtransportnexthop'}->[0];
+         ($Transport->{'Transport'},$Transport->{'Nexthop'}) = split /:/,$ret->{$dn}->{'suseMailTransportNexthop'}->[0];
        }
        else
        {
-         $Transport->{'Nexthop'}         = $ret->{$dn}->{'susemailtransportnexthop'}->[0];
+         $Transport->{'Nexthop'}         = $ret->{$dn}->{'suseMailTransportNexthop'}->[0];
        }
        push @{$MailTransports{'Transports'}}, $Transport;
        if( $Transport->{'Nexthop'} =~ /\[(.*)\]/ )
@@ -728,8 +728,8 @@ sub ReadMailTransports {
     # filling up our array
     foreach my $dn (keys %{$ret})
     {
-       my $TLSMode         = $ret->{$dn}->{'susetlspersitemode'}->[0] || "NONE";
-       my $TLSSite         = $ret->{$dn}->{'susetlspersitepeer'}->[0] ;
+       my $TLSMode         = $ret->{$dn}->{'suseTLSPerSiteMode'}->[0] || "NONE";
+       my $TLSSite         = $ret->{$dn}->{'suseTLSPerSitePeer'}->[0] ;
        $MailTransports{'TLSSites'}->{$TLSSite} = $TLSMode;
     }
     
@@ -820,10 +820,10 @@ sub WriteMailTransports {
     # Search hash to find all the Transport Objects
     my %SearchMap       = (
                                'base_dn' => $ldapMap->{'mail_config_dn'},
-                               'filter'  => "objectclass=susemailtransport",
+                               'filter'  => "objectClass=suseMailTransport",
                                'map'     => 1,
                                'scope'   => 2,
-			       'attrs'   => ['susemailtransportdestination' ]
+			       'attrs'   => ['suseMailTransportDestination' ]
                           );
 
     my $ret = SCR->Read('.ldap.search',\%SearchMap);
@@ -932,7 +932,7 @@ sub WriteMailTransports {
     # Search hash to find all the TLSSites Objects
     %SearchMap       = (
                                'base_dn' => $ldapMap->{'mail_config_dn'},
-                               'filter'  => "objectclass=suseTLSPerSiteContainer",
+                               'filter'  => "objectClass=suseTLSPerSiteContainer",
                                'map'     => 1,
                                'scope'   => 2,
 			       'attrs'   => []
@@ -1152,8 +1152,8 @@ sub ReadMailPrevention {
     foreach my $entry (@{$ret})
     {  
        my $AccessEntry = {};
-       $AccessEntry->{'MailClient'} = $entry->{'susemailclient'}->[0];
-       $AccessEntry->{'MailAction'} = $entry->{'susemailaction'}->[0];
+       $AccessEntry->{'MailClient'} = $entry->{'suseMailClient'}->[0];
+       $AccessEntry->{'MailAction'} = $entry->{'suseMailAction'}->[0];
        push @{$MailPrevention{'AccessList'}}, $AccessEntry;
     }
 
@@ -1297,7 +1297,7 @@ sub WriteMailPrevention {
     #Now we have a look on the access table
     my %SearchMap = (
                    'base_dn' => $ldapMap->{'mail_config_dn'},
-                   'filter'  => "ObjectClass=suseMailAccess",
+                   'filter'  => "objectClass=suseMailAccess",
                    'scope'   => 2,
                    'map'     => 1
                  );
@@ -2123,11 +2123,11 @@ sub ReadMailLocalDomains {
     foreach(@{$ret})
     {
        my $domain = {};
-       if( $_->{'zonename'}->[0] !~ /in-addr.arpa$/i)
+       if( $_->{'zoneName'}->[0] !~ /in-addr.arpa$/i)
        {
-         $domain->{'Name'}         = $_->{'zonename'}->[0];
-         $domain->{'Type'}         = $_->{'susemaildomaintype'}->[0]         || 'none';
-         $domain->{'Masquerading'} = $_->{'susemaildomainmasquerading'}->[0] || 'yes';
+         $domain->{'Name'}         = $_->{'zoneName'}->[0];
+         $domain->{'Type'}         = $_->{'suseMailDomainType'}->[0]         || 'none';
+         $domain->{'Masquerading'} = $_->{'suseMailDomainMasquerading'}->[0] || 'yes';
          push @{$MailLocalDomains{'Domains'}}, $domain;
        }
     }
@@ -2178,15 +2178,15 @@ sub WriteMailLocalDomains {
       my $DN = "zoneName=$name,$ldapMap->{'dns_config_dn'}";
       my $retVal = SCR->Read('.ldap.search',{
                                              "base_dn"      => $DN,
-                                             "filter"       => '(objectclass=dNSZone)',
+                                             "filter"       => '(objectClass=dNSZone)',
                                              "scope"        => 0,
                                              "not_found_ok" => 0
                                             } ); 
 
-      if( defined $retVal && defined $retVal->[0] && defined $retVal->[0]->{'objectclass'}) 
+      if( defined $retVal && defined $retVal->[0] && defined $retVal->[0]->{'objectClass'}) 
       {
             my $found = 0;
-            foreach my $ojc ( @{$retVal->[0]->{'objectclass'}} )
+            foreach my $ojc ( @{$retVal->[0]->{'objectClass'}} )
 	    {
                 if($ojc =~ /^suseMailDomain$/i) {
                     $found = 1;
@@ -2195,9 +2195,9 @@ sub WriteMailLocalDomains {
             }
             if($found && $type eq 'none')
 	    {
-                # delete objectclass
+                # delete objectClass
 
-                $Domains->{$DN}->{'objectclass'}                = ['dNSZone'];
+                $Domains->{$DN}->{'objectClass'}                = ['dNSZone'];
                 $Domains->{$DN}->{'suseMailDomainType'}         = [];
                 $Domains->{$DN}->{'suseMailDomainMasquerading'} = [];
 
@@ -2219,7 +2219,7 @@ sub WriteMailLocalDomains {
 	    {
                 # modify
 
-                $Domains->{$DN}->{'objectclass'}                = ['dNSZone','suseMailDomain'];
+                $Domains->{$DN}->{'objectClass'}                = ['dNSZone','suseMailDomain'];
                 $Domains->{$DN}->{'zoneName'}                   = $name;
                 $Domains->{$DN}->{'suseMailDomainType'}         = $type;
                 $Domains->{$DN}->{'suseMailDomainMasquerading'} = $masquerading;
@@ -2351,7 +2351,7 @@ sub ReadLDAPDefaults {
     # read mail configuration data
     $ldapret = SCR->Read(".ldap.search", {
 	"base_dn"      => $ldapMap->{'base_config_dn'},
-	"filter"       => '(objectclass=suseMailConfiguration)',
+	"filter"       => '(objectClass=suseMailConfiguration)',
 	"scope"        => 2,
 	"not_found_ok" => 1,
 	"attrs"        => [ 'suseDefaultBase' ]
@@ -2365,7 +2365,7 @@ sub ReadLDAPDefaults {
     }
     if(@$ldapret > 0)
     {
-        $ldapMap->{'mail_config_dn'} = $ldapret->[0]->{'susedefaultbase'}->[0];
+        $ldapMap->{'mail_config_dn'} = $ldapret->[0]->{'suseDefaultBase'}->[0];
     }
     else
     {
@@ -2405,7 +2405,7 @@ sub ReadLDAPDefaults {
     # check whether ou=Mailserver tree exists
     $ldapret = SCR->Read(".ldap.search", {
 	"base_dn"      => $ldapMap->{'ldap_domain'},
-	"filter"       => '(&(ou=Mailserver)(objectclass=organizationalUnit))',
+	"filter"       => '(&(ou=Mailserver)(objectClass=organizationalUnit))',
 	"scope"        => 2,
 	"not_found_ok" => 1,
 	"attrs"        => [ 'ou' ]
@@ -2447,7 +2447,7 @@ sub ReadLDAPDefaults {
     # check whether mail plugin is already in the pluginlist
     $ldapret = SCR->Read(".ldap.search", {
 	"base_dn"      => $ldapMap->{'base_config_dn'},
-	"filter"       => '(objectclass=suseUserTemplate)',
+	"filter"       => '(objectClass=suseUserTemplate)',
 	"scope"        => 2,
 	"not_found_ok" => 1
 	});
@@ -2462,9 +2462,9 @@ sub ReadLDAPDefaults {
     {
 	# 
 	my $foundplugin = 0;
-	if( defined $ldapret->[0]->{'suseplugin'} )
+	if( defined $ldapret->[0]->{'susePlugin'} )
 	{
-	    foreach my $sp ( @{$ldapret->[0]->{'suseplugin'}} )
+	    foreach my $sp ( @{$ldapret->[0]->{'susePlugin'}} )
 	    {
 		$foundplugin = 1 if lc($sp) eq "userspluginmail";
 	    }
@@ -2479,7 +2479,7 @@ sub ReadLDAPDefaults {
 					   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
 		}
 		my $dn = "cn=userTemplate,".$ldapMap->{'base_config_dn'};
-		my $pluginlist = $ldapret->[0]->{'suseplugin'};
+		my $pluginlist = $ldapret->[0]->{'susePlugin'};
 		push @$pluginlist, 'UsersPluginMail';
 		if( ! SCR->Write('.ldap.modify',
 				 { "dn" => $dn },
@@ -2503,7 +2503,7 @@ sub ReadLDAPDefaults {
     # now we search user base
     $ldapret = SCR->Read(".ldap.search", {
                                           "base_dn"      => $ldapMap->{'base_config_dn'},
-                                          "filter"       => '(objectclass=suseUserConfiguration)',
+                                          "filter"       => '(objectClass=suseUserConfiguration)',
                                           "scope"        => 2,
                                           "not_found_ok" => 1,
                                           "attrs"        => [ 'suseDefaultBase' ]
@@ -2517,12 +2517,12 @@ sub ReadLDAPDefaults {
     }
     if(@$ldapret > 0)
     {
-        $ldapMap->{'user_config_dn'} = $ldapret->[0]->{'susedefaultbase'}->[0];
+        $ldapMap->{'user_config_dn'} = $ldapret->[0]->{'suseDefaultBase'}->[0];
     }
     # now we search group base
     $ldapret = SCR->Read(".ldap.search", {
                                           "base_dn"      => $ldapMap->{'base_config_dn'},
-                                          "filter"       => '(objectclass=suseGroupConfiguration)',
+                                          "filter"       => '(objectClass=suseGroupConfiguration)',
                                           "scope"        => 2,
                                           "not_found_ok" => 1,
                                           "attrs"        => [ 'suseDefaultBase' ]
@@ -2536,12 +2536,12 @@ sub ReadLDAPDefaults {
     }
     if(@$ldapret > 0)
     {
-        $ldapMap->{'group_config_dn'} = $ldapret->[0]->{'susedefaultbase'}->[0];
+        $ldapMap->{'group_config_dn'} = $ldapret->[0]->{'suseDefaultBase'}->[0];
     }
     # now we search DNS base
     $ldapret = SCR->Read(".ldap.search", {
                                           "base_dn"      => $ldapMap->{'base_config_dn'},
-                                          "filter"       => '(objectclass=suseDNSConfiguration)',
+                                          "filter"       => '(objectClass=suseDNSConfiguration)',
                                           "scope"        => 2,
                                           "not_found_ok" => 1,
                                           "attrs"        => [ 'suseDefaultBase' ]
@@ -2554,7 +2554,7 @@ sub ReadLDAPDefaults {
                                code => "LDAP_SEARCH_FAILED");
     }
     if(@$ldapret > 0) {
-        $ldapMap->{'dns_config_dn'} = $ldapret->[0]->{'susedefaultbase'}->[0];
+        $ldapMap->{'dns_config_dn'} = $ldapret->[0]->{'suseDefaultBase'}->[0];
     }
     else
     {
@@ -2915,19 +2915,19 @@ sub check_ldap_configuration {
 
     my $changes   = 0;
     my %query_filter     = (
-                        'transport_maps'      => '(&(objectclass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'smtp_tls_per_site'   => '(&(objectclass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'access'              => '(&(objectclass=suseMailAccess)(suseMailClient=%s))',
-                        'local_recipient_maps'=> '(&(objectclass=suseMailRecipient)(|(suseMailAcceptAddress=%s)(uid=%s)))',
-                        'alias_maps'          => '(&(objectclass=suseMailRecipient)(cn=%s))',
-                        'alias_maps_member'   => '(&(objectclass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes))',
-                        'mynetworks'          => '(&(objectclass=suseMailMyNetworks)(suseMailClient=%s))',
-                        'masquerade_domains'  => '(&(objectclass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
-                        'mydestination'       => '(&(objectclass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
-                        'virtual_alias_maps'  => '(&(objectclass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
-                        'canonical_maps'      => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
-                        'recipient_canonical_maps' => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
-                        'sender_canonical_maps' => '(&(objectclass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
+                        'transport_maps'      => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
+                        'smtp_tls_per_site'   => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
+                        'access'              => '(&(objectClass=suseMailAccess)(suseMailClient=%s))',
+                        'local_recipient_maps'=> '(&(objectClass=suseMailRecipient)(|(suseMailAcceptAddress=%s)(uid=%s)))',
+                        'alias_maps'          => '(&(objectClass=suseMailRecipient)(cn=%s))',
+                        'alias_maps_member'   => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes))',
+                        'mynetworks'          => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
+                        'masquerade_domains'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
+                        'mydestination'       => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
+                        'virtual_alias_maps'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
+                        'canonical_maps'      => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
+                        'recipient_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
+                        'sender_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
                        );
     my %result_attribute = (
                         'transport_maps'      => 'suseMailTransportNexthop',

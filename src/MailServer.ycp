@@ -184,17 +184,17 @@ void Check_Mail_Domain()
         /* looking if a mail domain exist */
         map searchmap = $[
                         "base_dn"     :  LDAPSettings["base_config_dn"]:"",
-                        "filter"      :   "objectclass=suseDnsConfiguration",
+                        "filter"      :   "objectClass=suseDnsConfiguration",
                         "attrs"       :    ["suseDefaultBase"],
                         "not_found_ok": false,
                         "scope"       :    2
                      ];
         list modulesDns = (list)SCR::Read (.ldap.search, searchmap);
-        string dns_base = (string)modulesDns[0,"susedefaultbase",0]:"";
+        string dns_base = (string)modulesDns[0,"suseDefaultBase",0]:"";
 
         searchmap = $[
                 "base_dn"       :  dns_base,
-                "filter"        :  "(&(objectclass=dNSZone)(relativeDomainName=@))",
+                "filter"        :  "(&(objectClass=dNSZone)(relativeDomainName=@))",
                 "not_found_ok"  : false,
                 "map"           : true,
                 "scope"         :    2
@@ -209,7 +209,7 @@ void Check_Mail_Domain()
         }
         boolean is_main_domain = false;
         foreach(string dn, map domain, (map<string,map>) domains,  ``{
-                if(domain["susemaildomaintype",0]:"" == "main" )
+                if(domain["suseMailDomainType",0]:"" == "main" )
                 {
                    is_main_domain = true;
                    break;
@@ -230,7 +230,7 @@ void Check_Mail_Domain()
                         || substring (((list)domain["zonename"]:[])[0]:"",
                                       size (((list)domain["zonename"]:[])[0]:"") - size (".in-addr.arpa")) != ".in-addr.arpa")
                     {
-                        domain["objectclass"] = add(domain["objectclass"]:[], "suseMailDomain");
+                        domain["objectClass"] = add(domain["objectClass"]:[], "suseMailDomain");
                         domain["suseMailDomainType"] = ["main"];
                         domain["suseMailDomainMasquerading"] = ["yes"];
                         lastDomain = domain;
