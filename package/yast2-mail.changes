@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jul 24 12:34:45 CEST 2008 - varkoly@suse.de
+
+- API changes in yast2-users and yast2-ldap 
+
+-------------------------------------------------------------------
 Thu Jun  5 14:35:14 CEST 2008 - varkoly@suse.de
 
 - the variable $max_servers in /etc/amavisd.conf must be equal to the max
