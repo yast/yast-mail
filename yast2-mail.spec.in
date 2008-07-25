@@ -97,6 +97,7 @@ Requires:       perl-NetxAP
 @agentdir@/CyrusConfParser.pm
 @agentdir@/MasterCFParser.pm
 
+%dir /etc/openldap/
 %dir /etc/openldap/schema/
 /etc/openldap/schema/suse-mailserver.schema
 /etc/permissions.d/mail-server*
