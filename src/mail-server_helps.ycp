@@ -93,7 +93,7 @@ and configured too. You can install other (comerciel) virus scanner engine.
     /* MailPrevention dialog help 3/3 */
 _("<p><b><big>Configure Spam Learning Extension:</big></b><br>
 The spam learning extension can only configured if the local delivery method <b>cyrus imapd</b> is.
-In this case 2 shared folder <b>NesSpam</b> <b>NoSpam</b> will be created. In this folders can put 
+In this case 2 shared folder <b>NewSpam</b> and <b>NoSpam</b> will be created. In this folders can put
 anyone e-mails. E-mails which was not detected by the <b>SpamAssassin</b> you can put into the
 folder <p>NewSpam</p>. If you want your spam finder works good you have to put non spam mails into
 the folder <p>NoSpam</p> too. The e-mails in this folder can not be read by anyone.
@@ -102,7 +102,7 @@ the folder <p>NoSpam</p> too. The e-mails in this folder can not be read by anyo
 
     /* MailRelaying dialog help 1/2 */
     "MailRelaying" : _("<p><b><big>Trusted Local Networks:</big></b><br>
-Clients from these networks can use your mail server for mail relaying. 
+Clients from these networks can use your mail server for mail relaying.
 (Sending non-local mails)
 <br></p>
 ") +
