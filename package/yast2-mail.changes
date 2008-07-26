@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Jul 26 06:25:23 CEST 2008 - varkoly@suse.de
+
+- Add missed Requires: perl-NetxAP
+
+-------------------------------------------------------------------
 Thu Jul 24 12:34:45 CEST 2008 - varkoly@suse.de
 
 - API changes in yast2-users and yast2-ldap 
