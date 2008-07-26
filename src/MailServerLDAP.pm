@@ -32,6 +32,7 @@ our %TYPEINFO;
 
 YaST::YCP::Import ("YaPI::LdapServer");
 YaST::YCP::Import ("Service");
+YaST::YCP::Import ("Ldap");
 
 BEGIN {$TYPEINFO{ConfigureLDAPServer} = ["function", [ "map" , "string", "any" ] ];}
 sub ConfigureLDAPServer()

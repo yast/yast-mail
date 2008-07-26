@@ -3,6 +3,7 @@
 @HEADER@
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-devtools yast2-testsuite
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
+BuildRequires:  perl-NetxAP
 
 PreReq:         %fillup_prereq
 
@@ -10,6 +11,7 @@ PreReq:         %fillup_prereq
 Requires:	yast2 >= 2.16.23
 Requires:	yast2-users
 Requires:	yast2-ldap
+Requires:       perl-NetxAP
 
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel

@@ -112,7 +112,7 @@ define any CheckLDAPDialog ()
     { // Now we setup the LDAP Server
 	args = add(args, "setup");
     }
-    if( conf_ldap_client )
+    if( conf_ldap_client  && ! setup_ldap_server )
     { // Now we setup the server as LDAP Server
 	args = add(args, "conf");
     }
@@ -127,6 +127,14 @@ define any CheckLDAPDialog ()
 	Ldap::Read();
 	Ldap::LDAPInit();
 	LDAPSettings =  (map <string, any>) Ldap::Export();
+	//tell Ldap module to create the default objects:
+	if ( LDAPSettings [ "ldap_server" ]:"" == "" ) LDAPSettings [ "ldap_server" ]  = "localhost";
+	if ( LDAPSettings [ "ldap_server" ]:"" == "" ) LDAPSettings [ "ldap_server" ]  = true;
+	LDAPSettings [ "start_ldap" ]   = true;
+	LDAPSettings [ "create_ldap" ]  = true;
+	Ldap::Import(LDAPSettings);
+	//write the settings: 
+	Ldap::Write(abort);
     }
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
     if( MailServer::AdminPassword != nil )
@@ -139,12 +147,6 @@ define any CheckLDAPDialog ()
             return false;
         };
 
-	//tell Ldap module to create the default objects:
-	LDAPSettings [ "create_ldap" ] = true;
-	Ldap::Import(LDAPSettings);
-y2milestone("after LDAPSettings %1", LDAPSettings);
-	//write the settings: 
-	Ldap::Write(abort);
 	//create default mail-server configuration
         YaPI::MailServer::ResetMailServer(MailServer::AdminPassword);
 	return `ok;
