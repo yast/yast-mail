@@ -76,16 +76,27 @@ This is the list of the defined mail transports.
 </p>
 "),
 
-    /* MailPrevention dialog help 1/2 */
+    /* MailPrevention dialog help 1/3 */
     "MailPrevention" : _("<p><b><big>SPAM Prevention</big></b><br>
 Postfix offers a variety of parameters that limit the delivery of unsolicited commercial e-mail (UCE).
 In this dialog, configure this settings.  For example, set access lists or RBL
 (real-time blackhole list) name servers. 
 <br></p>
 ") +
-    /* MailPrevention dialog help 2/2 */
+    /* MailPrevention dialog help 2/3 */
 _("<p><b><big>Start Virus Scanner AMAVIS:</big></b><br>
-If you start the virus scanner AMAVIS, do not forget to install a virus scanner engine. 
+If you start the virus scanner AMAVIS, your e-mails will be scanned for viruses and and for spams.
+The virus scanner engine <b>Clamavd</b> and the spam finder <b>SpamAssassin</b> will be installed 
+and configured too. You can install other (comerciel) virus scanner engine.
+</p>
+"), +
+    /* MailPrevention dialog help 3/3 */
+_("<p><b><big>Configure Spam Learning Extension:</big></b><br>
+The spam learning extension can only configured if the local delivery method <b>cyrus imapd</b> is.
+In this case 2 shared folder <b>NesSpam</b> <b>NoSpam</b> will be created. In this folders can put 
+anyone e-mails. E-mails which was not detected by the <b>SpamAssassin</b> you can put into the
+folder <p>NewSpam</p>. If you want your spam finder works good you have to put non spam mails into
+the folder <p>NoSpam</p> too. The e-mails in this folder can not be read by anyone.
 </p>
 "),
 

@@ -86,9 +86,15 @@ import     "Report";
     if(contains(args,"local"))
     {
 	map<string,any> LDB = MailServerLDAP::ConfigureLDAPServer();
-        SCR::Write(.sysconfig.ldap.BASE_CONFIG_DN,LDB["suffix"]:"");
+        SCR::Write(.sysconfig.ldap.BASE_CONFIG_DN,"ou=ldapconfig,"+LDB["suffix"]:"");
         SCR::Write(.sysconfig.ldap.BIND_DN,LDB["rootdn"]:"");
         SCR::Write(.sysconfig.ldap,nil);
+	SCR::Write (add (.etc.ldap_conf.v."/etc/ldap.conf","host"), ["localhost"]);
+	SCR::Write (add (.etc.ldap_conf.v."/etc/ldap.conf","base"), [ LDB["suffix"]:""]);
+	SCR::Write (add (.etc.ldap_conf.v."/etc/ldap.conf","ldap_version"), ["3"]);
+	//SCR::Write (add (.etc.ldap_conf.v."/etc/ldap.conf","ldap_version"), ["3"]);
+	//SCR::Write (add (.etc.ldap_conf.v."/etc/ldap.conf","ssl"), ["start_tls"]);
+	SCR::Write(.etc.ldap_conf, nil);
     }
     return true;
 }
