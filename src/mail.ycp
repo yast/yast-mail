@@ -128,10 +128,13 @@ define string StartDialog (string type, boolean first ) ``{
 
         if (ret == `next )
         {
-            if(  (boolean) UI::QueryWidget (`id (`skip_ask), `Value) )
-            {
-               SCR::Write (.sysconfig.mail.SKIP_ASK, "yes");
-            }
+            if( ! first )
+	    {
+		if(  (boolean) UI::QueryWidget (`id (`skip_ask), `Value) )
+		{
+		   SCR::Write (.sysconfig.mail.SKIP_ASK, "yes");
+		}
+	    }
             else
             {
                SCR::Write (.sysconfig.mail.SKIP_ASK, "no");
