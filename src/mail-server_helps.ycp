@@ -89,7 +89,7 @@ If you start the virus scanner AMAVIS, your e-mails will be scanned for viruses 
 The virus scanner engine <b>Clamavd</b> and the spam finder <b>SpamAssassin</b> will be installed 
 and configured too. You can install other (comerciel) virus scanner engine.
 </p>
-"), +
+") +
     /* MailPrevention dialog help 3/3 */
 _("<p><b><big>Configure Spam Learning Extension:</big></b><br>
 The spam learning extension can only configured if the local delivery method <b>cyrus imapd</b> is.

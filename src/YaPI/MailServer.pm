@@ -1348,7 +1348,7 @@ sub WriteMailPrevention {
              SCR->Execute('.mail.postfix.mastercf.modifyService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '30',
+		  'maxproc' => '5',
 		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	else
@@ -1356,7 +1356,7 @@ sub WriteMailPrevention {
              SCR->Execute('.mail.postfix.mastercf.addService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '30',
+		  'maxproc' => '5',
 		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
@@ -2823,7 +2823,7 @@ sub activate_virus_scanner {
    my $ismax  = 0;
    foreach my $l ( @ACONF )
    {
-	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = 30/;
+	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = 5/;
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
 	{
@@ -2839,7 +2839,7 @@ sub activate_virus_scanner {
    }
    if( !$ismax )
    {
-       push @CONF, '$max_servers = 30;'
+       push @CONF, '$max_servers = 5;'
    }
    if( ! open(OUT,">$aconf.new") )
    {
