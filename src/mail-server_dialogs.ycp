@@ -33,6 +33,7 @@ boolean ReallyAbort() {
 define any CheckLDAPDialog ()
 {
     y2milestone("--Start CheckLDAPDialog ---");
+    block<boolean> abort_block = ``{ return false; };
     boolean ca_mgm            = false;
     boolean conf_ldap_client  = false;
     boolean setup_ldap_server = false;
@@ -132,7 +133,7 @@ define any CheckLDAPDialog ()
 	LDAPSettings [ "create_ldap" ]  = true;
 	Ldap::Import(LDAPSettings);
 	//write the settings: 
-	Ldap::Write(abort);
+	Ldap::Write(abort_block);
     }
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
     if( MailServer::AdminPassword != nil )
