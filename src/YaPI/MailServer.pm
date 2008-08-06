@@ -56,9 +56,10 @@ YaST::YCP::Import ("NetworkInterfaces");
 my $proposal_valid = 0;
 
 ##
- # Some global variables for cyrus-imapd
-my $imapadm    = "cyrus";
-my $imaphost   = "localhost";
+ # Some global variables
+my $imapadm  = "cyrus";
+my $imaphost = "localhost";
+my $aconf    = "/etc/amavisd.conf";
 
 ##
  # Write only, used during autoinstallation.
@@ -1048,6 +1049,7 @@ C<$MailPrevention = ReadMailPrevention($adminpwd)>
            'RBLList'               => [],
            'AccessList'            => [],
            'VirusScanning'         => 1,
+           'VSCount'               => 10
            'SpamLearning'          => 1
                           );
 
@@ -1094,6 +1096,7 @@ sub ReadMailPrevention {
 			       'RBLList'                    => [],
 			       'AccessList'                 => [],
 			       'VirusScanning'              => YaST::YCP::Boolean(0),
+			       'VSCount'                    => 10,
 			       'SpamLearning'               => YaST::YCP::Boolean(0)
                           );
 
@@ -1169,8 +1172,28 @@ sub ReadMailPrevention {
 	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[localhost]:10024' && $vscan )
 	{
 	    $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
+	    if( ! open(IN,$aconf) )
+	    {
+	       return "Error: $!";
+	    }
+	    my @ACONF = <IN>;
+	    close(IN);
+	    my $ismax = 0;
+   	    foreach ( @ACONF )
+   	    {
+	    	s/\s+//g;
+		if ( /^\$max_servers=(\d+)/ )
+		{
+	  	    $MailPrevention{'VSCount'} = $1;
+		}
+	    }
+	    if( !$ismax )
+	    {
+	        $MailPrevention{'VSCount'} = 2;
+	    }
 	}
     }
+
     # make IMAP connection
     my $imap = new Net::IMAP($imaphost, Debug => 0);
     if( $imap )
@@ -1335,7 +1358,7 @@ sub WriteMailPrevention {
     SCR->Read('.mail.postfix.mastercf');
     if( $MailPrevention->{'VirusScanning'} )
     {
-	my $err = activate_virus_scanner();
+	my $err = activate_virus_scanner($MailPrevention->{'VSCount'});
 	if( $err ne "" )
 	{
 	    return $self->SetError(summary => "activating virus scanner failed",
@@ -1348,7 +1371,7 @@ sub WriteMailPrevention {
              SCR->Execute('.mail.postfix.mastercf.modifyService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '5',
+		  'maxproc' => $MailPrevention->{'VSCount'},
 		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	else
@@ -1356,7 +1379,7 @@ sub WriteMailPrevention {
              SCR->Execute('.mail.postfix.mastercf.addService',
    		{ 'service' => 'smtp',
 		  'command' => 'smtpd',
-		  'maxproc' => '5',
+		  'maxproc' => $MailPrevention->{'VSCount'},
 		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
         }
 	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
@@ -2805,9 +2828,9 @@ sub read_attribute {
 
 
 sub activate_virus_scanner {
+   my $VSCount = shift || 5;
    use File::Copy;
    
-   my $aconf = "/etc/amavisd.conf";
    my $cconf = "/etc/clamd.conf";
    my $clamsock = '/var/lib/clamav/clamd-socket';
    my @CONF = ();
@@ -2823,7 +2846,7 @@ sub activate_virus_scanner {
    my $ismax  = 0;
    foreach my $l ( @ACONF )
    {
-	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = 5/;
+	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = $VSCount/;
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
 	{
@@ -2839,7 +2862,7 @@ sub activate_virus_scanner {
    }
    if( !$ismax )
    {
-       push @CONF, '$max_servers = 5;'
+       push @CONF, '$max_servers = '.$VSCount;
    }
    if( ! open(OUT,">$aconf.new") )
    {

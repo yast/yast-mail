@@ -660,7 +660,8 @@ term MailPreventionDialog(string CID, string CIDRBL)
   list<string> RBLList      = (list<string>) MailServer::MailPrevention["RBLList"]:[];
   list<map<string,string> > AccessList = (list<map<string,string> >) MailServer::MailPrevention["AccessList"]:[];
   boolean VirusScanning     = (boolean)MailServer::MailPrevention["VirusScanning"]:false;
-  boolean SpamLearning      = (boolean)MailServer::MailPrevention["SpamLearning "]:false;
+  boolean SpamLearning      = (boolean)MailServer::MailPrevention["SpamLearning"]:false;
+  integer VSCount           = (integer)MailServer::MailPrevention["VSCount "]:10;
   boolean BasicProtectionOff    = false;
   boolean BasicProtectionMedium = false;
   boolean BasicProtectionHard   = true;
@@ -692,7 +693,11 @@ term MailPreventionDialog(string CID, string CIDRBL)
 	SpamL = `Left(`CheckBox (`id(`SpamLearning),  `opt(`notify), _("Configure Spam Learning Extension"), SpamLearning));
   }
   term content = `VBox (
-        `Left(`CheckBox (`id(`VirusScanning), `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
+	`HBox(
+	        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
+		`HSpacing (1),
+	        `Left(`CheckBox (`id(`VSCount), `opt(`notify), _("Count of Virsus Scanner Process"), VSCount))
+	),
 	`VSpacing (1),
 	SpamL,
 	`VSpacing (1),
@@ -1416,6 +1421,7 @@ any ComplexDialog()
 	  if( ret == `SpamLearning ) {
 	    MailServer::MailPrevention["Changed"]       = true;
 	    UI::ChangeWidget(`id(`VirusScanning), `Value, true);
+	    UI::ChangeWidget(`id(`VSCount),       `Value, 10);
             continue;
           }
 	  if(ret == `RBLAdd) {
@@ -1452,9 +1458,10 @@ any ComplexDialog()
 	       }
 	    });
 	  }
-          MailServer::MailPrevention["BasicProtection"] = (string)UI::QueryWidget(`id(`BasicProtection), `CurrentButton);
-          MailServer::MailPrevention["VirusScanning"]   = (boolean) UI::QueryWidget(`id(`VirusScanning), `Value);
-          MailServer::MailPrevention["SpamLearnig"]     = (boolean) UI::QueryWidget(`id(`SpamLearning), `Value);
+          MailServer::MailPrevention["BasicProtection"] = (string) UI::QueryWidget(`id(`BasicProtection), `CurrentButton);
+          MailServer::MailPrevention["VirusScanning"]   = (boolean)UI::QueryWidget(`id(`VirusScanning), `Value);
+          MailServer::MailPrevention["SpamLearning"]    = (boolean)UI::QueryWidget(`id(`SpamLearning), `Value);
+          MailServer::MailPrevention["VSCount"]         = (boolean)UI::QueryWidget(`id(`VSCount), `Value);
           title    = _("Mail Server SPAM Basic Prevention Configuration");
           content  = MailPreventionDialog(CID,CIDRBL);
           helptext = HELPS["MailPrevention"]:"Bla Bla Bla";
