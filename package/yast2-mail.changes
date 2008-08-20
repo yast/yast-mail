@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Aug 20 14:13:39 CEST 2008 - sschober@suse.de
+
+- fixed rnc file for autoyast 
+
+-------------------------------------------------------------------
 Sat Jul 26 06:25:23 CEST 2008 - varkoly@suse.de
 
 - Add missed Requires: perl-NetxAP

@@ -30,7 +30,7 @@ aliases =
     element alias {
       element alias { text } &
       element destinations { text } &
-      element comment { text }
+      element comment { text }?
     }*
   }
 
