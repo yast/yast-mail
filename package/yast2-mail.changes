@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Sep 10 14:52:55 CEST 2008 - varkoly@suse.de
+
+- fix: use the right widget for get a number
+
+-------------------------------------------------------------------
 Wed Aug 20 14:13:39 CEST 2008 - sschober@suse.de
 
 - fixed rnc file for autoyast 
