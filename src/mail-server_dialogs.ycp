@@ -696,7 +696,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
 	`HBox(
 	        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
 		`HSpacing (1),
-	        `Left(`CheckBox (`id(`VSCount), `opt(`notify), _("Count of Virsus Scanner Process"), VSCount))
+	        `Left(`TextEntry (`id(`VSCount), `opt(`notify), _("Count of Virsus Scanner Process"), sformat("%1",VSCount)))
 	),
 	`VSpacing (1),
 	SpamL,
