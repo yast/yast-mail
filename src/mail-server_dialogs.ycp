@@ -52,7 +52,7 @@ define any CheckLDAPDialog ()
 	conf_ldap_client  = true;
 	ldap_server_local = true;
         comment = _("Your computer is not configured as an LDAP client.") + "<br>" +
-                  _("We suggest to set up a local LDAP server for the mail server.") + "<br>" +
+                  _("We suggest you set up a local LDAP server for the mail server.") + "<br>" +
                   _("Create certificates for the LDAP and mail server in order to secure your system.") + "<br>";
     }
     else
@@ -60,15 +60,15 @@ define any CheckLDAPDialog ()
 	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" )
 	{ // The LDAP-Server is local
           comment = _("Your computer is configured as an LDAP client and the LDAP server is local.") + "<br>" +
-                  _("We suggest to adapt the LDAP server configuration for the mail server.") + "<br>" +
+                  _("We suggest you adapt the LDAP server configuration for the mail server.") + "<br>" +
                   _("For this reason you have to know the password of the LDAP administrator account:") + "<br>" +
 		  "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>";
 	  ldap_server_local = true;
 	}
 	else
 	{ // The LDAP-Server is not local
-           comment =  _("Your computer is configured as LDAP client and the LDAP server is not local.") + "<br>" +
-                   _("We suggest to configure the LDAP server for the mail server.") + "<br>" +
+           comment =  _("Your computer is configured as a LDAP client and the LDAP server is not local.") + "<br>" +
+                   _("We suggest you configure the LDAP server for the mail server.") + "<br>" +
                    _("For this reason you have to know the password of the LDAP administrator account:") + "<br>" +
                    "<B>" + LDAPSettings["bind_dn"]:"" + ".</B><BR>" +
                    _("Furthermore, the LDAP server has to contain the <b>suse-mailserver.schema</b> and the corresponding index entries.");

@@ -53,8 +53,8 @@ define string StartDialogHelp () ``{
           _("<P>This module will configure and start Postfix and, if necessary, the Cyrus IMAP server.</P>")+
           // Translators: start dialog help, part 3 of 4
           _("<P><B>Warning:</B></P>
-<P>Most home users can use the build-in 
-features of their email application to send and
+<P>Most home users can use the built-in 
+features of their e-mail application to send and
 receive e-mail. They do not need this module.</P>
 ")+
           // Translators: start dialog help, part 4 of 4
@@ -72,7 +72,7 @@ define string StartDialog (string type, boolean first ) ``{
     term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
     string status    =  _("Mail server is not configured.")+"\n"+
 			_("Select configuration type according your personal needs")+"\n"+
-			_("If you want to use sendmail as MTA you have to use Standard configuration.");
+			_("If you want to use sendmail as your MTA you have to use Standard configuration.");
     if( first )
     {
        tskip_ask =  `VSpacing(1);
@@ -82,12 +82,12 @@ define string StartDialog (string type, boolean first ) ``{
 	    if( type == "standard" )
 	    {
 		status = _("The running mail server configuration is based on the <b>Standard</b> type.")+ "\n"+
-			 _("It is possible to change to <b>Advanced</b>. This will overwrite all existing settings.");
+			 _("It is possible to change to <b>Advanced</b> settings. This will overwrite all existing settings.");
 	    }
 	    else if( type == "advanced" )
 	    {
 		status = _("The running mail server configuration is based on the <b>Advanced</b> type.")+"\n"+
-			 _("It is possible to change to <b>Standard</b>. This will overwrite all existing settings.");
+			 _("It is possible to change to <b>Standard</b> settings. This will overwrite all existing settings.");
 	    }
     }
     term   contents =

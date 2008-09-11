@@ -85,18 +85,18 @@ In this dialog, configure this settings.  For example, set access lists or RBL
 ") +
     /* MailPrevention dialog help 2/3 */
 _("<p><b><big>Start Virus Scanner AMAVIS:</big></b><br>
-If you start the virus scanner AMAVIS, your e-mails will be scanned for viruses and and for spams.
+If you start the virus scanner AMAVIS, your e-mails will be scanned for viruses and and for spam.
 The virus scanner engine <b>Clamavd</b> and the spam finder <b>SpamAssassin</b> will be installed 
-and configured too. You can install other (comerciel) virus scanner engine.
+and configured too. You can also install other (commercial) virus scanner engines.
 </p>
 ") +
     /* MailPrevention dialog help 3/3 */
 _("<p><b><big>Configure Spam Learning Extension:</big></b><br>
-The spam learning extension can only configured if the local delivery method <b>cyrus imapd</b> is.
-In this case 2 shared folder <b>NewSpam</b> and <b>NoSpam</b> will be created. In this folders can put
-anyone e-mails. E-mails which was not detected by the <b>SpamAssassin</b> you can put into the
-folder <p>NewSpam</p>. If you want your spam finder works good you have to put non spam mails into
-the folder <p>NoSpam</p> too. The e-mails in this folder can not be read by anyone.
+The spam learning extension can only configured if the local delivery method is <b>cyrus imapd</b>.
+In this case the shared folders <b>NewSpam</b> and <b>NoSpam</b> will be created. Spam e-mail 
+which was not detected by <b>SpamAssassin</b> should be put into the folder <p>NewSpam</p>.
+If you want your spam finder to be most effective you should also put non spam e-mail into
+the folder <p>NoSpam</p>. The e-mails in this folder can not be read by anyone.
 </p>
 "),
 
