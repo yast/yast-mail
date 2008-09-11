@@ -1659,7 +1659,7 @@ y2milestone("FocusedContent %1",FocusedContent);
           UI::WizardCommand(`SetNextButtonLabel( _("OK") ) );
 	  if(UI::WidgetExists(`id(`table))) UI::ChangeWidget(`id(`table), `CurrentItem, CID);
           if(!MailServer::CertExist){
-            // If there is no certificate you can not use server side TLS SSL
+            // If there is no certificate you cannot use server side TLS SSL
 	    if(UI::WidgetExists(`id(`SMTPDTLSMode))) UI::ChangeWidget(`id(`SMTPDTLSMode), `Enabled, false);
 	    if(UI::WidgetExists(`id(`ImapSecurity))) UI::ChangeWidget(`id(`ImapSecurity), `Enabled, false);
 	    MailServer::MailLocalDelivery["Security"] = "0";

@@ -578,7 +578,7 @@ define symbol IncomingDialog () ``{
 	WJ_Set (widgets);
 	// grab current settings, store them to SuSEFirewall::
 	CWMFirewallInterfaces::OpenFirewallStore (fw_cwm_widget, "", event);
-	
+
 	if (!fm_empty)
 	{
 	    WJ_Set (fm_widgets);
