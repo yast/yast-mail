@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Sep 28 10:28:17 CEST 2008 - varkoly@suse.de
+
+- Fixing (bnc#422022) - HTML markup shows in YAST dialogue 
+
+-------------------------------------------------------------------
 Thu Sep 11 10:51:05 CEST 2008 - varkoly@suse.de
 
 - (bnc#425343) - string in mail.po not written well 
