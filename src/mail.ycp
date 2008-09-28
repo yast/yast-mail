@@ -9,8 +9,8 @@
  *   Main file
  *
  * Authors:
- *   Martin Vidner <mvidner@suse.cz>
  *   Peter Varkoly <varkoly@novell.com>
+ *   Martin Vidner <mvidner@suse.cz>
  *
  * $Id$
  *
@@ -81,13 +81,13 @@ define string StartDialog (string type, boolean first ) ``{
     {
 	    if( type == "standard" )
 	    {
-		status = _("The running mail server configuration is based on the <b>Standard</b> type.")+ "\n"+
-			 _("It is possible to change to <b>Advanced</b> settings. This will overwrite all existing settings.");
+		status = _("The running mail server configuration is based on the \"Standard\" type.")+ "\n"+
+			 _("It is possible to change to \"Advanced\" settings. This will overwrite all existing settings.");
 	    }
 	    else if( type == "advanced" )
 	    {
-		status = _("The running mail server configuration is based on the <b>Advanced</b> type.")+"\n"+
-			 _("It is possible to change to <b>Standard</b> settings. This will overwrite all existing settings.");
+		status = _("The running mail server configuration is based on the \"Advanced\" type.")+"\n"+
+			 _("It is possible to change to \"Standard\" settings. This will overwrite all existing settings.");
 	    }
     }
     term   contents =

@@ -43,12 +43,17 @@ define any CheckLDAPDialog ()
     Ldap::LDAPInit();
     map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
     list args = [];
+    integer size1 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/servercert.pem");
+    integer size2 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/serverkey.pem");
+    if( size1 <= 0 || size2 <= 0)
+    {
+		ca_mgm		  = true;
+    }
     y2milestone(" LDAPSettings %1", LDAPSettings);
     //if( ! LDAPSettings["start_ldap"]:false )
     if( LDAPSettings["bind_dn"]:"" == "" )
     { //No LDAP-Client configuration
 	setup_ldap_server = true;
-	ca_mgm		  = true;
 	conf_ldap_client  = true;
 	ldap_server_local = true;
         comment = _("Your computer is not configured as an LDAP client.") + "<br>" +
@@ -57,7 +62,7 @@ define any CheckLDAPDialog ()
     }
     else
     { //The computer is configured as LDAP-Client
-	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" )
+	if( LDAPSettings["ldap_server"]:"" == "127.0.0.1" ||  LDAPSettings["ldap_server"]:"" == "localhost" )
 	{ // The LDAP-Server is local
           comment = _("Your computer is configured as an LDAP client and the LDAP server is local.") + "<br>" +
                   _("We suggest you adapt the LDAP server configuration for the mail server.") + "<br>" +
@@ -661,10 +666,13 @@ term MailPreventionDialog(string CID, string CIDRBL)
   list<map<string,string> > AccessList = (list<map<string,string> >) MailServer::MailPrevention["AccessList"]:[];
   boolean VirusScanning     = (boolean)MailServer::MailPrevention["VirusScanning"]:false;
   boolean SpamLearning      = (boolean)MailServer::MailPrevention["SpamLearning"]:false;
-  integer VSCount           = (integer)MailServer::MailPrevention["VSCount "]:10;
+  integer VSCount           = (integer)MailServer::MailPrevention["VSCount"]:10;
   boolean BasicProtectionOff    = false;
   boolean BasicProtectionMedium = false;
   boolean BasicProtectionHard   = true;
+
+y2milestone("---- MailPrevention %1",MailServer::MailPrevention);
+y2milestone("---- VSCount %1",VSCount);
 
   if(BasicProtection == "off"){
      BasicProtectionOff     = true;
@@ -696,7 +704,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
 	`HBox(
 	        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
 		`HSpacing (1),
-	        `Left(`TextEntry (`id(`VSCount), `opt(`notify), _("Count of Virsus Scanner Process"), sformat("%1",VSCount)))
+	        `Left(`TextEntry (`id(`VSCount), _("Count of Virsus Scanner Process"), sformat("%1",VSCount)))
 	),
 	`VSpacing (1),
 	SpamL,
@@ -1461,7 +1469,7 @@ any ComplexDialog()
           MailServer::MailPrevention["BasicProtection"] = (string) UI::QueryWidget(`id(`BasicProtection), `CurrentButton);
           MailServer::MailPrevention["VirusScanning"]   = (boolean)UI::QueryWidget(`id(`VirusScanning), `Value);
           MailServer::MailPrevention["SpamLearning"]    = (boolean)UI::QueryWidget(`id(`SpamLearning), `Value);
-          MailServer::MailPrevention["VSCount"]         = (boolean)UI::QueryWidget(`id(`VSCount), `Value);
+          MailServer::MailPrevention["VSCount"]         = (integer)UI::QueryWidget(`id(`VSCount), `Value);
           title    = _("Mail Server SPAM Basic Prevention Configuration");
           content  = MailPreventionDialog(CID,CIDRBL);
           helptext = HELPS["MailPrevention"]:"Bla Bla Bla";

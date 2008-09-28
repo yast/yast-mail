@@ -1161,12 +1161,16 @@ sub ReadMailPrevention {
     }
 
     # Now we looking for if vscan (virusscanning) is started.
-    my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-		{ 'service' => 'smtp',
-		  'command' => 'smtpd'});
     my $vscan = SCR->Execute('.mail.postfix.mastercf.findService',
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd'} );
+    my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
+		{ 'service' => 'smtp',
+		  'command' => 'smtpd'});
+print "SMTP";
+print Dumper ($smtp);
+print "VSCAN";
+print Dumper ($vscan);
     if( defined $smtp->[0] && defined $smtp->[0]->{'options'} )
     { 
 	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[localhost]:10024' && $vscan )
@@ -1186,6 +1190,7 @@ sub ReadMailPrevention {
 		{
 	  	    $MailPrevention{'VSCount'} = $1;
 		}
+		$ismax = 1;
 	    }
 	    if( !$ismax )
 	    {
@@ -1200,7 +1205,7 @@ sub ReadMailPrevention {
     {
         $ret = $imap->login($imapadm, $AdminPassword);
 	if($$ret{Status} eq "ok") {
-	    $ret = $imap->select('NEWSPAM'); 
+	    $ret = $imap->select('NewSpam'); 
 	    if( $ret->{Status} eq 'ok' )
 	    {
 	        $MailPrevention{'SpamLearning'} = YaST::YCP::Boolean(1);
@@ -1358,6 +1363,7 @@ sub WriteMailPrevention {
     SCR->Read('.mail.postfix.mastercf');
     if( $MailPrevention->{'VirusScanning'} )
     {
+	$MailPrevention->{'VSCount'}) = 5 if( ! defined $MailPrevention->{'VSCount'});
 	my $err = activate_virus_scanner($MailPrevention->{'VSCount'});
 	if( $err ne "" )
 	{
@@ -1450,7 +1456,50 @@ sub WriteMailPrevention {
 		$ret = $imap->setacl('NoSpam',  $imapadm, "lrswipkxtea");
 		$ret = $imap->setacl('NewSpam', 'anyone', "lrswi");
 		$ret = $imap->setacl('NoSpam',  'anyone', "lsi");
+		my $lernspam = '#!/bin/bash
+LOG=/var/log/lern-spam
+/usr/share/oss/tools/oss_date.sh >> $LOG
+if [ ! -d /var/spool/imap/NewSpam ]
+then
+  exit
+fi
+
+setfacl -m u:vscan:rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
+setfacl -m m::rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
+
+su - vscan -c "/usr/bin/sa-learn --sync"
+(
+for i in `ls /var/spool/imap/NewSpam/[0-9]* 2> /dev/null`
+do
+   setfacl -m user:vscan:r-x $i
+   echo $i 
+   su - vscan -c "/usr/bin/sa-learn --spam $i"
+   rm $i
+done
+) >> $LOG  2>&1
+su - cyrus -c "reconstruct NewSpam" &>/dev/null
+
+(
+for i in `ls /var/spool/imap/NoSpam/[0-9]* 2> /dev/null`
+do
+   setfacl -m user:vscan:r-x $i
+   echo $i 
+   su - vscan -c "/usr/bin/sa-learn --ham $i"
+   rm $i
+done
+) >> $LOG  2>&1
+su - cyrus -c "reconstruct NoSpam" &>/dev/null
+
+setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
+';
+		SCR->Write(.target.string,"/etc/cron.hourly/lern-spam",$lernspam);
+		SCR->Write(.target.bash,"chmod 755 /etc/cron.hourly/lern-spam");
 	    }
+	}
+	else
+	{
+		SCR->Write(.target.bash,"test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
+	        $ret = $imap->delete('NewSpam'); 
 	}
     }
     return  1;
