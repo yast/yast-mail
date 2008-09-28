@@ -1363,7 +1363,7 @@ sub WriteMailPrevention {
     SCR->Read('.mail.postfix.mastercf');
     if( $MailPrevention->{'VirusScanning'} )
     {
-	$MailPrevention->{'VSCount'}) = 5 if( ! defined $MailPrevention->{'VSCount'});
+	$MailPrevention->{'VSCount'} = 5 if( ! defined $MailPrevention->{'VSCount'});
 	my $err = activate_virus_scanner($MailPrevention->{'VSCount'});
 	if( $err ne "" )
 	{
@@ -1492,13 +1492,13 @@ su - cyrus -c "reconstruct NoSpam" &>/dev/null
 
 setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 ';
-		SCR->Write(.target.string,"/etc/cron.hourly/lern-spam",$lernspam);
-		SCR->Write(.target.bash,"chmod 755 /etc/cron.hourly/lern-spam");
+		SCR->Write(".target.string","/etc/cron.hourly/lern-spam",$lernspam);
+		SCR->Write(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
 	    }
 	}
 	else
 	{
-		SCR->Write(.target.bash,"test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
+		SCR->Write(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
 	        $ret = $imap->delete('NewSpam'); 
 	}
     }
