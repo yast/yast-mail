@@ -94,9 +94,9 @@ and configured too. You can also install other (commercial) virus scanner engine
 _("<p><b><big>Configure Spam Learning Extension:</big></b><br>
 The spam learning extension can only be configured if the local delivery method is <b>cyrus imapd</b>.
 In this case the shared folders <b>NewSpam</b> and <b>NoSpam</b> will be created. Spam e-mail 
-which was not detected by <b>SpamAssassin</b> should be put into the folder <p>NewSpam</p>.
+which was not detected by <b>SpamAssassin</b> should be put into the folder <b>NewSpam</b>.
 If you want your spam finder to be most effective you should also put non spam e-mail into
-the folder <p>NoSpam</p>. The e-mails in this folder cannot be read by anyone.
+the folder <b>NoSpam</b>. The e-mails in this folder cannot be read by anyone.
 </p>
 "),
 
