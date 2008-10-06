@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Oct  6 12:17:22 CEST 2008 - varkoly@suse.de
+
+- (bnc#432405) - typo in mail.pot 
+
+-------------------------------------------------------------------
 Sun Sep 28 10:28:17 CEST 2008 - varkoly@suse.de
 
 - Fixing (bnc#422022) - HTML markup shows in YAST dialogue 

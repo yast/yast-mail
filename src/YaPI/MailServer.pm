@@ -1167,10 +1167,10 @@ sub ReadMailPrevention {
     my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
 		{ 'service' => 'smtp',
 		  'command' => 'smtpd'});
-print "SMTP";
-print Dumper ($smtp);
-print "VSCAN";
-print Dumper ($vscan);
+#print "SMTP";
+#print Dumper ($smtp);
+#print "VSCAN";
+#print Dumper ($vscan);
     if( defined $smtp->[0] && defined $smtp->[0]->{'options'} )
     { 
 	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[localhost]:10024' && $vscan )
