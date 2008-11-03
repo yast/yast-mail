@@ -1096,7 +1096,7 @@ sub ReadMailPrevention {
 			       'RBLList'                    => [],
 			       'AccessList'                 => [],
 			       'VirusScanning'              => YaST::YCP::Boolean(0),
-			       'VSCount'                    => 10,
+			       'VSCount'                    => YaST::YCP::Integer(5),
 			       'SpamLearning'               => YaST::YCP::Boolean(0)
                           );
 
@@ -1188,13 +1188,13 @@ sub ReadMailPrevention {
 	    	s/\s+//g;
 		if ( /^\$max_servers=(\d+)/ )
 		{
-	  	    $MailPrevention{'VSCount'} = $1;
+	  	    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
 		}
 		$ismax = 1;
 	    }
 	    if( !$ismax )
 	    {
-	        $MailPrevention{'VSCount'} = 2;
+	        $MailPrevention{'VSCount'} = YaST::YCP::Integer(5);
 	    }
 	}
     }
