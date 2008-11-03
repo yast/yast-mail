@@ -701,11 +701,9 @@ y2milestone("---- VSCount %1",VSCount);
 	SpamL = `Left(`CheckBox (`id(`SpamLearning),  `opt(`notify), _("Configure Spam Learning Extension"), SpamLearning));
   }
   term content = `VBox (
-	`HBox(
-	        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
-		`HSpacing (1),
-	        `Left(`TextEntry (`id(`VSCount), _("Count of Virsus Scanner Process"), sformat("%1",VSCount)))
-	),
+        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
+	`VSpacing (1),
+	`Left(`IntField (`id(`VSCount), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
 	`VSpacing (1),
 	SpamL,
 	`VSpacing (1),
