@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Nov  4 15:09:49 CET 2008 - varkoly@suse.de
+
+- integer value have to be marked for yast modules 
+
+-------------------------------------------------------------------
 Mon Oct  6 12:17:22 CEST 2008 - varkoly@suse.de
 
 - (bnc#432405) - typo in mail.pot 
