@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Nov  7 16:05:23 CET 2008 - varkoly@suse.de
+
+- (bnc#440096) - LDAP mail plugin always sets imap quota even if not checked 
+
+-------------------------------------------------------------------
 Tue Nov  4 15:09:49 CET 2008 - varkoly@suse.de
 
 - integer value have to be marked for yast modules 
