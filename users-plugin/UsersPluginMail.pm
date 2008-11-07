@@ -777,7 +777,7 @@ sub cond_IMAP_OP {
                 #return undef;
             }
         }
-	if( $imapquota > -1 ) {
+	if( $imapquota > 0 ) {
 	    $ret = $imap->setquota($fname, ("STORAGE", $imapquota ) );
 	    if($$ret{Status} ne "ok") {
 		y2internal("setquota failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
@@ -871,7 +871,7 @@ sub cond_IMAP_OP {
                         #return undef;
                     }
                 }
-                if( $imapquota > -1 ) {
+                if( $imapquota > 0 ) {
                     $ret = $imap->setquota($fname, ("STORAGE", $imapquota ) );
                     if($$ret{Status} ne "ok") {
                 	y2internal("setquota failed: Serverresponse:$$ret{Status} => $$ret{Text}\n");
