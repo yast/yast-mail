@@ -214,7 +214,8 @@ sub Check {
     # check the presence of required attributes
     foreach my $req (@required_attrs) {
 	my $attr	= lc ($req);
-	my $val		= $data->{$attr};
+	my $val		= $data->{$req};
+	$val	= $data->{$attr} if (!defined $val);
 	if (!defined $val || $val eq "" || 
 	    (ref ($val) eq "ARRAY" && 
 		((@{$val} == 0) || (@{$val} == 1 && $val->[0] eq "")))) {
@@ -293,7 +294,7 @@ sub Add {
     if( grep /^UsersPluginMail$/, @{$data->{'plugins_to_remove'}} ) {
         my @updated_oc;
         foreach my $oc ( @{$data->{'objectClass'}} ) {
-            if ( lc($oc) ne "suseMailRecipient" ) {
+            if ( lc($oc) ne "susemailrecipient" ) {
                 push @updated_oc, $oc;
             }
         }
@@ -367,7 +368,7 @@ sub Edit {
     if( grep /^UsersPluginMail$/, @{$data->{'plugins_to_remove'}} ) {
         my @updated_oc;
         foreach my $oc ( @{$data->{'objectClass'}} ) {
-            if ( lc($oc) ne "suseMailRecipient" ) {
+            if ( lc($oc) ne "susemailrecipient" ) {
                 push @updated_oc, $oc;
             }
         }
