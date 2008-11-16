@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Nov 16 15:47:20 CET 2008 - varkoly@suse.de
+
+- (bnc#431002) – Yast2 mail client lacking important features 
+
+-------------------------------------------------------------------
 Sun Nov 16 12:58:44 CET 2008 - varkoly@suse.de
 
 - (bnc#395293) - yast2-dns-server and yast2- mail do not co-operate correctly 
