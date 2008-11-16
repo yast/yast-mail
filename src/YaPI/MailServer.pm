@@ -2214,6 +2214,20 @@ sub WriteMailLocalDomains {
 
     my $Domains          = {};
 
+    # We have to work with yast2-dns-server together
+    if( -e '/etc/sysconfig/named' )
+    {
+	my $reload_script = SCR->Read (".sysconfig.named.NAMED_INITIALIZE_SCRIPTS") || "";
+	my @reload_scripts = split / /, ((defined $reload_script) ? $reload_script:"");
+	my $already_present = scalar (grep (/ldapdump/, @reload_scripts)) > 0;
+        if (! $already_present)
+        {
+            push @reload_scripts, "ldapdump";
+	    SCR->Write (".sysconfig.named.NAMED_INITIALIZE_SCRIPTS", $reload_script);
+	    SCR->Write (".sysconfig.named", undef);
+        }
+    }
+
     #If nothing to do we don't do antithing
     if(! $MailLocalDomains->{'Changed'})
     {
