@@ -356,6 +356,8 @@ define symbol OutgoingDialog () ``{
 	`VSquash (
 	    `VBox (
 		WJ_MakeWidget (`outgoing_mail_server),
+		// TLS
+		`CheckBox( `id(`tls),    _("The server use &TLS"), Mail::smtp_use_TLS ),
 		// Translators: button
 		// TODO ...
 		`PushButton (`id(`outgoing_details), _("&Masquerading")),
@@ -410,6 +412,7 @@ define symbol OutgoingDialog () ``{
 
     if (ret == `next || contains (buttons, ret))
     {
+        Mail::smtp_use_TLS = (boolean)UI::QueryWidget (`id (`tls), `Value);
 	WJ_Set (widgets);
     }
     Wizard::RestoreScreenShotName ();
@@ -942,9 +945,7 @@ define symbol OutgoingAuthOptions() ``{
 			// text entry
 			`TextEntry(`id(`user),   _("&User name")),
 			// password entry
-			`Password( `id(`passw),  _("&Password")),
-			// TLS
-			`CheckBox( `id(`tls),    _("The server use &TLS"))
+			`Password( `id(`passw),  _("&Password"))
 		    )
 		),
 		`HWeight(1,
@@ -961,7 +962,6 @@ define symbol OutgoingAuthOptions() ``{
 
     if (config == $[]) {
 	config = add(config, "server",   Mail::outgoing_mail_server);
-	config = add(config, "tls",      Mail::smtp_use_TLS);
 	config = add(config, "user",     "");
 	config = add(config, "password", "");
     }
@@ -969,7 +969,6 @@ define symbol OutgoingAuthOptions() ``{
     UI::ChangeWidget(`id(`server), `Value, config["server"]:"");
     UI::ChangeWidget(`id(`user),   `Value, config["user"]:"");
     UI::ChangeWidget(`id(`passw),  `Value, config["password"]:"");
-    UI::ChangeWidget(`id(`tls),    `Value, (boolean)config["tls"]:true);
 
     while (true)
     {
@@ -989,7 +988,6 @@ define symbol OutgoingAuthOptions() ``{
 	    string server   = (string) UI::QueryWidget (`id (`server), `Value);
 	    string user     = (string) UI::QueryWidget (`id (`user), `Value);
 	    string password = (string) UI::QueryWidget (`id (`passw), `Value);
-	    boolean tls     = (boolean)UI::QueryWidget (`id (`tls), `Value);
 
 	    if (server == "" && user == "" && password == "")
 	    {
@@ -1002,7 +1000,6 @@ define symbol OutgoingAuthOptions() ``{
 		config["server"]   = server;
 		config["user"]     = user;
 		config["password"] = password;
-		config["tls"]      = tls;
 	    }
 
 	    // validity checks: reuse fetchmail widgets
@@ -1029,7 +1026,6 @@ define symbol OutgoingAuthOptions() ``{
 	    // #158220
 	    Mail::Touch (Mail::outgoing_mail_server != config["server"]:"");
 	    Mail::outgoing_mail_server = config["server"]:"";
-	    Mail::smtp_use_TLS         = config["tls"]:true;
 	}
     }
     Wizard::RestoreScreenShotName ();

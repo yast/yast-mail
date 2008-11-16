@@ -453,7 +453,7 @@ Configure a scanner manually."));
 	}
 	else if (mta == `postfix)
 	{
-	    smtp_use_TLS = ( (string) SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST) == "yes" );
+	    smtp_use_TLS = ( (string) SCR::Read (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT) == "yes" );
 	    outgoing_mail_server = (string)
 		SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	}
