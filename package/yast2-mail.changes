@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Dec  9 16:37:33 CET 2008 - varkoly@suse.de
+
+- (bnc#450888) - amavisd.conf broken (Beta6) 
+
+-------------------------------------------------------------------
 Sun Nov 16 15:47:20 CET 2008 - varkoly@suse.de
 
 - (bnc#431002) – Yast2 mail client lacking important features 
