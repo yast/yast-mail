@@ -703,7 +703,7 @@ y2milestone("---- VSCount %1",VSCount);
   term content = `VBox (
         `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
 	`VSpacing (1),
-	`Left(`IntField (`id(`VSCount), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
+	`Left(`IntField (`id(`VSCount),  `opt(`notify), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
 	`VSpacing (1),
 	SpamL,
 	`VSpacing (1),
@@ -1420,7 +1420,7 @@ any ComplexDialog()
 	   content  = MailTransportsDialog();
 	   helptext = HELPS["MailTransports"]:"Bla Bla Bla";
         } else if(FocusedContent == "MailPrevention") {
-	  if(ret == `VirusScanning || ret == "off" || ret == "medium" || ret == "hard") {
+	  if(ret == `VSCount || ret == `VirusScanning || ret == "off" || ret == "medium" || ret == "hard") {
 	    MailServer::MailPrevention["Changed"] = true;
             continue;
           }

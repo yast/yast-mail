@@ -1167,13 +1167,13 @@ sub ReadMailPrevention {
     my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
 		{ 'service' => 'smtp',
 		  'command' => 'smtpd'});
-#print "SMTP";
-#print Dumper ($smtp);
-#print "VSCAN";
-#print Dumper ($vscan);
+#print STDERR "SMTP";
+#print STDERR Dumper ($smtp);
+#print STDERR "VSCAN";
+#print STDERR Dumper ($vscan);
     if( defined $smtp->[0] && defined $smtp->[0]->{'options'} )
     { 
-	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[localhost]:10024' && $vscan )
+	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[127.0.0.1]:10024' && $vscan )
 	{
 	    $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
 	    if( ! open(IN,$aconf) )
@@ -1232,6 +1232,7 @@ sub WriteMailPrevention {
     }
    
     y2milestone("-- WriteMailPrevention --");
+    #print STDERR Dumper( $MailPrevention );
     # Make LDAP Connection 
     my $ldapMap = $self->ReadLDAPDefaults($AdminPassword);
     if( !$ldapMap )
@@ -1393,7 +1394,7 @@ sub WriteMailPrevention {
         if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
         {
 	    my $opts = $smtps->[0]->{options};
-	    $opts->{'content_filter'} = 'smtp:[localhost]:10024';
+	    $opts->{'content_filter'} = 'smtp:[127.0.0.1]:10024';
 	    SCR->Execute('.mail.postfix.mastercf.modifyService',
 			 { 'service' => 'smtps',
 			   'command' => 'smtpd',
@@ -2785,6 +2786,8 @@ fi';
        $TMP->{'Changed'}               = 1;
        $TMP->{'BasicProtection'}       = 'medium';
        $TMP->{'VirusScanning'}         = 1;
+       $TMP->{'VSCount'}               = 2;
+       $TMP->{'SpamLearning'}          = 0;
        $self->WriteMailPrevention($TMP,$AdminPassword); 
     #Setup Mail Server Relaying
 
@@ -2909,7 +2912,12 @@ sub activate_virus_scanner {
    my $ismax  = 0;
    foreach my $l ( @ACONF )
    {
-	$ismax = 1 if $l =~ s/^\$max_servers = \d+/\$max_servers = $VSCount/;
+	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
+	{
+	   #fix bnc#450888 : remove the supplementary entries
+	   next if $ismax;
+	   $ismax = 1;
+	}
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
 	{
