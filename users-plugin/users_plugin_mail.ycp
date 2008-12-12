@@ -253,7 +253,7 @@
              imap   = `Frame ( _("IMAP Quota"),
                         `VBox(
                                  `HBox(
-					`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"), intimapquota >= 0),
+					`CheckBox( `id(`enableImapquota ), `opt(`notify), _("Enable IMAP Quota"), intimapquota >= 0),
 					`HSpacing(5),
 					`IntField (`id(`imapquota), _("in kByte"), 1, 10000000, intimapquota >= 0 ? intimapquota : 10000)
                                        ),
@@ -291,7 +291,7 @@
             UI::ChangeWidget (`id (`deleteEmail), `Enabled, UI::QueryWidget (`id (`table), `CurrentItem) != nil);
             UI::ChangeWidget (`id (`editEmail), `Enabled, UI::QueryWidget (`id (`table), `CurrentItem) != nil);
             if(data["localdeliverytype"]:"local" == "cyrus" ) {
-               UI::ChangeWidget(`id(`imapquota), `Enabled, ((boolean) UI::QueryWidget(`id(`enableImpapquota), `Value)));
+               UI::ChangeWidget(`id(`imapquota), `Enabled, ((boolean) UI::QueryWidget(`id(`enableImapquota), `Value)));
             }
 
             ret = UI::UserInput();
@@ -375,7 +375,7 @@
                  }
 
                  if(data["localdeliverytype"]:"local" == "cyrus" ) {
-                    if ((boolean) UI::QueryWidget(`id(`enableImpapquota), `Value))
+                    if ((boolean) UI::QueryWidget(`id(`enableImapquota), `Value))
                     {
                        data["suseImapQuota"] = (integer) UI::QueryWidget(`id(`imapquota), `Value);
                     }
