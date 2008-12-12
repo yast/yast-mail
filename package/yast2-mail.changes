@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Fri Dec 12 06:37:41 CET 2008 - varkoly@suse.de
+
+- bnc#458553 - YaSt2 Mail module do not install cyrus-sasl-saslauthd
+- new user has got default quota only
+- quota value not readable in ncurses
+ 
+
+-------------------------------------------------------------------
 Tue Dec  9 16:37:33 CET 2008 - varkoly@suse.de
 
 - (bnc#450888) - amavisd.conf broken (Beta6) 
