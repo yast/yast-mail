@@ -268,8 +268,7 @@ sub AddBefore {
     my $imapadmpw  = Ldap->bind_pass();
     my $MailLocalDelivery = YaPI::MailServer->ReadMailLocalDelivery($imapadmpw);
     $data->{'localdeliverytype'} = $MailLocalDelivery->{'Type'};
-    if($data->{'localdeliverytype'} eq 'cyrus' ) {
-        #setting default quota
+    if($data->{'localdeliverytype'} eq 'cyrus' && ! defined $data->{'suseImapQuota'} ) {
         $data->{'suseImapQuota'} =  $ldapret->[0]->{'suseImapDefaultQuota'}->[0];
     }
 

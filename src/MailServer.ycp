@@ -168,6 +168,7 @@ global boolean cyrus_installed     = false;
 global boolean postfix_installed   = false;
 global boolean fetchmail_installed = false;
 global boolean sasl_installed      = false;
+global boolean saslauthd_installed = false;
 global boolean plugins_installed   = false;
 
 /*
@@ -269,6 +270,7 @@ global boolean CheckPackages()
     ldap_installed      = Installed("yast2-ldap-client");
     amavis_installed    = Installed("amavisd-new");
     sasl_installed      = Installed("cyrus-sasl-plain");
+    saslauthd_installed = Installed("cyrus-sasl-saslauthd");
     plugins_installed   = Installed("yast2-mail-plugins");
     string         to_install = "";
     list<string> l_to_install = [];
@@ -297,6 +299,11 @@ global boolean CheckPackages()
     {
 	l_to_install = add( l_to_install, "cyrus-sasl-plain" );
 	to_install   = to_install + "cyrus-sasl-plain\n";
+    }
+    if(!saslauthd_installed)
+    {
+	l_to_install = add( l_to_install, "cyrus-sasl-saslauthd" );
+	to_install   = to_install + "cyrus-sasl-saslauthd\n";
     }
     if(!plugins_installed)
     {

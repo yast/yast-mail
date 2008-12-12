@@ -253,15 +253,13 @@
              imap   = `Frame ( _("IMAP Quota"),
                         `VBox(
                                  `HBox(
-                                       `IntField (`id(`imapquota), _("in kByte"), 1, 10000000,
-                                                  intimapquota >= 0 ? intimapquota : 10000),
-                                       `HStretch()
+					`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"), intimapquota >= 0),
+					`HSpacing(5),
+					`IntField (`id(`imapquota), _("in kByte"), 1, 10000000, intimapquota >= 0 ? intimapquota : 10000)
                                        ),
-                                 `Left(`Label(sformat (_("IMAP quota already in use: %1 kByte"),
-                                                 data["imapquotaused"]:"0" != nil ? data["imapquotaused"]:"0":"0"))),
-                                 `Left(`CheckBox( `id(`enableImpapquota ), `opt(`notify), _("Enable IMAP Quota"),
-                                                  intimapquota >= 0
-                                                  ))
+                                  `VSpacing(0.5),
+                                  `Left(`Label(sformat (_("IMAP quota already in use: %1 kByte"),
+                                                 data["imapquotaused"]:"0" != nil ? data["imapquotaused"]:"0":"0")))
                         )
                 );
         }
