@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Jan  4 10:08:56 CET 2009 - varkoly@suse.de
+
+- bnc#463430 - Mail to a shared folder can couse infinit loop 
+
+-------------------------------------------------------------------
 Fri Dec 12 06:37:41 CET 2008 - varkoly@suse.de
 
 - bnc#458553 - YaSt2 Mail module do not install cyrus-sasl-saslauthd
