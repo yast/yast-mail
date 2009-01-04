@@ -169,12 +169,11 @@
         string what    = config["what"]:"user";
         string action  = data["what"]:"";
 
-        if( data["suseMailCommand"]:"" != "" ) {
-            sharedfolder = true;
-        }
         if(  data["suseDeliveryToMember"]:"no" == "yes" ) {
             deliverytomember = true;
-	    sharedfolder     = false;
+        }
+        if(  data["suseDeliveryToFolder"]:"no" == "yes" ) {
+            sharedfolder = true;
         }
 
         map<string, any> tmp_data        = $[];
@@ -385,13 +384,12 @@
                 }
 // We put it everytime into the LDAP, and the ldap filter control if it is visible
                 data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
-//               if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
-//                   data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
-//               } else {
-//                   if( data["suseMailCommand"]:"" != "" ) {
-//                     data = remove (data, "suseMailCommand");
-//                   }
-//               }
+                if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
+		   data["suseDeliveryToFolder"] = "yes";
+                } else {
+                   data["suseDeliveryToFolder"] = "no";
+                }
+
                 string err = UsersPluginMail::Check ( config, (map<string,any>) union (data, tmp_data));
 
                 if (err != "")
