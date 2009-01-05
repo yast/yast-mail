@@ -2917,8 +2917,10 @@ sub activate_virus_scanner {
    my @ACONF = <IN>;
    close(IN);
    
-   my $isclam = 0;
-   my $ismax  = 0;
+   my $isclam       = 0;
+   my $ismax        = 0;
+   my $ismyhostname = 0;
+   my $myhostname   = `hostname -f`;
    foreach my $l ( @ACONF )
    {
 	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
@@ -2926,6 +2928,12 @@ sub activate_virus_scanner {
 	   #fix bnc#450888 : remove the supplementary entries
 	   next if $ismax;
 	   $ismax = 1;
+	}
+	if ( $l =~ s/^\$myhostname = .*;/\$myhostname = $myhostname;/ )
+	{
+	   #fix bnc#450888 : remove the supplementary entries
+	   next if $ismyhostname;
+	   $ismyhostname = 1;
 	}
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
@@ -2943,6 +2951,10 @@ sub activate_virus_scanner {
    if( !$ismax )
    {
        push @CONF, '$max_servers = '.$VSCount;
+   }
+   if( !$ismyhostname )
+   {
+       push @CONF, '$myhostname = '.$myhostname;
    }
    if( ! open(OUT,">$aconf.new") )
    {
