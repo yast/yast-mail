@@ -348,7 +348,14 @@ sub WriteGlobalSettings {
                      'command' => 'smtp' });
        if(! defined $smtpsrv )
        {
-           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp', 'command' => 'smtp' });
+           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp',
+                        'type'    => 'inet',
+                        'private' => 'n',
+                        'unpriv'  => '-',
+                        'chroot'  => 'n',
+                        'wakeup'  => '-',
+                        'maxproc' => '-',
+                        'command' => 'smtpd' });
        }
     }
     
@@ -1161,44 +1168,38 @@ sub ReadMailPrevention {
     }
 
     # Now we looking for if vscan (virusscanning) is started.
-    my $vscan = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanin = SCR->Execute('.mail.postfix.mastercf.findService',
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd'} );
-    my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-		{ 'service' => 'smtp',
-		  'command' => 'smtpd'});
-#print STDERR "SMTP";
-#print STDERR Dumper ($smtp);
-#print STDERR "VSCAN";
-#print STDERR Dumper ($vscan);
-    if( defined $smtp->[0] && defined $smtp->[0]->{'options'} )
-    { 
-	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[127.0.0.1]:10024' && $vscan )
-	{
-	    $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
-	    if( ! open(IN,$aconf) )
-	    {
-	       return "Error: $!";
-	    }
-	    my @ACONF = <IN>;
-	    close(IN);
-	    my $ismax = 0;
-   	    foreach ( @ACONF )
-   	    {
-	    	s/\s+//g;
-		if ( /^\$max_servers=(\d+)/ )
-		{
-	  	    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
-		}
-		$ismax = 1;
-	    }
-	    if( !$ismax )
-	    {
-	        $MailPrevention{'VSCount'} = YaST::YCP::Integer(5);
-	    }
-	}
-    }
+    my $vscanout = SCR->Execute('.mail.postfix.mastercf.findService',
+		{ 'service' => 'amavis',
+		  'command' => 'lmtp'} );
+    my $content_filter = read_attribute($MainCf,'content_filter');
 
+    if( $content_filter eq 'amavis:[127.0.0.1]:10024' && $vscanin && $vscanout)
+    {
+        $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
+        if( ! open(IN,$aconf) )
+        {
+           return "Error: $!";
+        }
+        my @ACONF = <IN>;
+        close(IN);
+        my $ismax = 0;
+        foreach ( @ACONF )
+        {
+        	s/\s+//g;
+    	if ( /^\$max_servers=(\d+)/ )
+    	{
+      	    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
+    	}
+    	$ismax = 1;
+        }
+        if( !$ismax )
+        {
+            $MailPrevention{'VSCount'} = YaST::YCP::Integer(5);
+        }
+    }
     # make IMAP connection
     my $imap = new Net::IMAP($imaphost, Debug => 0);
     if( $imap )
@@ -1372,34 +1373,64 @@ sub WriteMailPrevention {
 				   code => "VIRUS_SCANNER_FAILED",
 				   description => "activating the virus scanner failed: $err");
 	}
-        if( SCR->Execute('.mail.postfix.mastercf.findService',
-			 { 'service' => 'smtp', 'command' => 'smtpd' }))
-        {
-             SCR->Execute('.mail.postfix.mastercf.modifyService',
-   		{ 'service' => 'smtp',
-		  'command' => 'smtpd',
-		  'maxproc' => $MailPrevention->{'VSCount'},
-		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
-        }
-	else
-	{
-             SCR->Execute('.mail.postfix.mastercf.addService',
-   		{ 'service' => 'smtp',
-		  'command' => 'smtpd',
-		  'maxproc' => $MailPrevention->{'VSCount'},
-		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
-        }
+	# This is only for systems updated from SLES10
 	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
 				 { 'service' => 'smtps', 'command' => 'smtpd' });
         if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
         {
 	    my $opts = $smtps->[0]->{options};
-	    $opts->{'content_filter'} = 'smtp:[127.0.0.1]:10024';
-	    SCR->Execute('.mail.postfix.mastercf.modifyService',
-			 { 'service' => 'smtps',
-			   'command' => 'smtpd',
-			   'options' => $opts } );
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    SCR->Execute('.mail.postfix.mastercf.modifyService',
+				 { 'service' => 'smtps',
+				   'command' => 'smtpd',
+		  		   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
         }
+	my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
+				 { 'service' => 'smtp', 'command' => 'smtpd' });
+        if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
+        {
+	    my $opts = $smtp->[0]->{options};
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    SCR->Execute('.mail.postfix.mastercf.modifyService',
+				 { 'service' => 'smtp',
+				   'command' => 'smtpd',
+		  		   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
+        }
+	if( SCR->Execute('.mail.postfix.mastercf.findService',
+	    { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
+	{
+	    SCR->Execute('.mail.postfix.mastercf.deleteService',
+	        { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	}
+	if( SCR->Execute('.mail.postfix.mastercf.findService',
+	    { 'service' => 'amavis', 'command' => 'lmtp' }))
+	{
+	    SCR->Execute('.mail.postfix.mastercf.deleteService',
+	        { 'service' => 'amavis', 'command' => 'lmtp' });
+	}
+	# End This is only for systems updated from SLES10
+	# create smtpd pocess for getting back the emails
+        SCR->Execute('.mail.postfix.mastercf.addService',
+		{ 'service' => 'amavis',
+		  'command' => 'lmtp',
+		  'type'    => 'unix',
+		  'private' => '-',
+		  'unpriv'  => '-',
+		  'chroot'  => '-',
+		  'wakeup'  => '-',
+		  'maxproc' => $MailPrevention->{'VSCount'},
+		  'options' => { lmtp_data_done_timeout     => 1200,
+				 lmtp_send_xforward_command => 'yes',
+				 disable_dns_lookups        => 'yes',
+				 max_use                    => 20 } } );
         SCR->Execute('.mail.postfix.mastercf.addService',
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd',
@@ -1409,30 +1440,40 @@ sub WriteMailPrevention {
 		  'chroot'  => 'n',
 		  'wakeup'  => '-',
 		  'maxproc' => '-',
-		  'options' => { 'content_filter' => '' } } );
+		  'options' => {  content_filter => '',
+				  local_recipient_maps => '',
+				  relay_recipient_maps => '',
+				  smtpd_delay_reject => 'no',
+				  smtpd_restriction_classes => '',
+				  smtpd_client_restrictions => '',
+				  smtpd_helo_restrictions => '',
+				  smtpd_sender_restrictions => '',
+				  smtpd_recipient_restrictions => 'permit_mynetworks,reject',
+				  smtpd_data_restrictions => 'reject_unauth_pipelining',
+				  smtpd_end_of_data_restrictions => '',
+				  mynetworks => '127.0.0.0/8',
+				  smtpd_error_sleep_time => '0',
+				  smtpd_soft_error_limit => '1001',
+				  smtpd_hard_error_limit => '1000',
+				  smtpd_client_connection_count_limit => '0',
+				  smtpd_client_connection_rate_limit => '0',
+				  receive_override_options => 'no_header_body_checks,no_unknown_recipient_checks'
+		  		} 
+		} );
+       write_attribute($MainCf,'content_filter','amavis:[127.0.0.1]:10024');   
     }
     else
     {
-      SCR->Execute('.mail.postfix.mastercf.deleteService',
-          { 'service' => 'localhost:10025', 'command' => 'smtpd' });
-      SCR->Execute('.mail.postfix.mastercf.modifyService', 
-          { 'service' => 'smtp', 'command' => 'smtpd', 'options' => {} } );
-
-      my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-				 { 'service' => 'smtps', 'command' => 'smtpd' });
-      if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-      {
-	  my $opts = $smtps->[0]->{options};
-	  delete $opts->{'content_filter'};
-	  SCR->Execute('.mail.postfix.mastercf.modifyService',
-		       { 'service' => 'smtps',
-			 'command' => 'smtpd',
-			 'options' => $opts });
-      }
-      Service->Stop('amavis');
-      Service->Stop('clamd');
-      Service->Disable('amavis');
-      Service->Disable('clamd');
+	SCR->Execute('.mail.postfix.mastercf.deleteService',
+	    { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	SCR->Execute('.mail.postfix.mastercf.deleteService',
+	    { 'service' => 'amavis', 'command' => 'lmtp' });
+	write_attribute($MainCf,'content_filter','');   
+	
+	Service->Stop('amavis');
+	Service->Stop('clamd');
+	Service->Disable('amavis');
+	Service->Disable('clamd');
     }
 
     # now we looks if the ldap entries in the main.cf for the access table are OK.
@@ -1643,7 +1684,6 @@ sub WriteMailRelaying {
     }
     
     y2milestone("-- WriteMailRelaying --");
-#print STDERR Dumper([$MailRelaying]);
     # Make LDAP Connection 
     my $ldapMap = $self->ReadLDAPDefaults($AdminPassword);
     if( !$ldapMap )
@@ -2920,7 +2960,7 @@ sub activate_virus_scanner {
    my $isclam       = 0;
    my $ismax        = 0;
    my $ismyhostname = 0;
-   my $myhostname   = `hostname -f`;
+   my $myhostname   = `hostname -f`; chomp $myhostname;
    foreach my $l ( @ACONF )
    {
 	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
@@ -2929,7 +2969,7 @@ sub activate_virus_scanner {
 	   next if $ismax;
 	   $ismax = 1;
 	}
-	if ( $l =~ s/^\$myhostname = .*;/\$myhostname = $myhostname;/ )
+	if ( $l =~ s/^\$myhostname = .*;/\$myhostname = '$myhostname';/ )
 	{
 	   #fix bnc#450888 : remove the supplementary entries
 	   next if $ismyhostname;
@@ -2948,18 +2988,20 @@ sub activate_virus_scanner {
    	}
 	push @CONF, $l;
    }
+   pop @CONF;
    if( !$ismax )
    {
-       push @CONF, '$max_servers = '.$VSCount;
+       push @CONF, '$max_servers = '.$VSCount.";\n";
    }
    if( !$ismyhostname )
    {
-       push @CONF, '$myhostname = '.$myhostname;
+       push @CONF, '$myhostname = '."'$myhostname';\n";
    }
    if( ! open(OUT,">$aconf.new") )
    {
        return "Error: $!";
    }
+   push @CONF, '1;';
    print OUT @CONF;
    close(OUT);
    
