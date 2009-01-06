@@ -658,7 +658,7 @@ term MailTransportsDialog()
 
 term MailPreventionDialog(string CID, string CIDRBL)
 {
-  y2milestone("--Start MailTransportsDialog ---");
+  y2milestone("--Start MailPreventionDialog ---");
   list<term>     AccessItems= [];
   list<term>     RBLItems   = [];
   string  BasicProtection   =  (string)MailServer::MailPrevention["BasicProtection"]:"";
@@ -671,8 +671,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
   boolean BasicProtectionMedium = false;
   boolean BasicProtectionHard   = true;
 
-y2milestone("---- MailPrevention %1",MailServer::MailPrevention);
-y2milestone("---- VSCount %1",VSCount);
+  y2milestone("---- VSCount %1",VSCount);
 
   if(BasicProtection == "off"){
      BasicProtectionOff     = true;
@@ -701,9 +700,9 @@ y2milestone("---- VSCount %1",VSCount);
 	SpamL = `Left(`CheckBox (`id(`SpamLearning),  `opt(`notify), _("Configure Spam Learning Extension"), SpamLearning));
   }
   term content = `VBox (
-        `Left(`CheckBox (`id(`VirusScanning),     `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
+        `Left(`CheckBox (`id(`VirusScanning), `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
 	`VSpacing (1),
-	`Left(`IntField (`id(`VSCount),  `opt(`notify), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
+	`Left(`IntField (`id(`VSCount),       `opt(`notify), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
 	`VSpacing (1),
 	SpamL,
 	`VSpacing (1),
@@ -1349,6 +1348,10 @@ any ComplexDialog()
         ret       = event["ID"]:nil;
         EventType = event["EventType"]:nil;
 
+y2milestone("event %1",event);
+y2milestone("event %1",ret);
+y2milestone("FocusedContent %1",FocusedContent);
+
         if(ret == `cancel || ret == `abort ) {
             if(ReallyAbort()) break;
             else continue;
@@ -1655,9 +1658,6 @@ any ComplexDialog()
            focus_changed  = true;
            FocusedContent ="MailLocalDomains";
         }
-y2milestone("event %1",event);
-y2milestone("event %1",ret);
-y2milestone("FocusedContent %1",FocusedContent);
         if(ret != `cancel && ret != `abort && ret != `next ) {
           Wizard::SetContents(title, content ,helptext, false, true);
           Wizard::SetDesktopIcon("mail");
