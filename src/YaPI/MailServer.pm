@@ -1827,7 +1827,7 @@ sub ReadMailLocalDelivery {
     my %MailLocalDelivery = (
                                 'Changed'         => YaST::YCP::Boolean(0),
                                 'Type'            => '',
-                                'MailboxSizeLimit'=> '',
+                                'MailboxSizeLimit'=> 0,
                                 'FallBackMailbox' => '',
                                 'SpoolDirectory'  => '',
                                 'QuotaLimit'      => 90,
