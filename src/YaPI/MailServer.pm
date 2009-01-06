@@ -1374,36 +1374,37 @@ sub WriteMailPrevention {
 				   description => "activating the virus scanner failed: $err");
 	}
 	# This is only for systems updated from SLES10
-	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-				 { 'service' => 'smtps', 'command' => 'smtpd' });
-        if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-        {
-	    my $opts = $smtps->[0]->{options};
-	    if ( defined $opts->{'content_filter'} )
-	    {
-		    delete $opts->{'content_filter'};
-		    SCR->Execute('.mail.postfix.mastercf.modifyService',
-				 { 'service' => 'smtps',
-				   'command' => 'smtpd',
-		  		   'maxproc' => '-',
-				   'options' => $opts } );
-	    }
-        }
-	my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-				 { 'service' => 'smtp', 'command' => 'smtpd' });
-        if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
-        {
-	    my $opts = $smtp->[0]->{options};
-	    if ( defined $opts->{'content_filter'} )
-	    {
-		    delete $opts->{'content_filter'};
-		    SCR->Execute('.mail.postfix.mastercf.modifyService',
-				 { 'service' => 'smtp',
-				   'command' => 'smtpd',
-		  		   'maxproc' => '-',
-				   'options' => $opts } );
-	    }
-        }
+		my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
+					 { 'service' => 'smtps', 'command' => 'smtpd' });
+		if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
+		{
+		    my $opts = $smtps->[0]->{options};
+		    if ( defined $opts->{'content_filter'} )
+		    {
+			    delete $opts->{'content_filter'};
+			    SCR->Execute('.mail.postfix.mastercf.modifyService',
+					 { 'service' => 'smtps',
+					   'command' => 'smtpd',
+					   'maxproc' => '-',
+					   'options' => $opts } );
+		    }
+		}
+		my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
+					 { 'service' => 'smtp', 'command' => 'smtpd' });
+		if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
+		{
+		    my $opts = $smtp->[0]->{options};
+		    if ( defined $opts->{'content_filter'} )
+		    {
+			    delete $opts->{'content_filter'};
+			    SCR->Execute('.mail.postfix.mastercf.modifyService',
+					 { 'service' => 'smtp',
+					   'command' => 'smtpd',
+					   'maxproc' => '-',
+					   'options' => $opts } );
+		    }
+		}
+	# End This is only for systems updated from SLES10
 	if( SCR->Execute('.mail.postfix.mastercf.findService',
 	    { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
 	{
@@ -1416,7 +1417,6 @@ sub WriteMailPrevention {
 	    SCR->Execute('.mail.postfix.mastercf.deleteService',
 	        { 'service' => 'amavis', 'command' => 'lmtp' });
 	}
-	# End This is only for systems updated from SLES10
 	# create smtpd pocess for getting back the emails
         SCR->Execute('.mail.postfix.mastercf.addService',
 		{ 'service' => 'amavis',
@@ -2365,25 +2365,27 @@ sub WriteMailLocalDomains {
         }
 	else
 	{
-	  # This is a new domain, we create it. 
-	  # We create all the DNS attributes. `hostname -f` is the NS entry.
-          my $serial = POSIX::strftime("%Y%m%d%H%M",localtime);
-          my $host   = `hostname -f`; chomp $host;
-          my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
-                      'zoneName'                     => $name,
-                      'suseMailDomainType'           => $type,
-                      'suseMailDomainMasquerading'   => $masquerading,
+		# This is a new domain, we create it. 
+		# We create all the DNS attributes. `hostname -f` is the NS and MX entry.
+		my $serial = POSIX::strftime("%Y%m%d%H%M",localtime);
+		my $host   = `hostname -f`; chomp $host;
+		my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
+		      'zoneName'                     => $name,
+		      'suseMailDomainType'           => $type,
+		      'suseMailDomainMasquerading'   => $masquerading,
 		      'relativeDomainName'	     => '@',
 		      'dNSClass'	             => 'IN',
 		      'dNSTTL'	                     => '86400',
+		      'nSRecord'		     => $host.'.',
+		      'mXRecord'		     => '40 '.$host.'.',
 		      'sOARecord'                    => $host.'. root.'.$host.'. '.$serial.' 10800 3600 302400 43200'
-                 };
-          if(! SCR->Write('.ldap.add',{ "dn" => $DN } ,$tmp)){
-            my $ldapERR = SCR->Read(".ldap.error");
-            return $self->SetError(summary     => "LDAP add failed",
-                                   code        => "SCR_WRITE_FAILED",
-                                   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
-         }
+		 };
+		if(! SCR->Write('.ldap.add',{ "dn" => $DN } ,$tmp)){
+			my $ldapERR = SCR->Read(".ldap.error");
+			return $self->SetError(summary     => "LDAP add failed",
+					   code        => "SCR_WRITE_FAILED",
+					   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
+		}
        }
     }
 
