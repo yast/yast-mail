@@ -1,16 +1,9 @@
 -------------------------------------------------------------------
-Tue Jan  6 09:09:44 CET 2009 - varkoly@suse.de
+Tue Jan  6 09:47:46 CET 2009 - varkoly@suse.de
 
+- make progress bar by WriteDialog visable
 - bnc#463589 - YaST2 Mail Server & amavisd 
-
--------------------------------------------------------------------
-Mon Jan  5 13:23:15 CET 2009 - varkoly@suse.de
-
 - the myhostname in /etc/amavisd.conf must be set to FQHN 
-
--------------------------------------------------------------------
-Sun Jan  4 10:08:56 CET 2009 - varkoly@suse.de
-
 - bnc#463430 - Mail to a shared folder can couse infinit loop 
 
 -------------------------------------------------------------------
