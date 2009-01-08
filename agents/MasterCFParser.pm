@@ -71,7 +71,6 @@ other postfix commands, options must be a hash reference.
 
 package MasterCFParser;
 use strict;
-use Data::Dumper;
 no warnings 'redefine';
 
 ######################################################################################
@@ -140,8 +139,10 @@ sub readMasterCF {
 	while( defined $CFA[$c+1] && $CFA[$c+1] =~ /^\s+/ ) {
 	    $line .= $CFA[++$c];
 	}
-	
-	push @$cfa, line2service($line);
+	if( $line =~ /\w+/ )
+	{ #avoid emty lines
+		push @$cfa, line2service($line);
+	}
     }
     $this->{MCF} = $cfa;
     return 0;
@@ -247,7 +248,10 @@ sub getServiceByAttributes {
 	next if defined $s->{comment};
 	$foundmatches = 0;
 	foreach my $fs ( keys %$fsrv ) {
-	    $foundmatches++ if $fsrv->{$fs} eq $s->{$fs};
+	    if( defined $fsrv->{$fs} && defined $s->{$fs} )
+	    { 
+		    $foundmatches++ if $fsrv->{$fs} eq $s->{$fs};
+	    }
 	}
 	push @$retsrv, $s if $foundmatches == $nrkeys;
     }
@@ -420,7 +424,9 @@ sub service2line {
     my $line = '';
     if( defined $srv->{comment} ) {
 	$line = $srv->{comment};
-    } else {
+    } 
+    elsif( defined $srv->{service} && $srv->{type} && $srv->{private} && $srv->{unpriv} && $srv->{chroot} && $srv->{wakeup} && $srv->{maxproc} && $srv->{command} )
+    {
 	$line = 
 	    sprintf("%-8s %-5s %-6s %-7s %-7s %-8s %-7s %s",
 		    $srv->{service},
