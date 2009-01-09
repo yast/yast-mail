@@ -1189,15 +1189,15 @@ sub ReadMailPrevention {
         foreach ( @ACONF )
         {
         	s/\s+//g;
-    	if ( /^\$max_servers=(\d+)/ )
-    	{
-      	    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
-    	}
-    	$ismax = 1;
+		if ( /^\$max_servers=(\d+)/ )
+		{
+		    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
+		}
+		$ismax = 1;
         }
         if( !$ismax )
         {
-            $MailPrevention{'VSCount'} = YaST::YCP::Integer(5);
+            $MailPrevention{'VSCount'} = YaST::YCP::Integer(2);
         }
     }
     # make IMAP connection
@@ -2963,19 +2963,23 @@ sub activate_virus_scanner {
    my $ismax        = 0;
    my $ismyhostname = 0;
    my $myhostname   = `hostname -f`; chomp $myhostname;
+   my $mydomain     = `hostname -d`; chomp $mydomain;
    foreach my $l ( @ACONF )
    {
 	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
 	{
-	   #fix bnc#450888 : remove the supplementary entries
 	   next if $ismax;
 	   $ismax = 1;
 	}
 	if ( $l =~ s/^\$myhostname = .*;/\$myhostname = '$myhostname';/ )
 	{
-	   #fix bnc#450888 : remove the supplementary entries
 	   next if $ismyhostname;
 	   $ismyhostname = 1;
+	}
+	if ( $l =~ s/^\$mydomain = .*;/\$mydomain = '$mydomain';/ )
+	{
+	   push @CONF, $l;
+	   next ;
 	}
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
