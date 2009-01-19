@@ -145,17 +145,17 @@
             list<term> result = [];
             integer i = 0;
 
-            if( is(data["suseMailForwardAaddress"]:(any)"", string)
-                && size (data["suseMailForwardAaddress"]:"") > 0 )
+            if( is(data["suseMailForwardAddress"]:(any)"", string)
+                && size (data["suseMailForwardAddress"]:"") > 0 )
             {
                     result = [`item (`id (i),
-                                     data["suseMailForwardAaddress"]:"")];
+                                     data["suseMailForwardAddress"]:"")];
                     // transforming to list
-                    data["suseMailForwardAaddress"] = [data["suseMailForwardAaddress"]:""];
+                    data["suseMailForwardAddress"] = [data["suseMailForwardAddress"]:""];
             }
-            else if ( is(data["suseMailForwardAaddress"]:(any)[], list) )
+            else if ( is(data["suseMailForwardAddress"]:(any)[], list) )
             {
-                    foreach (string element, data["suseMailForwardAaddress"]:[], ``{
+                    foreach (string element, data["suseMailForwardAddress"]:[], ``{
                         result = add (result, `item (`id (i), element));
                         i = i + 1;
                     });
@@ -333,13 +333,13 @@
                 {
                     if (check_mail_address (emailName))
                     {
-                        if (contains (data["suseMailForwardAaddress"]:[], emailName))
+                        if (contains (data["suseMailForwardAddress"]:[], emailName))
                         {
                             Popup::Error(_("Entry already exists."));
                         }
                         else
                         {
-                            data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[],
+                            data["suseMailForwardAddress"] = add (data["suseMailForwardAddress"]:[],
                                                                  emailName);
                             UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
                             UI::ChangeWidget(`id(`id_emailname), `Value, "");
@@ -354,24 +354,24 @@
             if (ret == `deleteEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[],
+                data["suseMailForwardAddress"] = remove (data["suseMailForwardAddress"]:[],
                                                         id);
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
             if (ret == `editEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                string oldEMAIL = (string)((list) data["suseMailForwardAaddress"]:[])[id]:"";
+                string oldEMAIL = (string)((list) data["suseMailForwardAddress"]:[])[id]:"";
                 string newEMAIL = editEMAIL (oldEMAIL);
 
-                if (contains (data["suseMailForwardAaddress"]:[], newEMAIL))
+                if (contains (data["suseMailForwardAddress"]:[], newEMAIL))
                 {
                     Popup::Error(_("Entry already exists."));
                 }
                 else
                 {
-                    data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[], id);
-                    data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[], newEMAIL);
+                    data["suseMailForwardAddress"] = remove (data["suseMailForwardAddress"]:[], id);
+                    data["suseMailForwardAddress"] = add (data["suseMailForwardAddress"]:[], newEMAIL);
                 }
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
@@ -405,10 +405,10 @@
                      data["plugins"] = add (data["plugins"]:[],
                                             "UsersPluginMail");
                  }
-                 if( size(data["suseMailForwardAaddress"]:[]) == 1 ) {
-                     data["suseMailForwardAaddress"] = ((list)data["suseMailForwardAaddress"]:[])[0]:"";
-                 } else if( size(data["suseMailForwardAaddress"]:[]) == 0 ) {
-                     remove(data,"suseMailForwardAaddress");
+                 if( size(data["suseMailForwardAddress"]:[]) == 1 ) {
+                     data["suseMailForwardAddress"] = ((list)data["suseMailForwardAddress"]:[])[0]:"";
+                 } else if( size(data["suseMailForwardAddress"]:[]) == 0 ) {
+                     remove(data,"suseMailForwardAddress");
                  }
 
                  if(data["localdeliverytype"]:"local" == "cyrus" ) {
