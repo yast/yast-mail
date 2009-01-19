@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Jan 19 16:49:10 CET 2009 - varkoly@suse.de
+
+- bnc#466748 - yast2-mail-plugins broken 
+
+-------------------------------------------------------------------
 Thu Jan  8 13:17:02 CET 2009 - varkoly@suse.de
 
 - avoid undefined variables in the MasterCFParser
