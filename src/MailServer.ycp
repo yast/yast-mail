@@ -170,8 +170,8 @@ global boolean sasl_installed      = false;
 global boolean saslauthd_installed = false;
 global boolean plugins_installed   = false;
 global boolean amavis_installed    = false;
-global boolean spamassassin        = false;
-global boolean clamav              = false;
+global boolean spamassassin_installed=false;
+global boolean clamav_installed    = false;
 
 /*
  * Help funktion to check the DNS Settings
@@ -563,8 +563,8 @@ global boolean Write() {
     Progress::NextStage();
     if((boolean)MailPrevention["VirusScanning"]:false)
     {
-	to_install   = "";
-	l_to_install = [];
+	string to_install   = "";
+	list   l_to_install = [];
 	if(!amavis_installed)
 	{
 	    l_to_install = add( l_to_install, "amavisd-new" );
