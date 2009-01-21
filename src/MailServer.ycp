@@ -274,8 +274,8 @@ global boolean CheckPackages()
     saslauthd_installed = Installed("cyrus-sasl-saslauthd");
     plugins_installed   = Installed("yast2-mail-plugins");
     amavis_installed    = Installed("amavisd-new");
-    clamav              = Installed("clamav");
-    spamassassin        = Installed("spamassassin");
+    clamav_installed    = Installed("clamav");
+    spamassassin_installed= Installed("spamassassin");
     string         to_install = "";
     list<string> l_to_install = [];
 
@@ -564,7 +564,7 @@ global boolean Write() {
     if((boolean)MailPrevention["VirusScanning"]:false)
     {
 	string to_install   = "";
-	list   l_to_install = [];
+	list<string>    l_to_install = [];
 	if(!amavis_installed)
 	{
 	    l_to_install = add( l_to_install, "amavisd-new" );
