@@ -1212,6 +1212,7 @@ sub ReadMailPrevention {
 	        $MailPrevention{'SpamLearning'} = YaST::YCP::Boolean(1);
 	    }
 	}
+	$imap->logout();
     }
     
     return \%MailPrevention;
@@ -1509,13 +1510,13 @@ fi
 setfacl -m u:vscan:rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 setfacl -m m::rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 
-su - vscan -c "/usr/bin/sa-learn --sync"
+/usr/bin/sa-learn --sync --dbpath /var/spool/amavis/.spamassassin/
 (
 for i in `ls /var/spool/imap/NewSpam/[0-9]* 2> /dev/null`
 do
    setfacl -m user:vscan:r-x $i
    echo $i 
-   su - vscan -c "/usr/bin/sa-learn --spam $i"
+   /usr/bin/sa-learn --spam --dbpath /var/spool/amavis/.spamassassin/ $i
    rm $i
 done
 ) >> $LOG  2>&1
@@ -1526,22 +1527,26 @@ for i in `ls /var/spool/imap/NoSpam/[0-9]* 2> /dev/null`
 do
    setfacl -m user:vscan:r-x $i
    echo $i 
-   su - vscan -c "/usr/bin/sa-learn --ham $i"
+   /usr/bin/sa-learn --ham --dbpath /var/spool/amavis/.spamassassin/ $i
    rm $i
 done
 ) >> $LOG  2>&1
 su - cyrus -c "reconstruct NoSpam" &>/dev/null
+chown -R vscan /var/spool/amavis/.spamassassin/
 
 setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 ';
 		SCR->Write(".target.string","/etc/cron.hourly/lern-spam",$lernspam);
 		SCR->Write(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
 	    }
+	    $imap->logout();
 	}
 	else
 	{
-		SCR->Write(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
-	        $ret = $imap->delete('NewSpam'); 
+	    SCR->Write(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
+	    $ret = $imap->delete('NewSpam'); 
+	    $ret = $imap->delete('NoSpam'); 
+	    $imap->logout();
 	}
     }
     return  1;
@@ -2012,6 +2017,9 @@ sub WriteMailLocalDelivery {
         SCR->Write('.etc.imapd_conf.quotawarn',$MailLocalDelivery->{'QuotaLimit'});
         SCR->Write('.etc.imapd_conf.timeout',$MailLocalDelivery->{'ImapIdleTime'});
         SCR->Write('.etc.imapd_conf.poptimeout',$MailLocalDelivery->{'PopIdleTime'});
+        SCR->Write('.etc.imapd_conf.allowplaintext','yes');
+        SCR->Write('.etc.imapd_conf.unixhierarchysep','yes');
+        SCR->Write('.etc.imapd_conf.allowplainwithouttls','yes');
         if($MailLocalDelivery->{'FallBackMailbox'} ne ''  )
 	{
            SCR->Write('.etc.imapd_conf.lmtp_luser_relay',$MailLocalDelivery->{'FallBackMailbox'});
@@ -2095,6 +2103,20 @@ sub WriteMailLocalDelivery {
 	  {
 	      SCR->Execute('.mail.cyrusconf.toggleService', 'pop3s');
 	  }
+      }
+      #Create mailbox for root
+      my $imap = new Net::IMAP($imaphost, Debug => 0);
+      if( $imap )
+      {
+	  my $ret = $imap->login($imapadm, $AdminPassword);
+	  if($$ret{Status} eq "ok")
+	  {
+	        $ret = $imap->create('user/root'); 
+		$ret = $imap->setacl('user/root', 'cyrus', "lrswipkxtea");
+		$ret = $imap->setacl('user/root', 'root', "lrswipkxtea");
+		$ret = $imap->setacl('user/root', 'anyone', "" );
+	  }
+          $imap->logout();
       }
     }
     elsif(  $MailLocalDelivery->{'Type'} eq 'none')

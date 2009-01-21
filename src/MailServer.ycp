@@ -162,7 +162,6 @@ define boolean Installed (string package) ``{
 global boolean pam_ldap_installed  = false;
 global boolean nss_ldap_installed  = false;
 global boolean procmail_installed  = false;
-global boolean amavis_installed    = false;
 global boolean ldap_installed      = false;
 global boolean cyrus_installed     = false;
 global boolean postfix_installed   = false;
@@ -170,6 +169,9 @@ global boolean fetchmail_installed = false;
 global boolean sasl_installed      = false;
 global boolean saslauthd_installed = false;
 global boolean plugins_installed   = false;
+global boolean amavis_installed    = false;
+global boolean spamassassin        = false;
+global boolean clamav              = false;
 
 /*
  * Help funktion to check the DNS Settings
@@ -268,10 +270,12 @@ global boolean CheckPackages()
     postfix_installed   = Installed("postfix");
     fetchmail_installed = Installed("fetchmail");
     ldap_installed      = Installed("yast2-ldap-client");
-    amavis_installed    = Installed("amavisd-new");
     sasl_installed      = Installed("cyrus-sasl-plain");
     saslauthd_installed = Installed("cyrus-sasl-saslauthd");
     plugins_installed   = Installed("yast2-mail-plugins");
+    amavis_installed    = Installed("amavisd-new");
+    clamav              = Installed("clamav");
+    spamassassin        = Installed("spamassassin");
     string         to_install = "";
     list<string> l_to_install = [];
 
@@ -309,13 +313,6 @@ global boolean CheckPackages()
     {
 	l_to_install = add( l_to_install, "yast2-mail-plugins" );
 	to_install   = to_install + "yast2-mail-plugins\n";
-    }
-    if(!amavis_installed)
-    {
-        l_to_install = add( l_to_install, "amavisd-new" );
-        to_install   = to_install + "amavisd-new\n";
-        l_to_install = add( l_to_install, "clamav" );
-        to_install   = to_install + "clamav\n";
     }
     if(to_install != "")
     {
@@ -504,13 +501,13 @@ global boolean Write() {
 	    /* Progress stage 1/7 */
 	    _("Write mail server global settings"),
 	    /* Progress stage 2/7 */
-	    _("Write mail server transports"),
-	    /* Progress stage 3/7 */
-	    _("Write mail server prevention settings"),
-	    /* Progress stage 4/7 */
-	    _("Write mail server relaying settings"),
-	    /* Progress stage 5/7 */
 	    _("Write mail server local delivery settings"),
+	    /* Progress stage 3/7 */
+	    _("Write mail server transports"),
+	    /* Progress stage 4/7 */
+	    _("Write mail server prevention settings"),
+	    /* Progress stage 5/7 */
+	    _("Write mail server relaying settings"),
 	    /* Progress stage 6/3 */
 	    _("Write mail fetching jobs"),
 	    /* Progress stage 7/7 */
@@ -519,13 +516,13 @@ global boolean Write() {
 	    /* Progress stage 1/7 */
 	    _("Writing mail server global settings..."),
 	    /* Progress stage 2/7 */
-	    _("Writing mail server transports..."),
-	    /* Progress stage 3/7 */
-	    _("Writing mail server prevention settings..."),
-	    /* Progress stage 4/7 */
-	    _("Writing mail server relaying settings..."),
-	    /* Progress stage 5/7 */
 	    _("Writing mail server local delivery settings..."),
+	    /* Progress stage 3/7 */
+	    _("Writing mail server transports..."),
+	    /* Progress stage 4/7 */
+	    _("Writing mail server prevention settings..."),
+	    /* Progress stage 5/7 */
+	    _("Writing mail server relaying settings..."),
 	    /* Progress stage 6/3 */
 	    _("Writing mail fetching jobs..."),
 	    /* Progress stage 7/7 */
@@ -564,39 +561,69 @@ global boolean Write() {
     // write mail preventions
     if(Abort()) return false;
     Progress::NextStage();
-    if((boolean)MailPrevention["VirusScanning"]:false) {
-      if(! amavis_installed)
-      {
-	  if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				    "\n clamav \n amavisd-new \n",
+    if((boolean)MailPrevention["VirusScanning"]:false)
+    {
+	to_install   = "";
+	l_to_install = [];
+	if(!amavis_installed)
+	{
+	    l_to_install = add( l_to_install, "amavisd-new" );
+	    to_install   = to_install + "\n amavisd-new";
+	    if(!clamav_installed)
+	    {
+	        l_to_install = add( l_to_install, "clamav" );
+	        to_install   = to_install + "\n clamav";
+	    }
+	    if(!spamassassin_installed)
+	    {
+	        l_to_install = add( l_to_install, "spamassassin" );
+	        to_install   = to_install + "\n spamassassin";
+	    }
+	    if(! amavis_installed || !clamav_installed || !spamassassin_installed)
+	    {
+	        if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+				    to_install,
 				    Label::InstallButton(),
 				    Label::AbortButton(),
 				    `focus_yes))
-	  {
-	      Package::DoInstall(["clamav","amavisd-new"]);
-	      Service::Start("clamd");
-	      Service::Start("freshclam");
-	      Service::Start("amavis");
-	      y2milestone("Installing amavis");
-	  }
-	  else
-	  {
-	      return false;
-	  }
-      }
-      Service::Enable("amavis");
-      Service::Enable("clamd");
-      Service::Enable("freshclam");
+	        {
+	            Package::DoInstall(l_to_install);
+	            y2milestone("Installing amavis");
+	        }
+	        else
+	        {
+	            return false;
+	        }
+		Service::Start("clamd");
+		Service::Start("freshclam");
+		Service::Start("amavis");
+	    }
+	    Service::Enable("amavis");
+	    Service::Enable("clamd");
+	    Service::Enable("freshclam");
+        }
     }
     if( (boolean)MailPrevention["Changed"]:false ) {
-      if( ! YaPI::MailServer::WriteMailPrevention(MailPrevention,AdminPassword) ) {
-         Report::Error(_("Cannot write mail server preventions."));
-      }
-      if((boolean)MailPrevention["VirusScanning"]:false) {
-	 Service::Restart("clamd");
-	 Service::Restart("freshclam");
-	 Service::Restart("amavis");
-      }
+	if( ! YaPI::MailServer::WriteMailPrevention(MailPrevention,AdminPassword) ) {
+	   Report::Error(_("Cannot write mail server preventions."));
+	}
+	if((boolean)MailPrevention["VirusScanning"]:false) {
+	    Service::Enable("amavis");
+	    Service::Enable("clamd");
+	    Service::Enable("freshclam");
+	    Service::Restart("clamd");
+	    Service::Restart("freshclam");
+	    Service::Restart("amavis");
+	}
+	else
+	{
+	    Service::Stop("clamd");
+	    Service::Stop("freshclam");
+	    Service::Stop("amavis");
+	    Service::Disable("amavis");
+	    Service::Disable("clamd");
+	    Service::Disable("freshclam");
+	}
     }
     sleep(sl);
 
@@ -636,38 +663,29 @@ global boolean Write() {
     }
 
     if(MailLocalDelivery["Type"]:"none" == "cyrus") {
-       if(!cyrus_installed)
-       {
-	   if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				     "\n cyrus-imapd \n",
-				     Label::InstallButton(),
-				     Label::AbortButton(),
-				     `focus_yes))
-	   {
-	       Package::DoInstall(["cyrus-imapd"]);
-	       SCR::UnmountAgent(.etc.imapd_conf);
-	   }
-	   else
-	   {
-	       return false;
-	   }
-       }
-       string crypted  = Users::CryptPassword(AdminPassword, "system", "foo");
-       SCR::Write(.target.passwd.cyrus, crypted);
+        if(!cyrus_installed)
+        {
+            if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+		     "\n cyrus-imapd \n",
+		     Label::InstallButton(),
+		     Label::AbortButton(),
+		     `focus_yes))
+            {
+                Package::DoInstall(["cyrus-imapd"]);
+                SCR::UnmountAgent(.etc.imapd_conf);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        string crypted  = Users::CryptPassword(AdminPassword, "system", "foo");
+        SCR::Write(.target.passwd.cyrus, crypted);
 
-      list Values = SCR::Dir(.etc.imapd_conf);
-      SCR::Write(.etc.imapd_conf.allowplaintext,"yes");
-      if(!contains(Values,"unixhierarchysep")) {
-	SCR::Write(.etc.imapd_conf.unixhierarchysep,"yes");
-      }
-      if(!contains(Values,"allowplainwithouttls")) {
-	SCR::Write(.etc.imapd_conf.allowplainwithouttls,"yes");
-      }
-      SCR::Write(.etc.imapd_conf,nil);
-      if(Service::Status("cyrus") > 0) {
-         Service::Start("cyrus");
-         Service::Enable("cyrus");
-       }
+        if(Service::Status("cyrus") > 0) {
+            Service::Start("cyrus");
+            Service::Enable("cyrus");
+        }
     } else {
        if(cyrus_installed) {
           Service::Stop("cyrus");
