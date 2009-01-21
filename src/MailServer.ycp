@@ -547,6 +547,73 @@ global boolean Write() {
     }
     sleep(sl);
 
+    // write mail local delivery
+    // first we looking for if all the needed packages are installed
+    if(MailLocalDelivery["Type"]:"none" == "procmail"){
+       if(! procmail_installed)
+       {
+	   if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+				     "\n procmail \n",
+				     Label::InstallButton(),
+				     Label::AbortButton(),
+				     `focus_yes))
+	   {
+	       Package::DoInstall(["procmail"]);
+	   }
+	   else
+	   {
+	       return false;
+	   }
+       }
+    }
+
+    if(Service::Status("saslauthd") > 0) {
+       Service::Start("saslauthd");
+       Service::Enable("saslauthd");
+    }
+
+    if(MailLocalDelivery["Type"]:"none" == "cyrus") {
+        if(!cyrus_installed)
+        {
+            if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
+		     "\n cyrus-imapd \n",
+		     Label::InstallButton(),
+		     Label::AbortButton(),
+		     `focus_yes))
+            {
+                Package::DoInstall(["cyrus-imapd"]);
+                SCR::UnmountAgent(.etc.imapd_conf);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        string crypted  = Users::CryptPassword(AdminPassword, "system", "foo");
+        SCR::Write(.target.passwd.cyrus, crypted);
+
+        if(Service::Status("cyrus") > 0) {
+            Service::Start("cyrus");
+            Service::Enable("cyrus");
+        }
+    } else {
+       if(cyrus_installed) {
+          Service::Stop("cyrus");
+          Service::Disable("cyrus");
+       }
+    }
+    if(Abort()) return false;
+    Progress::NextStage();
+    if( (boolean)MailLocalDelivery["Changed"]:false ) {
+      if( ! YaPI::MailServer::WriteMailLocalDelivery(MailLocalDelivery,AdminPassword) ) {
+        Report::Warning(_("Cannot write the mail server local delivery settings."));
+      }
+      if(MailLocalDelivery["Type"]:"none" == "cyrus") {
+          Service::Reload("cyrus");
+      }
+    }
+    sleep(sl);
+
     // write mail transports
     if(Abort()) return false;
     Progress::NextStep();
@@ -633,73 +700,6 @@ global boolean Write() {
     if( (boolean)MailRelaying["Changed"]:false ) {
       if( ! YaPI::MailServer::WriteMailRelaying(MailRelaying,AdminPassword) ) {
         Report::Warning(_("Cannot write the mail server relay settings."));
-      }
-    }
-    sleep(sl);
-
-    // write mail local delivery
-    // first we looking for if all the needed packages are installed
-    if(MailLocalDelivery["Type"]:"none" == "procmail"){
-       if(! procmail_installed)
-       {
-	   if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-				     "\n procmail \n",
-				     Label::InstallButton(),
-				     Label::AbortButton(),
-				     `focus_yes))
-	   {
-	       Package::DoInstall(["procmail"]);
-	   }
-	   else
-	   {
-	       return false;
-	   }
-       }
-    }
-
-    if(Service::Status("saslauthd") > 0) {
-       Service::Start("saslauthd");
-       Service::Enable("saslauthd");
-    }
-
-    if(MailLocalDelivery["Type"]:"none" == "cyrus") {
-        if(!cyrus_installed)
-        {
-            if ( Report::AnyQuestion ("",_("You have not installed all needed packages.") +
-		     "\n cyrus-imapd \n",
-		     Label::InstallButton(),
-		     Label::AbortButton(),
-		     `focus_yes))
-            {
-                Package::DoInstall(["cyrus-imapd"]);
-                SCR::UnmountAgent(.etc.imapd_conf);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        string crypted  = Users::CryptPassword(AdminPassword, "system", "foo");
-        SCR::Write(.target.passwd.cyrus, crypted);
-
-        if(Service::Status("cyrus") > 0) {
-            Service::Start("cyrus");
-            Service::Enable("cyrus");
-        }
-    } else {
-       if(cyrus_installed) {
-          Service::Stop("cyrus");
-          Service::Disable("cyrus");
-       }
-    }
-    if(Abort()) return false;
-    Progress::NextStage();
-    if( (boolean)MailLocalDelivery["Changed"]:false ) {
-      if( ! YaPI::MailServer::WriteMailLocalDelivery(MailLocalDelivery,AdminPassword) ) {
-        Report::Warning(_("Cannot write the mail server local delivery settings."));
-      }
-      if(MailLocalDelivery["Type"]:"none" == "cyrus") {
-          Service::Reload("cyrus");
       }
     }
     sleep(sl);
