@@ -1537,13 +1537,13 @@ chown -R vscan /var/spool/amavis/.spamassassin/
 setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 ';
 		SCR->Write(".target.string","/etc/cron.hourly/lern-spam",$lernspam);
-		SCR->Write(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
+		SCR->Execute(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
 	    }
 	    $imap->logout();
 	}
 	else
 	{
-	    SCR->Write(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
+	    SCR->Execute(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
 	    $ret = $imap->delete('NewSpam'); 
 	    $ret = $imap->delete('NoSpam'); 
 	    $imap->logout();
