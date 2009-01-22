@@ -2104,20 +2104,6 @@ sub WriteMailLocalDelivery {
 	      SCR->Execute('.mail.cyrusconf.toggleService', 'pop3s');
 	  }
       }
-      #Create mailbox for root
-      my $imap = new Net::IMAP($imaphost, Debug => 0);
-      if( $imap )
-      {
-	  my $ret = $imap->login($imapadm, $AdminPassword);
-	  if($$ret{Status} eq "ok")
-	  {
-	        $ret = $imap->create('user/root'); 
-		$ret = $imap->setacl('user/root', 'cyrus', "lrswipkxtea");
-		$ret = $imap->setacl('user/root', 'root', "lrswipkxtea");
-		$ret = $imap->setacl('user/root', 'anyone', "" );
-	  }
-          $imap->logout();
-      }
     }
     elsif(  $MailLocalDelivery->{'Type'} eq 'none')
     {
@@ -2137,6 +2123,31 @@ sub WriteMailLocalDelivery {
     SCR->Write('.etc.imapd_conf',undef);
     SCR->Write('.mail.cyrusconf',undef);
     return 1;
+}
+
+BEGIN { $TYPEINFO{CreateRootMailbox}     =["function", "any", "string"]; }
+sub CreateRootMailbox {
+    my $self            = shift;
+    my $AdminPassword   = shift;
+
+      #Create mailbox for root
+      my $imap = new Net::IMAP($imaphost, Debug => 0);
+      if( $imap )
+      {
+	  my $ret = $imap->login($imapadm, $AdminPassword);
+	  if($$ret{Status} eq "ok")
+	  {
+	      $ret = $imap->select('usr/root'); 
+	      if( $ret->{Status} ne 'ok' )
+	      {
+	          $ret = $imap->create('user/root'); 
+		  $ret = $imap->setacl('user/root', 'cyrus', "lrswipkxtea");
+		  $ret = $imap->setacl('user/root', 'root', "lrswipkxtea");
+		  $ret = $imap->setacl('user/root', 'anyone', "" );
+	      }
+	  }
+          $imap->logout();
+      }
 }
 
 BEGIN { $TYPEINFO{ReadFetchingMail}     =["function", "any", "string"]; }

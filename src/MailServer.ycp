@@ -591,11 +591,8 @@ global boolean Write() {
         }
         string crypted  = Users::CryptPassword(AdminPassword, "system", "foo");
         SCR::Write(.target.passwd.cyrus, crypted);
-
-        if(Service::Status("cyrus") > 0) {
-            Service::Start("cyrus");
-            Service::Enable("cyrus");
-        }
+	y2milestone("--- Enabling cyrus --");
+        Service::Enable("cyrus");
     } else {
        if(cyrus_installed) {
           Service::Stop("cyrus");
@@ -609,7 +606,12 @@ global boolean Write() {
         Report::Warning(_("Cannot write the mail server local delivery settings."));
       }
       if(MailLocalDelivery["Type"]:"none" == "cyrus") {
-          Service::Reload("cyrus");
+	  y2milestone("--- Stop cyrus --");
+          Service::Stop("cyrus");
+	  y2milestone("--- Start cyrus --");
+          Service::Start("cyrus");
+	  sleep(10000);
+	  YaPI::MailServer::CreateRootMailbox(AdminPassword);
       }
     }
     sleep(sl);

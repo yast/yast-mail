@@ -666,7 +666,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
   list<map<string,string> > AccessList = (list<map<string,string> >) MailServer::MailPrevention["AccessList"]:[];
   boolean VirusScanning     = (boolean)MailServer::MailPrevention["VirusScanning"]:false;
   boolean SpamLearning      = (boolean)MailServer::MailPrevention["SpamLearning"]:false;
-  integer VSCount           = (integer)MailServer::MailPrevention["VSCount"]:10;
+  integer VSCount           = (integer)MailServer::MailPrevention["VSCount"]:5;
   boolean BasicProtectionOff    = false;
   boolean BasicProtectionMedium = false;
   boolean BasicProtectionHard   = true;
@@ -1430,7 +1430,7 @@ y2milestone("FocusedContent %1",FocusedContent);
 	  if( ret == `SpamLearning ) {
 	    MailServer::MailPrevention["Changed"]       = true;
 	    UI::ChangeWidget(`id(`VirusScanning), `Value, true);
-	    UI::ChangeWidget(`id(`VSCount),       `Value, 10);
+	    UI::ChangeWidget(`id(`VSCount),       `Value, MailServer::MailPrevention["VSCount"]:"5");
             continue;
           }
 	  if(ret == `RBLAdd) {
