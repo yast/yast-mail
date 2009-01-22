@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jan 22 10:12:09 CET 2009 - varkoly@suse.de
+
+- bnc#467589 - Cyrus don't create Directory for new LDAP User at first run.
+- bnc#467562 - Yast mail doesn't install needed Spamassassin Package for SPAM learning extension for Mailserver 
+
+-------------------------------------------------------------------
 Mon Jan 19 16:49:10 CET 2009 - varkoly@suse.de
 
 - bnc#466748 - yast2-mail-plugins broken 
