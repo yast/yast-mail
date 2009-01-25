@@ -2104,6 +2104,24 @@ sub WriteMailLocalDelivery {
 	      SCR->Execute('.mail.cyrusconf.toggleService', 'pop3s');
 	  }
       }
+      Service->Enable('saslauthd');
+      Service->Enable('cyrus');
+      if( !Service->Status('saslauthd') )
+      {
+          Service->Restart('saslauthd');
+      }
+      else
+      {
+          Service->Start('saslauthd');
+      }
+      if( !Service->Status('cyrus') )
+      {
+          Service->Restart('cyrus');
+      }
+      else
+      {
+          Service->Start('cyrus');
+      }
     }
     elsif(  $MailLocalDelivery->{'Type'} eq 'none')
     {
@@ -2400,7 +2418,7 @@ sub WriteMailLocalDomains {
 	{
 		# This is a new domain, we create it. 
 		# We create all the DNS attributes. `hostname -f` is the NS and MX entry.
-		my $serial = POSIX::strftime("%Y%m%d%H%M",localtime);
+		my $serial = POSIX::strftime("%Y%m%d%H",localtime);
 		my $host   = `hostname -f`; chomp $host;
 		my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
 		      'zoneName'                     => $name,
