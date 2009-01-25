@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Sun Jan 25 19:20:19 CET 2009 - varkoly@suse.de
+
+- saslauthd and cyrus must be started and enabled by YaPI
+- Serial of SOA Record must not be greater then 4294967295
+
+-------------------------------------------------------------------
 Thu Jan 22 10:12:09 CET 2009 - varkoly@suse.de
 
 - bnc#467589 - Cyrus don't create Directory for new LDAP User at first run.
