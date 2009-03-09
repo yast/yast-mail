@@ -425,7 +425,9 @@ sub service2line {
     if( defined $srv->{comment} ) {
 	$line = $srv->{comment};
     } 
-    elsif( defined $srv->{service} && $srv->{type} && $srv->{private} && $srv->{unpriv} && $srv->{chroot} && $srv->{wakeup} && $srv->{maxproc} && $srv->{command} )
+    elsif( defined $srv->{service} && defined $srv->{type} && defined $srv->{private} &&
+           defined $srv->{unpriv} && defined $srv->{chroot} && defined $srv->{wakeup} && 
+	   defined $srv->{maxproc} && defined $srv->{command} )
     {
 	$line = 
 	    sprintf("%-8s %-5s %-6s %-7s %-7s %-8s %-7s %s",
