@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Mar  9 22:15:36 CET 2009 - varkoly@suse.de
+
+-  bnc#483639 - yast2 mail server's master.cf parser do not writes some lines
+
+-------------------------------------------------------------------
 Sun Jan 25 19:20:19 CET 2009 - varkoly@suse.de
 
 - saslauthd and cyrus must be started and enabled by YaPI
