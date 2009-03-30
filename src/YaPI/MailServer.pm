@@ -3088,8 +3088,10 @@ sub activate_virus_scanner {
    move("$aconf.new",$aconf);
    move("$cconf.new",$cconf);
    Service->Enable('amavis');
+   Service->Enable('freshclam');
    Service->Enable('clamd');
    Service->Start('amavis');
+   Service->Start('freshclam');
    Service->Start('clamd');
    return "";
 }
