@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Mar 31 10:41:00 CEST 2009 - varkoly@suse.de
+
+- If starting the virus scanner freshclam have to be started also 
+
+-------------------------------------------------------------------
 Mon Mar  9 22:15:36 CET 2009 - varkoly@suse.de
 
 -  bnc#483639 - yast2 mail server's master.cf parser do not writes some lines
