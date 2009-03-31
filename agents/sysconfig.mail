@@ -36,7 +36,7 @@ SMTPD_LISTEN_REMOTE="yes"
 ## Default:     no
 #
 # Set this to "yes" if the yast2 mail module must not
-# start with the with the vizard for asking the 
+# start with the wizard for asking the 
 # configuration type of the mail server.
 #
 SKIP_ASK="no"
