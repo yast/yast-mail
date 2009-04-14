@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Apr 14 12:42:18 CEST 2009 - varkoly@suse.de
+
+- bnc#490688 – rename mail server module from "Mail Transfer Agent" to "Mail Server" 
+
+-------------------------------------------------------------------
 Tue Mar 31 10:41:00 CEST 2009 - varkoly@suse.de
 
 - If starting the virus scanner freshclam have to be started also 
