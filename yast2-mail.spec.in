@@ -29,13 +29,13 @@ Conflicts:	aaa_base < 10.3
 
 BuildArchitectures:	noarch
 
-Summary:	Configuration of mail
+Summary:	YaST2 - Mail Configuration
 
 %description
 -
 
 %package plugins
-Summary:	Plugins for the YaST2 users modul for enterprise mail server configuration.
+Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
 Group:		System/YaST
 Requires:       perl-NetxAP
 
