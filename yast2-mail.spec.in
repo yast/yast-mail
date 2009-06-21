@@ -32,7 +32,8 @@ BuildArchitectures:	noarch
 Summary:	YaST2 - Mail Configuration
 
 %description
--
+The YaST2 component for mail configuration. It handles Postfix, Cyrus,
+Amavis and Fetchmail.
 
 %package plugins
 Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
@@ -40,7 +41,8 @@ Group:		System/YaST
 Requires:       perl-NetxAP
 
 %description plugins
--
+Plugins for the YaST2 users modul for enterprise mail server
+configuration.
 
 @PREP@
 
