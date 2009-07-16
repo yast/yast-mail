@@ -3123,6 +3123,19 @@ sub write_attribute {
     return 1;
 }
 
+sub read_attribute {
+    my $config    = shift;
+    my $attribute = shift;
+    foreach(@{$config})
+    {
+        if($_->{"key"} eq $attribute)
+	{
+            return $_->{"value"} if defined $_->{"value"};
+        }
+    }
+    return undef;
+}
+
 # Internal helper Funktion to check if a needed ldap table is correctly defined
 # in the main.cf. If not so the neccesary entries will be created.
 sub check_ldap_configuration {
@@ -3169,7 +3182,7 @@ sub check_ldap_configuration {
                         'smtp_tls_per_site'   => 'one',
                         'access'              => 'one',
                         'local_recipient_maps'=> 'one',
-                        'alias_maps'          => 'one',
+                        'alias_maps'          => 'sub',
                         'alias_maps_folder'   => 'one',
                         'mynetworks'          => 'one',
                         'masquerade_domains'  => 'sub',
