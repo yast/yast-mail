@@ -133,16 +133,10 @@
     /**
      * When should fetchmail run:
      * <dl>
-     * <dt> `manual  <dd>
-     * <dt> `ppp     <dd> for a ppp conection, /etc/ppp/ip-{up,down}.d
-     * <dt> `network <dd> for any network connection,
-     *                    /etc/sysconfig/network/if-{up,down}.d
-     * </dl>
-     * #22903
-     * Unused yet!
-     * #37139, just enable rcfetchmail.
+     * <dt> "manual"  <dd>
+     * <dt> "daemon"  <dd>
      */
-    global symbol fetchmail_mode = `manual;
+    global string fetchmail_mode = "manual";
 
     /**
      *List of maps:
@@ -333,7 +327,7 @@ Configure a scanner manually."));
      * @return Whether rcfetchmail should run
      */
     define boolean RunFetchmailGlobally () ``{
-	return size (fetchmail) > 0;
+	return ( fetchmail_mode == "daemon" && size (fetchmail) > 0 );
     }
 
     /**
@@ -544,9 +538,10 @@ Configure a scanner manually."));
 	{
 	    return false;
 	}
-	// read 4
-	// TODO
-	fetchmail_mode = `manual;
+	if( Service::Enabled ("fetchmail") )
+	{
+		fetchmail_mode = "daemon";
+	}
 
 	// if we are testing as non-root, it will fail, that's OK
 	map out = (map) SCR::Execute (.target.bash_output, "/usr/bin/id --user");

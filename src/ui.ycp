@@ -479,6 +479,9 @@ define symbol IncomingDialog () ``{
 		`HSpacing (1),
 		// pushbutton
 		`Bottom (`PushButton (`id (`downloading), `opt (`key_F7), _("&Details...")))
+		),
+	    `HBox (
+		`Left(`ComboBox (`id (`fm_start),_("Start &fetchmail"),["manual","daemon"]))
 		)
 	    );
 	// frame label: mail downloading (fetchmail)
@@ -533,6 +536,7 @@ define symbol IncomingDialog () ``{
     WJ_GetWidget (`delivery_mode);
     // initialize the widget (set the current value)
     CWMFirewallInterfaces::OpenFirewallInit (fw_cwm_widget, "");
+    UI::ChangeWidget(`id(`fm_start),`Value, Mail::fetchmail_mode);
 
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
@@ -557,9 +561,9 @@ define symbol IncomingDialog () ``{
 	}
 	else if (ret == `next || contains (buttons, ret))
 	{
+	    Mail::fetchmail_mode = (string) UI::QueryWidget(`id (`fm_start), `Value);
 	    // input validation
 	    // For consistency, all querywidgets are done here
-
 	    if (WJ_Validate (widgets))
 	    {
 		fm_empty =
