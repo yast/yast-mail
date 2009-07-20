@@ -2960,7 +2960,16 @@ fi';
     write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
     write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
     write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
-    write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
+    my $alias_maps      = read_attribute($MainCf,'alias_maps');
+    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps_folder.cf/) 
+    {
+    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps_folder.cf';
+    }
+    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps.cf/) 
+    {
+    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps.cf';
+    }
+    write_attribute($MainCf,'alias_maps',$alias_maps);
     check_ldap_configuration('transport_maps',$ldapMap);
     check_ldap_configuration('smtp_tls_per_site',$ldapMap);
     check_ldap_configuration('masquerade_domains',$ldapMap);
