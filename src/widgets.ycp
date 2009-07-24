@@ -796,7 +796,7 @@ for the system administrator and redirect root's mail to this account.</p>"),
 	"label": _("&Delivery Mode"),
 	"choices": Choices_delivery_mode,
 	// help text
-	"help": _("<p>The <b>delivery mode</b> is usually <b>procmail</b>, unless you do not forward root's mail or want to access the mail via IMAP.</p>"),
+	"help": _("<p>The <b>delivery mode</b> is usually <b>Directly</b>, unless you do not forward root's mail or want to access the mail via IMAP.</p>"),
 	"get": Get_delivery_mode,
 	"set": Set_delivery_mode,
 	"validate": Validate_delivery_mode,
