@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  7 16:59:53 CEST 2009 - varkoly@suse.de
+
+- remove redefinition of read_attribute 
+
+-------------------------------------------------------------------
 Mon Jul 20 12:31:04 CEST 2009 - varkoly@suse.de
 
 - bnc#491113 - fetchmail demon is started though disabled in runlevel
