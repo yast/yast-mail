@@ -2988,22 +2988,6 @@ fi';
     return 1;
 }
 
-# some helper funktions
-sub read_attribute {
-    my $config    = shift;
-    my $attribute = shift;
-
-    foreach(@{$config})
-    {
-        if($_->{"key"} eq $attribute)
-	{
-                return $_->{"value"};
-        }
-    }
-    return '';
-}
-
-
 sub activate_virus_scanner {
    my $VSCount = shift || 5;
    use File::Copy;
