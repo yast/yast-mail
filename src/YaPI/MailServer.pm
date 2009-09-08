@@ -1635,7 +1635,7 @@ sub ReadMailRelaying {
     my $smtpd_recipient_restrictions = read_attribute($MainCf,'smtpd_recipient_restrictions');
     my $smtpd_sasl_auth_enable       = read_attribute($MainCf,'smtpd_sasl_auth_enable');
     my $smtpd_use_tls                = read_attribute($MainCf,'smtpd_use_tls');
-    my $smtpd_enforce_tls            = read_attribute($MainCf,'smtpd_enforce_tls');
+    my $smtpd_enforce_tls            = read_attribute($MainCf,'smtpd_enforce_tls')   || 'no';
     my $smtpd_tls_auth_only          = read_attribute($MainCf,'smtpd_tls_auth_only');
     if($smtpd_use_tls eq 'no')
     {
@@ -2480,7 +2480,6 @@ sub ReadLDAPDefaults {
         if(defined $ldapMap->{'ldap_server'} && $ldapMap->{'ldap_server'} ne "")
 	{
             my $dummy = $ldapMap->{'ldap_server'};
-            my $dummy = $ldapMap->{'ldap_server'};
             $ldapMap->{'ldap_server'} = Ldap->GetFirstServer("$dummy");
             $ldapMap->{'ldap_port'} = Ldap->GetFirstPort("$dummy");
         }
@@ -3119,7 +3118,7 @@ sub write_ldap_maps($$)
     write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf');   
     write_attribute($MainCf,'smtp_tls_per_site','ldap:/etc/postfix/ldapsmtp_tls_per_site.cf');
     write_attribute($MainCf,'transport_maps','ldap:/etc/postfix/ldaptransport_maps.cf');
-    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldapuser_recipient_maps.cf, ldap:/etc/postfix/ldapvalias_maps_both.cf, ldap:/etc/postfix/ldapvalias_maps_member.cf, ldap:/etc/postfix/ldapvalias_maps_folder.cf, ldap:/etc/postfix/ldapvalias_maps_forward.cf');
+    write_attribute($MainCf,'virtual_alias_maps', 'ldap:/etc/postfix/ldapuser_recipient_maps.cf, ldap:/etc/postfix/ldapvalias_maps_both.cf, ldap:/etc/postfix/ldapvalias_maps_member.cf, ldap:/etc/postfix/ldapvalias_maps_folder.cf, ldap:/etc/postfix/ldapvalias_maps_forward.cf');
     write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
     check_ldap_configuration('access',$ldapMap);
     check_ldap_configuration('alias_maps',$ldapMap);
@@ -3178,7 +3177,9 @@ sub check_ldap_configuration {
                         'virtual_alias_domains'   => 'zoneName',
                         'canonical_maps'          => 'tableValue',
                         'recipient_canonical_maps'=> 'tableValue',
-                        'sender_canonical_maps'   => 'tableValue'
+                        'smtp_tls_per_site'       => 'suseMailTransportNexthop',
+                        'sender_canonical_maps'   => 'tableValue',
+                        'user_recipient_maps'     => 'uid,suseMailForwardAddress'
                        );
     my %scope            = (
                         'access'                  => 'one',
@@ -3196,11 +3197,12 @@ sub check_ldap_configuration {
                         'virtual_alias_domains'   => 'sub',
                         'canonical_maps'          => 'one',
                         'recipient_canonical_maps'=> 'one',
-                        'sender_canonical_maps'   => 'one'
+                        'sender_canonical_maps'   => 'one',
+			'user_recipient_maps'     => 'one'
                        );
     my %base            = (
                         'access'                  => $ldapMap->{'mail_config_dn'},
-                        'alias_maps'              => 'ou=Aliases,',$ldapMap->{'mail_config_dn'},
+                        'alias_maps'              => 'ou=Aliases,'.$ldapMap->{'mail_config_dn'},
                         'alias_maps_folder'       => $ldapMap->{'group_config_dn'},
                         'masquerade_domains'      => $ldapMap->{'dns_config_dn'},
                         'mydestination'           => $ldapMap->{'dns_config_dn'},
@@ -3214,7 +3216,8 @@ sub check_ldap_configuration {
                         'virtual_alias_domains'   => $ldapMap->{'dns_config_dn'},
                         'canonical_maps'          => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
                         'recipient_canonical_maps'=> 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
-                        'sender_canonical_maps'   => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'}
+                        'sender_canonical_maps'   => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
+                        'user_recipient_maps'     => $ldapMap->{'user_config_dn'}
                        );
     my %special_result_attribute = (
                         'valias_maps_both'        => 'member',
@@ -3227,7 +3230,11 @@ sub check_ldap_configuration {
 		       );
 
 
-
+if( ! defined $result_attribute{$config} )
+{
+	print STDERR "BAJAVAN $config";
+	return;
+}
     #First we read the whool main.cf configuration
     my $LDAPCF    = SCR->Read('.mail.ldaptable',$config);
 
