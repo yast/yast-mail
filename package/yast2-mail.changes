@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Tue Sep  8 16:37:11 CEST 2009 - varkoly@suse.de
+
+- Reorganize ldap tables 
+
+-------------------------------------------------------------------
 Fri Aug  7 16:59:53 CEST 2009 - varkoly@suse.de
 
 - remove redefinition of read_attribute 
