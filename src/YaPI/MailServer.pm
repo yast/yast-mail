@@ -1278,11 +1278,9 @@ sub WriteMailPrevention {
     if($MailPrevention->{'BasicProtection'} eq 'hard')
     {
       #Write hard settings 
-       write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf, reject_unknown_sender_domain');   
        write_attribute($MainCf,'smtpd_helo_required','yes');   
        write_attribute($MainCf,'smtpd_helo_restrictions','permit_mynetworks, reject_invalid_hostname');   
        write_attribute($MainCf,'strict_rfc821_envelopes','yes');   
-       write_attribute($MainCf,'local_recipient_maps','$alias_maps, ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
        if( $clnt_restrictions ne '')
        {
           write_attribute($MainCf,'smtpd_client_restrictions',"permit_mynetworks, $clnt_restrictions, ldap:/etc/postfix/ldapaccess.cf, reject_unknown_client");
@@ -1295,11 +1293,9 @@ sub WriteMailPrevention {
     elsif($MailPrevention->{'BasicProtection'} eq 'medium')
     {
       #Write medium settings  
-       write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf, reject_unknown_sender_domain');   
        write_attribute($MainCf,'smtpd_helo_required','yes');   
        write_attribute($MainCf,'smtpd_helo_restrictions','');   
        write_attribute($MainCf,'strict_rfc821_envelopes','no');   
-       write_attribute($MainCf,'local_recipient_maps','$alias_maps, ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
        if( $clnt_restrictions ne '')
        {
           write_attribute($MainCf,'smtpd_client_restrictions',"$clnt_restrictions, ldap:/etc/postfix/ldapaccess.cf");
@@ -1312,12 +1308,10 @@ sub WriteMailPrevention {
     elsif($MailPrevention->{'BasicProtection'} eq 'off')
     {
       # Write off settings  
-       write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf');   
        write_attribute($MainCf,'smtpd_helo_required','no');   
        write_attribute($MainCf,'smtpd_helo_restrictions','');   
        write_attribute($MainCf,'strict_rfc821_envelopes','no');   
        write_attribute($MainCf,'smtpd_client_restrictions','ldap:/etc/postfix/ldapaccess.cf');
-       write_attribute($MainCf,'local_recipient_maps','$alias_maps, ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
     }
     else
     {
@@ -1442,7 +1436,6 @@ sub WriteMailPrevention {
 		  'wakeup'  => '-',
 		  'maxproc' => '-',
 		  'options' => {  content_filter => '',
-				  local_recipient_maps => '',
 				  relay_recipient_maps => '',
 				  smtpd_delay_reject => 'no',
 				  smtpd_restriction_classes => '',
@@ -1478,7 +1471,6 @@ sub WriteMailPrevention {
     }
 
     # now we looks if the ldap entries in the main.cf for the access table are OK.
-    check_ldap_configuration('local_recipient_maps',$ldapMap);
     check_ldap_configuration('access',$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
@@ -1960,15 +1952,7 @@ sub WriteMailLocalDelivery {
 #print STDERR Dumper([$MailLocalDelivery]);   
     if(  $MailLocalDelivery->{'Type'} ne 'none')
     {
-        write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-        write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
-        write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
-        write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
-        check_ldap_configuration('alias_maps_folder',$ldapMap);
-        check_ldap_configuration('alias_maps',$ldapMap);
-        check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
-        check_ldap_configuration('virtual_alias_maps',$ldapMap);
-        check_ldap_configuration('virtual_alias_domains',$ldapMap);
+	write_ldap_maps($MainCf,$ldapMap);
     }
     if(  $MailLocalDelivery->{'Type'} eq 'local')
     {
@@ -2443,23 +2427,11 @@ sub WriteMailLocalDomains {
 
     # First we read the main.cf
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
-    write_attribute($MainCf,'masquerade_domains','ldap:/etc/postfix/ldapmasquerade_domains.cf');
     write_attribute($MainCf,'masquerade_classes','envelope_sender, header_sender, header_recipient');
     write_attribute($MainCf,'masquerade_exceptions','root');
-    write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
-    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
-    write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
+    write_ldap_maps($MainCf,$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
-    check_ldap_configuration('masquerade_domains',$ldapMap);
-    check_ldap_configuration('mydestination',$ldapMap);
-    check_ldap_configuration('alias_maps_folder',$ldapMap);
-    check_ldap_configuration('local_recipient_maps',$ldapMap);
-    check_ldap_configuration('alias_maps',$ldapMap);
-    check_ldap_configuration('virtual_alias_maps',$ldapMap);
-    check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
-    check_ldap_configuration('virtual_alias_domains',$ldapMap);
     return 1;
 }
 
@@ -2507,6 +2479,7 @@ sub ReadLDAPDefaults {
         $ldapMap = Ldap->Export();
         if(defined $ldapMap->{'ldap_server'} && $ldapMap->{'ldap_server'} ne "")
 	{
+            my $dummy = $ldapMap->{'ldap_server'};
             my $dummy = $ldapMap->{'ldap_server'};
             $ldapMap->{'ldap_server'} = Ldap->GetFirstServer("$dummy");
             $ldapMap->{'ldap_port'} = Ldap->GetFirstPort("$dummy");
@@ -2619,9 +2592,27 @@ sub ReadLDAPDefaults {
 				   code => "SCR_INIT_FAILED",
 				   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
 	}
-	if( ! SCR->Write('.ldap.add',
-			 { "dn" => $uBase },
-			 $configOBJ->{$uBase} ) )
+	if( ! SCR->Write('.ldap.add', { "dn" => $uBase }, $configOBJ->{$uBase} ) )
+	{
+            my $ldapERR = SCR->Read(".ldap.error");
+            return $self->SetError(summary => "LDAP add failed",
+				   code => "SCR_INIT_FAILED",
+				   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
+	}
+	$uBase = "ou=Aliases,ou=Mailserver,".$ldapMap->{'ldap_domain'};
+	$configOBJ->{$uBase}->{'objectClass'} = 'organizationalUnit';
+	$configOBJ->{$uBase}->{'ou'} = 'Aliases';
+	if( ! SCR->Write('.ldap.add', { "dn" => $uBase }, $configOBJ->{$uBase} ) )
+	{
+            my $ldapERR = SCR->Read(".ldap.error");
+            return $self->SetError(summary => "LDAP add failed",
+				   code => "SCR_INIT_FAILED",
+				   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
+	}
+	$uBase = "ou=Canonical,ou=Mailserver,".$ldapMap->{'ldap_domain'};
+	$configOBJ->{$uBase}->{'objectClass'} = 'organizationalUnit';
+	$configOBJ->{$uBase}->{'ou'} = 'Canonical';
+	if( ! SCR->Write('.ldap.add', { "dn" => $uBase }, $configOBJ->{$uBase} ) )
 	{
             my $ldapERR = SCR->Read(".ldap.error");
             return $self->SetError(summary => "LDAP add failed",
@@ -2945,41 +2936,10 @@ fi';
          SCR->Execute('.mail.postfix.mastercf.deleteService', {'service' => 'tlsmgr','command' => 'tlsmgr'});
       }
     }
-    #Setup the ldap tables;
-    # Transport
-    check_ldap_configuration('transport_maps',$ldapMap);
-    write_attribute($MainCf,'transport_maps','ldap:/etc/postfix/ldaptransport_maps.cf');
-    # smtp_tls_per_site
-    check_ldap_configuration('smtp_tls_per_site',$ldapMap);
-    write_attribute($MainCf,'smtp_tls_per_site','ldap:/etc/postfix/ldapsmtp_tls_per_site.cf');
-    #
-    write_attribute($MainCf,'masquerade_domains','ldap:/etc/postfix/ldapmasquerade_domains.cf');
     write_attribute($MainCf,'masquerade_classes','envelope_sender, header_sender, header_recipient');
     write_attribute($MainCf,'masquerade_exceptions','root');
-    write_attribute($MainCf,'content_filter','');
-    write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
-    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
-    my $alias_maps      = read_attribute($MainCf,'alias_maps');
-    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps_folder.cf/) 
-    {
-    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps_folder.cf';
-    }
-    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps.cf/) 
-    {
-    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps.cf';
-    }
-    write_attribute($MainCf,'alias_maps',$alias_maps);
-    check_ldap_configuration('transport_maps',$ldapMap);
-    check_ldap_configuration('smtp_tls_per_site',$ldapMap);
-    check_ldap_configuration('masquerade_domains',$ldapMap);
-    check_ldap_configuration('mydestination',$ldapMap);
-    check_ldap_configuration('local_recipient_maps',$ldapMap);
-    check_ldap_configuration('alias_maps_folder',$ldapMap);
-    check_ldap_configuration('alias_maps',$ldapMap);
-    check_ldap_configuration('virtual_alias_maps',$ldapMap);
-    check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
-    check_ldap_configuration('virtual_alias_domains',$ldapMap);
+    #Setup the ldap tables;
+    write_ldap_maps($MainCf,$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
     SCR->Write('.mail.postfix.mastercf',undef);
@@ -3129,6 +3089,54 @@ sub read_attribute {
     return undef;
 }
 
+# Internal helper Funktion to write the ldap maps
+sub write_ldap_maps($$)
+{
+    my( $MainCf, $ldapMap ) = @_;
+
+    my $alias_maps      = read_attribute($MainCf,'alias_maps');
+    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps_folder.cf/) 
+    {
+    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps_folder.cf';
+    }
+    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps.cf/) 
+    {
+    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps.cf';
+    }
+    write_attribute($MainCf,'alias_maps',$alias_maps);
+    my $masquerade_domains      = read_attribute($MainCf,'masquerade_domains');
+    if($masquerade_domains !~ /ldap:\/etc\/postfix\/ldapmasquerade_domains.cf/) 
+    {
+    	$masquerade_domains .= ', ldap:/etc/postfix/ldapmasquerade_domains.cf';
+    }
+    write_attribute($MainCf,'masquerade_domains',$masquerade_domains);
+    my $mydestination   = read_attribute($MainCf,'mydestination');
+    if($mydestination !~ /ldap:\/etc\/postfix\/ldapmydestination.cf/ )
+    {
+	$mydestination .= ', ldap:/etc/postfix/ldapmydestination.cf';
+    }
+    write_attribute($MainCf,'mydestination',$mydestination);
+    write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf');   
+    write_attribute($MainCf,'smtp_tls_per_site','ldap:/etc/postfix/ldapsmtp_tls_per_site.cf');
+    write_attribute($MainCf,'transport_maps','ldap:/etc/postfix/ldaptransport_maps.cf');
+    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldapuser_recipient_maps.cf, ldap:/etc/postfix/ldapvalias_maps_both.cf, ldap:/etc/postfix/ldapvalias_maps_member.cf, ldap:/etc/postfix/ldapvalias_maps_folder.cf, ldap:/etc/postfix/ldapvalias_maps_forward.cf');
+    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
+    check_ldap_configuration('access',$ldapMap);
+    check_ldap_configuration('alias_maps',$ldapMap);
+    check_ldap_configuration('alias_maps_folder',$ldapMap);
+    check_ldap_configuration('masquerade_domains',$ldapMap);
+    check_ldap_configuration('mydestination',$ldapMap);
+    check_ldap_configuration('smtp_tls_per_site',$ldapMap);
+    check_ldap_configuration('transport_maps',$ldapMap);
+    check_ldap_configuration('user_recipient_maps',$ldapMap);
+    check_ldap_configuration('valias_maps_both',$ldapMap);
+    check_ldap_configuration('valias_maps_member',$ldapMap);
+    check_ldap_configuration('valias_maps_folder',$ldapMap);
+    check_ldap_configuration('valias_maps_forward',$ldapMap);
+    check_ldap_configuration('virtual_alias_domains',$ldapMap);
+
+}
+
 # Internal helper Funktion to check if a needed ldap table is correctly defined
 # in the main.cf. If not so the neccesary entries will be created.
 sub check_ldap_configuration {
@@ -3137,75 +3145,85 @@ sub check_ldap_configuration {
 
     my $changes   = 0;
     my %query_filter     = (
-                        'transport_maps'      => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'smtp_tls_per_site'   => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'access'              => '(&(objectClass=suseMailAccess)(suseMailClient=%s))',
-                        'local_recipient_maps'=> '(&(objectClass=suseMailRecipient)(|(suseMailAcceptAddress=%s)(uid=%s)))',
-                        'alias_maps'          => '(&(objectClass=suseMailRecipient)(|(uid=%s)(cn=%s)))',
-                        'alias_maps_folder'   => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToFolder=yes))',
-                        'mynetworks'          => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
-                        'masquerade_domains'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
-                        'mydestination'       => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
-                        'virtual_alias_maps_member'   => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes))',
-			'virtual_alias_maps'  => '(&(objectclass=suseMailRecipient)(suseMailAcceptAddress=%s))',
-                        'virtual_alias_domains'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
-                        'canonical_maps'      => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
-                        'recipient_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
-                        'sender_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
+                        'access'                  => '(&(objectClass=suseMailAccess)(suseMailClient=%s))',
+                        'alias_maps'              => '(&(objectClass=suseMailTable)(tableKey=%s))',
+                        'alias_maps_folder'       => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToFolder=yes))',
+                        'masquerade_domains'      => '(&(objectClass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
+                        'mydestination'           => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
+                        'mynetworks'              => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
+                        'smtp_tls_per_site'       => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
+                        'transport_maps'          => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
+                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s))',
+                        'valias_maps_both'        => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes)(suseDeliveryToFolder=yes))',
+                        'valias_maps_member'      => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes)(!(suseDeliveryToFolder=yes)))',
+                        'valias_maps_folder'      => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(suseDeliveryToMember=yes))(suseDeliveryToFolder=yes))',
+                        'valias_maps_forward'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(suseDeliveryToMember=yes))(!(suseDeliveryToFolder=yes)))',
+                        'virtual_alias_domains'   => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
+                        'canonical_maps'          => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
+                        'recipient_canonical_maps'=> '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
+                        'sender_canonical_maps'   => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
                        );
     my %result_attribute = (
-                        'transport_maps'      => 'suseMailTransportNexthop',
-                        'smtp_tls_per_site'   => 'suseTLSPerSiteMode',
-                        'access'              => 'suseMailAction',
-                        'local_recipient_maps'=> 'uid',
-                        'alias_maps'          => 'suseMailForwardAddress',
-                        'alias_maps_folder'   => 'suseMailCommand',
-                        'mynetworks'          => 'suseMailClient',
-                        'masquerade_domains'  => 'zoneName',
-                        'mydestination'       => 'zoneName',
-                        'virtual_alias_maps_member'   => 'uid',
-                        'virtual_alias_maps'  => 'cn',
-                        'virtual_alias_domains'  => 'zoneName',
-                        'canonical_maps'      => 'tableValue',
-                        'recipient_canonical_maps' => 'tableValue',
-                        'sender_canonical_maps'    => 'tableValue'
+                        'access'                  => 'suseMailAction',
+                        'alias_maps'              => 'tableValue',
+                        'alias_maps_folder'       => 'suseMailCommand',
+                        'masquerade_domains'      => 'zoneName',
+                        'mydestination'           => 'zoneName',
+                        'mynetworks'              => 'suseMailClient',
+                        'transport_maps'          => 'suseMailTransportNexthop',
+                        'valias_maps_both'        => 'suseMailForwardAddress,cn,uid',
+                        'valias_maps_member'      => 'suseMailForwardAddress,uid',
+                        'valias_maps_folder'      => 'suseMailForwardAddress,cn',
+                        'valias_maps_forward'     => 'suseMailForwardAddress',
+                        'virtual_alias_domains'   => 'zoneName',
+                        'canonical_maps'          => 'tableValue',
+                        'recipient_canonical_maps'=> 'tableValue',
+                        'sender_canonical_maps'   => 'tableValue'
                        );
     my %scope            = (
-                        'transport_maps'      => 'one',
-                        'smtp_tls_per_site'   => 'one',
-                        'access'              => 'one',
-                        'local_recipient_maps'=> 'one',
-                        'alias_maps'          => 'sub',
-                        'alias_maps_folder'   => 'one',
-                        'mynetworks'          => 'one',
-                        'masquerade_domains'  => 'sub',
-                        'mydestination'       => 'sub',
-                        'virtual_alias_maps_member'   => 'one',
-                        'virtual_alias_maps'  => 'one',
-                        'virtual_alias_domains'  => 'sub',
-                        'canonical_maps'      => 'one',
-                        'recipient_canonical_maps' => 'one',
-                        'sender_canonical_maps'    => 'one'
+                        'access'                  => 'one',
+                        'alias_maps'              => 'one',
+                        'alias_maps_folder'       => 'one',
+                        'masquerade_domains'      => 'sub',
+                        'mydestination'           => 'sub',
+                        'mynetworks'              => 'one',
+                        'transport_maps'          => 'one',
+                        'smtp_tls_per_site'       => 'one',
+                        'valias_maps_both'        => 'one',
+                        'valias_maps_member'      => 'one',
+                        'valias_maps_folder'      => 'one',
+                        'valias_maps_forward'     => 'one',
+                        'virtual_alias_domains'   => 'sub',
+                        'canonical_maps'          => 'one',
+                        'recipient_canonical_maps'=> 'one',
+                        'sender_canonical_maps'   => 'one'
                        );
     my %base            = (
-                        'transport_maps'      => $ldapMap->{'mail_config_dn'},
-                        'smtp_tls_per_site'   => $ldapMap->{'mail_config_dn'},
-                        'access'              => $ldapMap->{'mail_config_dn'},
-                        'local_recipient_maps'=> $ldapMap->{'user_config_dn'},
-                        'alias_maps'          => $ldapMap->{'ldap_domain'},
-                        'alias_maps_folder'   => $ldapMap->{'group_config_dn'},
-                        'mynetworks'          => $ldapMap->{'mail_config_dn'},
-                        'masquerade_domains'  => $ldapMap->{'dns_config_dn'},
-                        'mydestination'       => $ldapMap->{'dns_config_dn'},
-                        'virtual_alias_maps_member'   => $ldapMap->{'group_config_dn'},
-                        'virtual_alias_maps'  => $ldapMap->{'group_config_dn'},
-                        'virtual_alias_domains'  => $ldapMap->{'dns_config_dn'},
-                        'canonical_maps'      => $ldapMap->{'mail_config_dn'},
-                        'recipient_canonical_maps' => $ldapMap->{'mail_config_dn'},
-                        'sender_canonical_maps'    => $ldapMap->{'mail_config_dn'}
+                        'access'                  => $ldapMap->{'mail_config_dn'},
+                        'alias_maps'              => 'ou=Aliases,',$ldapMap->{'mail_config_dn'},
+                        'alias_maps_folder'       => $ldapMap->{'group_config_dn'},
+                        'masquerade_domains'      => $ldapMap->{'dns_config_dn'},
+                        'mydestination'           => $ldapMap->{'dns_config_dn'},
+                        'mynetworks'              => $ldapMap->{'mail_config_dn'},
+                        'smtp_tls_per_site'       => $ldapMap->{'mail_config_dn'},
+                        'transport_maps'          => $ldapMap->{'mail_config_dn'},
+                        'valias_maps_both'        => $ldapMap->{'group_config_dn'},
+                        'valias_maps_member'      => $ldapMap->{'group_config_dn'},
+                        'valias_maps_folder'      => $ldapMap->{'group_config_dn'},
+                        'valias_maps_forward'     => $ldapMap->{'group_config_dn'},
+                        'virtual_alias_domains'   => $ldapMap->{'dns_config_dn'},
+                        'canonical_maps'          => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
+                        'recipient_canonical_maps'=> 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
+                        'sender_canonical_maps'   => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'}
                        );
     my %special_result_attribute = (
-                        'virtual_alias_maps_member'   => 'member',
+                        'valias_maps_both'        => 'member',
+                        'valias_maps_member'      => 'member'
+		       );
+
+    my %terminal_result_attribute = (
+                        'valias_maps_both'        => 'uid',
+                        'valias_maps_member'      => 'uid'
 		       );
 
 
@@ -3260,6 +3278,10 @@ sub check_ldap_configuration {
 	if(defined $special_result_attribute{$config})
 	{
 		$LDAPCF->{'special_result_attribute'} = $special_result_attribute{$config};
+	}
+	if(defined $terminal_result_attribute{$config})
+	{
+		$LDAPCF->{'terminal_result_attribute'} = $terminal_result_attribute{$config};
 	}
         $LDAPCF->{'scope'}            = $scope{$config}; 
 

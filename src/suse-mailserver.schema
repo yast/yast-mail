@@ -178,8 +178,8 @@ objectclass ( MailOC:6 NAME ( 'suseTLSPerSiteContainer' 'TLSPerSiteContainer' ) 
         DESC 'To build TLS per side maps'
         MUST ( suseTLSPerSiteMode $ suseTLSPerSitePeer ) )
 
-objectclass ( MailOC:7 NAME ( 'suseCanonicalTable' 'CanonicalTable' ) SUP top STRUCTURAL
-        DESC 'To build canonical maps'
+objectclass ( MailOC:7 NAME ( 'suseMailTable' 'MailTable' ) SUP top STRUCTURAL
+        DESC 'To build Mail Tables'
         MUST ( tableKey  $ tableValue )
 	MAY  ( valueType $ description ) )
 
