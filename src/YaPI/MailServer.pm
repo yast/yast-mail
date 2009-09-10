@@ -197,9 +197,8 @@ sub ReadGlobalSettings {
     $GlobalSettings{'MaximumMailSize'}  = read_attribute($MainCf,'message_size_limit');
 
     #
-    $GlobalSettings{'Banner'}           = `postconf -h smtpd_banner`;
-    $GlobalSettings{'Interfaces'}       = `postconf -h inet_interfaces`;
-    chomp $GlobalSettings{'Banner'};
+    chomp( $GlobalSettings{'Banner'}     = `postconf -h smtpd_banner`);
+    chomp($GlobalSettings{'Interfaces'}  = `postconf -h inet_interfaces`);
 
     # Determine if relay host is used
     $GlobalSettings{'SendingMail'}{'RelayHost'}{'Name'} = read_attribute($MainCf,'relayhost');
@@ -3078,6 +3077,7 @@ sub write_attribute {
 sub read_attribute {
     my $config    = shift;
     my $attribute = shift;
+    my $a	  = undef;
     foreach(@{$config})
     {
         if($_->{"key"} eq $attribute)
@@ -3085,6 +3085,8 @@ sub read_attribute {
             return $_->{"value"} if defined $_->{"value"};
         }
     }
+    chomp( $a = `postconf  -h $attribute` ); 
+    return $a if( defined $a );
     return undef;
 }
 
