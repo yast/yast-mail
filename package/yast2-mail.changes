@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Mon Sep 28 08:37:46 CEST 2009 - varkoly@suse.de
+
+- bnc#532518 – YaST in translation (use 'YaST' instead of 'YaST2') 
+
+-------------------------------------------------------------------
 Tue Sep  8 16:37:11 CEST 2009 - varkoly@suse.de
 
 - Reorganize ldap tables 
