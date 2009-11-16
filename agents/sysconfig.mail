@@ -30,7 +30,7 @@ MAIL_CREATE_CONFIG="yes"
 # If set to "no" or empty then only mail from localhost
 # will be accepted.
 #
-SMTPD_LISTEN_REMOTE="yes"
+SMTPD_LISTEN_REMOTE="no"
 
 ## Type:        yesno
 ## Default:     no
