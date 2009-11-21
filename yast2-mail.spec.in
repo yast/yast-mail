@@ -3,7 +3,7 @@
 @HEADER@
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-devtools yast2-testsuite
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
-BuildRequires:  perl-NetxAP
+BuildRequires:  perl-NetxAP util-linux
 
 PreReq:         %fillup_prereq
 
