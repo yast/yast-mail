@@ -6,7 +6,7 @@ MailServerLDAP
 
 =head1 PREFACE
 
-This package is a part of the YaST2 mail modul.
+This package is a part of the YaST mail modul.
 
 =head1 SYNOPSIS
 

@@ -192,7 +192,7 @@ define any AuthorizingDialog ()
     if( size1 <= 0 || size2 <= 0) {
        Popup::Warning(_("You have not created server certificate and key.
 You will not able to use server side SSL and TSL on the mail server.
-Create the certificate with the YaST2 CA management module.
+Create the certificate with the YaST CA management module.
 "));
     } else {
        MailServer::CertExist = true;

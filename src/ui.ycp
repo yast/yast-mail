@@ -91,7 +91,7 @@ SuSEconfig will overwrite manual changes.
 	    // bb) read English
 	    // TODO: look at exim and mention it in the popup
 	    // Translators: error popup
-	    Popup::Error (_("YaST2 can only configure Postfix and Sendmail,
+	    Popup::Error (_("YaST can only configure Postfix and Sendmail,
 but neither of them is installed."));
 	}
     }
