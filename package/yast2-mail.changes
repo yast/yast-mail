@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Nov 21 18:12:51 CET 2009 - varkoly@suse.de
+
+- bnc#532518 - JJ: YaST in translation (use 'YaST' instead of 'YaST2')
+
+-------------------------------------------------------------------
 Sat Nov 21 15:02:51 CET 2009 - varkoly@suse.de
 
 - bnc#555814 – VUL-0: SMTPD_LISTEN_REMOTE="yes" by default
