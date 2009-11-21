@@ -1,4 +1,40 @@
 -------------------------------------------------------------------
+Sat Nov 21 15:02:51 CET 2009 - varkoly@suse.de
+
+- bnc#555814 – VUL-0: SMTPD_LISTEN_REMOTE="yes" by default
+
+-------------------------------------------------------------------
+Mon Mar  9 22:15:36 CET 2009 - varkoly@suse.de
+
+-  bnc#483639 - yast2 mail server's master.cf parser do not writes some lines
+
+-------------------------------------------------------------------
+Sun Jan 25 19:20:19 CET 2009 - varkoly@suse.de
+
+- saslauthd and cyrus must be started and enabled by YaPI
+- Serial of SOA Record must not be greater then 4294967295
+
+-------------------------------------------------------------------
+Thu Jan 22 10:12:09 CET 2009 - varkoly@suse.de
+
+- bnc#467589 - Cyrus don't create Directory for new LDAP User at first run.
+- bnc#467562 - Yast mail doesn't install needed Spamassassin Package for SPAM learning extension for Mailserver 
+
+-------------------------------------------------------------------
+Mon Jan 19 16:49:10 CET 2009 - varkoly@suse.de
+
+- bnc#466748 - yast2-mail-plugins broken 
+
+-------------------------------------------------------------------
+Thu Jan  8 13:17:02 CET 2009 - varkoly@suse.de
+
+- avoid undefined variables in the MasterCFParser
+- make progress bar by WriteDialog visable
+- bnc#463589 - YaST2 Mail Server & amavisd 
+- the myhostname in /etc/amavisd.conf must be set to FQHN 
+- bnc#463430 - Mail to a shared folder can couse infinit loop 
+
+-------------------------------------------------------------------
 Fri Dec 12 06:37:41 CET 2008 - varkoly@suse.de
 
 - bnc#458553 - YaSt2 Mail module do not install cyrus-sasl-saslauthd

@@ -348,7 +348,14 @@ sub WriteGlobalSettings {
                      'command' => 'smtp' });
        if(! defined $smtpsrv )
        {
-           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp', 'command' => 'smtp' });
+           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp',
+                        'type'    => 'inet',
+                        'private' => 'n',
+                        'unpriv'  => '-',
+                        'chroot'  => 'n',
+                        'wakeup'  => '-',
+                        'maxproc' => '-',
+                        'command' => 'smtpd' });
        }
     }
     
@@ -1161,44 +1168,38 @@ sub ReadMailPrevention {
     }
 
     # Now we looking for if vscan (virusscanning) is started.
-    my $vscan = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanin = SCR->Execute('.mail.postfix.mastercf.findService',
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd'} );
-    my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-		{ 'service' => 'smtp',
-		  'command' => 'smtpd'});
-#print STDERR "SMTP";
-#print STDERR Dumper ($smtp);
-#print STDERR "VSCAN";
-#print STDERR Dumper ($vscan);
-    if( defined $smtp->[0] && defined $smtp->[0]->{'options'} )
-    { 
-	if( $smtp->[0]->{'options'}->{'content_filter'} eq 'smtp:[127.0.0.1]:10024' && $vscan )
-	{
-	    $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
-	    if( ! open(IN,$aconf) )
-	    {
-	       return "Error: $!";
-	    }
-	    my @ACONF = <IN>;
-	    close(IN);
-	    my $ismax = 0;
-   	    foreach ( @ACONF )
-   	    {
-	    	s/\s+//g;
+    my $vscanout = SCR->Execute('.mail.postfix.mastercf.findService',
+		{ 'service' => 'amavis',
+		  'command' => 'lmtp'} );
+    my $content_filter = read_attribute($MainCf,'content_filter');
+
+    if( $content_filter eq 'amavis:[127.0.0.1]:10024' && $vscanin && $vscanout)
+    {
+        $MailPrevention{'VirusScanning'} = YaST::YCP::Boolean(1);
+        if( ! open(IN,$aconf) )
+        {
+           return "Error: $!";
+        }
+        my @ACONF = <IN>;
+        close(IN);
+        my $ismax = 0;
+        foreach ( @ACONF )
+        {
+        	s/\s+//g;
 		if ( /^\$max_servers=(\d+)/ )
 		{
-	  	    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
+		    $MailPrevention{'VSCount'} = YaST::YCP::Integer($1);
 		}
 		$ismax = 1;
-	    }
-	    if( !$ismax )
-	    {
-	        $MailPrevention{'VSCount'} = YaST::YCP::Integer(5);
-	    }
-	}
+        }
+        if( !$ismax )
+        {
+            $MailPrevention{'VSCount'} = YaST::YCP::Integer(2);
+        }
     }
-
     # make IMAP connection
     my $imap = new Net::IMAP($imaphost, Debug => 0);
     if( $imap )
@@ -1211,6 +1212,7 @@ sub ReadMailPrevention {
 	        $MailPrevention{'SpamLearning'} = YaST::YCP::Boolean(1);
 	    }
 	}
+	$imap->logout();
     }
     
     return \%MailPrevention;
@@ -1372,34 +1374,64 @@ sub WriteMailPrevention {
 				   code => "VIRUS_SCANNER_FAILED",
 				   description => "activating the virus scanner failed: $err");
 	}
-        if( SCR->Execute('.mail.postfix.mastercf.findService',
-			 { 'service' => 'smtp', 'command' => 'smtpd' }))
-        {
-             SCR->Execute('.mail.postfix.mastercf.modifyService',
-   		{ 'service' => 'smtp',
-		  'command' => 'smtpd',
-		  'maxproc' => $MailPrevention->{'VSCount'},
-		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
-        }
-	else
+	# This is only for systems updated from SLES10
+		my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
+					 { 'service' => 'smtps', 'command' => 'smtpd' });
+		if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
+		{
+		    my $opts = $smtps->[0]->{options};
+		    if ( defined $opts->{'content_filter'} )
+		    {
+			    delete $opts->{'content_filter'};
+			    SCR->Execute('.mail.postfix.mastercf.modifyService',
+					 { 'service' => 'smtps',
+					   'command' => 'smtpd',
+					   'maxproc' => '-',
+					   'options' => $opts } );
+		    }
+		}
+		my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
+					 { 'service' => 'smtp', 'command' => 'smtpd' });
+		if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
+		{
+		    my $opts = $smtp->[0]->{options};
+		    if ( defined $opts->{'content_filter'} )
+		    {
+			    delete $opts->{'content_filter'};
+			    SCR->Execute('.mail.postfix.mastercf.modifyService',
+					 { 'service' => 'smtp',
+					   'command' => 'smtpd',
+					   'maxproc' => '-',
+					   'options' => $opts } );
+		    }
+		}
+	# End This is only for systems updated from SLES10
+	if( SCR->Execute('.mail.postfix.mastercf.findService',
+	    { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
 	{
-             SCR->Execute('.mail.postfix.mastercf.addService',
-   		{ 'service' => 'smtp',
-		  'command' => 'smtpd',
+	    SCR->Execute('.mail.postfix.mastercf.deleteService',
+	        { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	}
+	if( SCR->Execute('.mail.postfix.mastercf.findService',
+	    { 'service' => 'amavis', 'command' => 'lmtp' }))
+	{
+	    SCR->Execute('.mail.postfix.mastercf.deleteService',
+	        { 'service' => 'amavis', 'command' => 'lmtp' });
+	}
+	# create smtpd pocess for getting back the emails
+        SCR->Execute('.mail.postfix.mastercf.addService',
+		{ 'service' => 'amavis',
+		  'command' => 'lmtp',
+		  'type'    => 'unix',
+		  'private' => '-',
+		  'unpriv'  => '-',
+		  'chroot'  => '-',
+		  'wakeup'  => '-',
 		  'maxproc' => $MailPrevention->{'VSCount'},
-		  'options' => { 'content_filter' => 'smtp:[127.0.0.1]:10024' } } );
-        }
-	my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-				 { 'service' => 'smtps', 'command' => 'smtpd' });
-        if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-        {
-	    my $opts = $smtps->[0]->{options};
-	    $opts->{'content_filter'} = 'smtp:[127.0.0.1]:10024';
-	    SCR->Execute('.mail.postfix.mastercf.modifyService',
-			 { 'service' => 'smtps',
-			   'command' => 'smtpd',
-			   'options' => $opts } );
-        }
+		  'options' => { lmtp_data_done_timeout     => 1200,
+				 lmtp_send_xforward_command => 'yes',
+				 disable_dns_lookups        => 'yes',
+				 max_use                    => 20 } } );
         SCR->Execute('.mail.postfix.mastercf.addService',
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd',
@@ -1409,30 +1441,40 @@ sub WriteMailPrevention {
 		  'chroot'  => 'n',
 		  'wakeup'  => '-',
 		  'maxproc' => '-',
-		  'options' => { 'content_filter' => '' } } );
+		  'options' => {  content_filter => '',
+				  local_recipient_maps => '',
+				  relay_recipient_maps => '',
+				  smtpd_delay_reject => 'no',
+				  smtpd_restriction_classes => '',
+				  smtpd_client_restrictions => '',
+				  smtpd_helo_restrictions => '',
+				  smtpd_sender_restrictions => '',
+				  smtpd_recipient_restrictions => 'permit_mynetworks,reject',
+				  smtpd_data_restrictions => 'reject_unauth_pipelining',
+				  smtpd_end_of_data_restrictions => '',
+				  mynetworks => '127.0.0.0/8',
+				  smtpd_error_sleep_time => '0',
+				  smtpd_soft_error_limit => '1001',
+				  smtpd_hard_error_limit => '1000',
+				  smtpd_client_connection_count_limit => '0',
+				  smtpd_client_connection_rate_limit => '0',
+				  receive_override_options => 'no_header_body_checks,no_unknown_recipient_checks'
+		  		} 
+		} );
+       write_attribute($MainCf,'content_filter','amavis:[127.0.0.1]:10024');   
     }
     else
     {
-      SCR->Execute('.mail.postfix.mastercf.deleteService',
-          { 'service' => 'localhost:10025', 'command' => 'smtpd' });
-      SCR->Execute('.mail.postfix.mastercf.modifyService', 
-          { 'service' => 'smtp', 'command' => 'smtpd', 'options' => {} } );
-
-      my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-				 { 'service' => 'smtps', 'command' => 'smtpd' });
-      if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-      {
-	  my $opts = $smtps->[0]->{options};
-	  delete $opts->{'content_filter'};
-	  SCR->Execute('.mail.postfix.mastercf.modifyService',
-		       { 'service' => 'smtps',
-			 'command' => 'smtpd',
-			 'options' => $opts });
-      }
-      Service->Stop('amavis');
-      Service->Stop('clamd');
-      Service->Disable('amavis');
-      Service->Disable('clamd');
+	SCR->Execute('.mail.postfix.mastercf.deleteService',
+	    { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	SCR->Execute('.mail.postfix.mastercf.deleteService',
+	    { 'service' => 'amavis', 'command' => 'lmtp' });
+	write_attribute($MainCf,'content_filter','');   
+	
+	Service->Stop('amavis');
+	Service->Stop('clamd');
+	Service->Disable('amavis');
+	Service->Disable('clamd');
     }
 
     # now we looks if the ldap entries in the main.cf for the access table are OK.
@@ -1468,13 +1510,13 @@ fi
 setfacl -m u:vscan:rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 setfacl -m m::rx /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 
-su - vscan -c "/usr/bin/sa-learn --sync"
+/usr/bin/sa-learn --sync --dbpath /var/spool/amavis/.spamassassin/
 (
 for i in `ls /var/spool/imap/NewSpam/[0-9]* 2> /dev/null`
 do
    setfacl -m user:vscan:r-x $i
    echo $i 
-   su - vscan -c "/usr/bin/sa-learn --spam $i"
+   /usr/bin/sa-learn --spam --dbpath /var/spool/amavis/.spamassassin/ $i
    rm $i
 done
 ) >> $LOG  2>&1
@@ -1485,22 +1527,26 @@ for i in `ls /var/spool/imap/NoSpam/[0-9]* 2> /dev/null`
 do
    setfacl -m user:vscan:r-x $i
    echo $i 
-   su - vscan -c "/usr/bin/sa-learn --ham $i"
+   /usr/bin/sa-learn --ham --dbpath /var/spool/amavis/.spamassassin/ $i
    rm $i
 done
 ) >> $LOG  2>&1
 su - cyrus -c "reconstruct NoSpam" &>/dev/null
+chown -R vscan /var/spool/amavis/.spamassassin/
 
 setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
 ';
 		SCR->Write(".target.string","/etc/cron.hourly/lern-spam",$lernspam);
-		SCR->Write(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
+		SCR->Execute(".target.bash","chmod 755 /etc/cron.hourly/lern-spam");
 	    }
+	    $imap->logout();
 	}
 	else
 	{
-		SCR->Write(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
-	        $ret = $imap->delete('NewSpam'); 
+	    SCR->Execute(".target.bash","test -e /etc/cron.hourly/lern-spam && rm /etc/cron.hourly/lern-spam");
+	    $ret = $imap->delete('NewSpam'); 
+	    $ret = $imap->delete('NoSpam'); 
+	    $imap->logout();
 	}
     }
     return  1;
@@ -1643,7 +1689,6 @@ sub WriteMailRelaying {
     }
     
     y2milestone("-- WriteMailRelaying --");
-#print STDERR Dumper([$MailRelaying]);
     # Make LDAP Connection 
     my $ldapMap = $self->ReadLDAPDefaults($AdminPassword);
     if( !$ldapMap )
@@ -1787,7 +1832,7 @@ sub ReadMailLocalDelivery {
     my %MailLocalDelivery = (
                                 'Changed'         => YaST::YCP::Boolean(0),
                                 'Type'            => '',
-                                'MailboxSizeLimit'=> '',
+                                'MailboxSizeLimit'=> 0,
                                 'FallBackMailbox' => '',
                                 'SpoolDirectory'  => '',
                                 'QuotaLimit'      => 90,
@@ -1916,12 +1961,14 @@ sub WriteMailLocalDelivery {
     if(  $MailLocalDelivery->{'Type'} ne 'none')
     {
         write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-        write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
-        write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
-        write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_member.cf, ldap:/etc/postfix/ldapalias_maps.cf');
+        write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
+        write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
+        write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
+        check_ldap_configuration('alias_maps_folder',$ldapMap);
         check_ldap_configuration('alias_maps',$ldapMap);
-        check_ldap_configuration('alias_maps_member',$ldapMap);
+        check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
         check_ldap_configuration('virtual_alias_maps',$ldapMap);
+        check_ldap_configuration('virtual_alias_domains',$ldapMap);
     }
     if(  $MailLocalDelivery->{'Type'} eq 'local')
     {
@@ -1970,6 +2017,9 @@ sub WriteMailLocalDelivery {
         SCR->Write('.etc.imapd_conf.quotawarn',$MailLocalDelivery->{'QuotaLimit'});
         SCR->Write('.etc.imapd_conf.timeout',$MailLocalDelivery->{'ImapIdleTime'});
         SCR->Write('.etc.imapd_conf.poptimeout',$MailLocalDelivery->{'PopIdleTime'});
+        SCR->Write('.etc.imapd_conf.allowplaintext','yes');
+        SCR->Write('.etc.imapd_conf.unixhierarchysep','yes');
+        SCR->Write('.etc.imapd_conf.allowplainwithouttls','yes');
         if($MailLocalDelivery->{'FallBackMailbox'} ne ''  )
 	{
            SCR->Write('.etc.imapd_conf.lmtp_luser_relay',$MailLocalDelivery->{'FallBackMailbox'});
@@ -2054,6 +2104,24 @@ sub WriteMailLocalDelivery {
 	      SCR->Execute('.mail.cyrusconf.toggleService', 'pop3s');
 	  }
       }
+      Service->Enable('saslauthd');
+      Service->Enable('cyrus');
+      if( !Service->Status('saslauthd') )
+      {
+          Service->Restart('saslauthd');
+      }
+      else
+      {
+          Service->Start('saslauthd');
+      }
+      if( !Service->Status('cyrus') )
+      {
+          Service->Restart('cyrus');
+      }
+      else
+      {
+          Service->Start('cyrus');
+      }
     }
     elsif(  $MailLocalDelivery->{'Type'} eq 'none')
     {
@@ -2073,6 +2141,31 @@ sub WriteMailLocalDelivery {
     SCR->Write('.etc.imapd_conf',undef);
     SCR->Write('.mail.cyrusconf',undef);
     return 1;
+}
+
+BEGIN { $TYPEINFO{CreateRootMailbox}     =["function", "any", "string"]; }
+sub CreateRootMailbox {
+    my $self            = shift;
+    my $AdminPassword   = shift;
+
+      #Create mailbox for root
+      my $imap = new Net::IMAP($imaphost, Debug => 0);
+      if( $imap )
+      {
+	  my $ret = $imap->login($imapadm, $AdminPassword);
+	  if($$ret{Status} eq "ok")
+	  {
+	      $ret = $imap->select('usr/root'); 
+	      if( $ret->{Status} ne 'ok' )
+	      {
+	          $ret = $imap->create('user/root'); 
+		  $ret = $imap->setacl('user/root', 'cyrus', "lrswipkxtea");
+		  $ret = $imap->setacl('user/root', 'root', "lrswipkxtea");
+		  $ret = $imap->setacl('user/root', 'anyone', "" );
+	      }
+	  }
+          $imap->logout();
+      }
 }
 
 BEGIN { $TYPEINFO{ReadFetchingMail}     =["function", "any", "string"]; }
@@ -2323,25 +2416,27 @@ sub WriteMailLocalDomains {
         }
 	else
 	{
-	  # This is a new domain, we create it. 
-	  # We create all the DNS attributes. `hostname -f` is the NS entry.
-          my $serial = POSIX::strftime("%Y%m%d%H%M",localtime);
-          my $host   = `hostname -f`; chomp $host;
-          my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
-                      'zoneName'                     => $name,
-                      'suseMailDomainType'           => $type,
-                      'suseMailDomainMasquerading'   => $masquerading,
+		# This is a new domain, we create it. 
+		# We create all the DNS attributes. `hostname -f` is the NS and MX entry.
+		my $serial = POSIX::strftime("%Y%m%d%H",localtime);
+		my $host   = `hostname -f`; chomp $host;
+		my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
+		      'zoneName'                     => $name,
+		      'suseMailDomainType'           => $type,
+		      'suseMailDomainMasquerading'   => $masquerading,
 		      'relativeDomainName'	     => '@',
 		      'dNSClass'	             => 'IN',
 		      'dNSTTL'	                     => '86400',
+		      'nSRecord'		     => $host.'.',
+		      'mXRecord'		     => '40 '.$host.'.',
 		      'sOARecord'                    => $host.'. root.'.$host.'. '.$serial.' 10800 3600 302400 43200'
-                 };
-          if(! SCR->Write('.ldap.add',{ "dn" => $DN } ,$tmp)){
-            my $ldapERR = SCR->Read(".ldap.error");
-            return $self->SetError(summary     => "LDAP add failed",
-                                   code        => "SCR_WRITE_FAILED",
-                                   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
-         }
+		 };
+		if(! SCR->Write('.ldap.add',{ "dn" => $DN } ,$tmp)){
+			my $ldapERR = SCR->Read(".ldap.error");
+			return $self->SetError(summary     => "LDAP add failed",
+					   code        => "SCR_WRITE_FAILED",
+					   description => $ldapERR->{'code'}." : ".$ldapERR->{'msg'});
+		}
        }
     }
 
@@ -2352,14 +2447,19 @@ sub WriteMailLocalDomains {
     write_attribute($MainCf,'masquerade_classes','envelope_sender, header_sender, header_recipient');
     write_attribute($MainCf,'masquerade_exceptions','root');
     write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
-    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
+    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
+    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
+    write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
     check_ldap_configuration('masquerade_domains',$ldapMap);
     check_ldap_configuration('mydestination',$ldapMap);
+    check_ldap_configuration('alias_maps_folder',$ldapMap);
     check_ldap_configuration('local_recipient_maps',$ldapMap);
+    check_ldap_configuration('alias_maps',$ldapMap);
     check_ldap_configuration('virtual_alias_maps',$ldapMap);
+    check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
+    check_ldap_configuration('virtual_alias_domains',$ldapMap);
     return 1;
 }
 
@@ -2858,17 +2958,19 @@ fi';
     write_attribute($MainCf,'masquerade_exceptions','root');
     write_attribute($MainCf,'content_filter','');
     write_attribute($MainCf,'mydestination','$myhostname, localhost.$mydomain, $mydomain, ldap:/etc/postfix/ldapmydestination.cf');
-    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf');
-    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
-    write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps.cf, ldap:/etc/postfix/ldapalias_maps_member.cf');
+    write_attribute($MainCf,'virtual_alias_maps',   'ldap:/etc/postfix/ldaplocal_recipient_maps.cf, ldap:/etc/postfix/ldapvirtual_alias_maps_member.cf, ldap:/etc/postfix/ldapvirtual_alias_maps.cf');
+    write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
+    write_attribute($MainCf,'alias_maps','hash:/etc/aliases, ldap:/etc/postfix/ldapalias_maps_folder.cf, ldap:/etc/postfix/ldapalias_maps.cf');
     check_ldap_configuration('transport_maps',$ldapMap);
     check_ldap_configuration('smtp_tls_per_site',$ldapMap);
     check_ldap_configuration('masquerade_domains',$ldapMap);
     check_ldap_configuration('mydestination',$ldapMap);
     check_ldap_configuration('local_recipient_maps',$ldapMap);
-    check_ldap_configuration('virtual_alias_maps',$ldapMap);
+    check_ldap_configuration('alias_maps_folder',$ldapMap);
     check_ldap_configuration('alias_maps',$ldapMap);
-    check_ldap_configuration('alias_maps_member',$ldapMap);
+    check_ldap_configuration('virtual_alias_maps',$ldapMap);
+    check_ldap_configuration('virtual_alias_maps_member',$ldapMap);
+    check_ldap_configuration('virtual_alias_domains',$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
     SCR->Write('.mail.postfix.mastercf',undef);
@@ -2908,15 +3010,27 @@ sub activate_virus_scanner {
    my @ACONF = <IN>;
    close(IN);
    
-   my $isclam = 0;
-   my $ismax  = 0;
+   my $isclam       = 0;
+   my $ismax        = 0;
+   my $ismyhostname = 0;
+   my $myhostname   = `hostname -f`; chomp $myhostname;
+   my $mydomain     = `hostname -d`; chomp $mydomain;
    foreach my $l ( @ACONF )
    {
 	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
 	{
-	   #fix bnc#450888 : remove the supplementary entries
 	   next if $ismax;
 	   $ismax = 1;
+	}
+	if ( $l =~ s/^\$myhostname = .*;/\$myhostname = '$myhostname';/ )
+	{
+	   next if $ismyhostname;
+	   $ismyhostname = 1;
+	}
+	if ( $l =~ s/^\$mydomain = .*;/\$mydomain = '$mydomain';/ )
+	{
+	   push @CONF, $l;
+	   next ;
 	}
    	$l =~ s/(.*)/# $1/ if $l =~ /bypass_virus_checks_acl.*=.*qw\( \./;
    	if( $isclam || $l =~ /Clam Antivirus-clamd/ )
@@ -2931,14 +3045,20 @@ sub activate_virus_scanner {
    	}
 	push @CONF, $l;
    }
+   pop @CONF;
    if( !$ismax )
    {
-       push @CONF, '$max_servers = '.$VSCount;
+       push @CONF, '$max_servers = '.$VSCount.";\n";
+   }
+   if( !$ismyhostname )
+   {
+       push @CONF, '$myhostname = '."'$myhostname';\n";
    }
    if( ! open(OUT,">$aconf.new") )
    {
        return "Error: $!";
    }
+   push @CONF, '1;';
    print OUT @CONF;
    close(OUT);
    
@@ -3013,12 +3133,14 @@ sub check_ldap_configuration {
                         'smtp_tls_per_site'   => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
                         'access'              => '(&(objectClass=suseMailAccess)(suseMailClient=%s))',
                         'local_recipient_maps'=> '(&(objectClass=suseMailRecipient)(|(suseMailAcceptAddress=%s)(uid=%s)))',
-                        'alias_maps'          => '(&(objectClass=suseMailRecipient)(cn=%s))',
-                        'alias_maps_member'   => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes))',
+                        'alias_maps'          => '(&(objectClass=suseMailRecipient)(|(uid=%s)(cn=%s)))',
+                        'alias_maps_folder'   => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToFolder=yes))',
                         'mynetworks'          => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
                         'masquerade_domains'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
                         'mydestination'       => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
-                        'virtual_alias_maps'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
+                        'virtual_alias_maps_member'   => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes))',
+			'virtual_alias_maps'  => '(&(objectclass=suseMailRecipient)(suseMailAcceptAddress=%s))',
+                        'virtual_alias_domains'  => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
                         'canonical_maps'      => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
                         'recipient_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
                         'sender_canonical_maps' => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=sender))'
@@ -3028,12 +3150,14 @@ sub check_ldap_configuration {
                         'smtp_tls_per_site'   => 'suseTLSPerSiteMode',
                         'access'              => 'suseMailAction',
                         'local_recipient_maps'=> 'uid',
-                        'alias_maps'          => 'suseMailCommand,suseMailForwardAddress',
-                        'alias_maps_member'   => 'uid,suseMailForwardAddress',
+                        'alias_maps'          => 'suseMailForwardAddress',
+                        'alias_maps_folder'   => 'suseMailCommand',
                         'mynetworks'          => 'suseMailClient',
                         'masquerade_domains'  => 'zoneName',
                         'mydestination'       => 'zoneName',
-                        'virtual_alias_maps'  => 'zoneName',
+                        'virtual_alias_maps_member'   => 'uid',
+                        'virtual_alias_maps'  => 'cn',
+                        'virtual_alias_domains'  => 'zoneName',
                         'canonical_maps'      => 'tableValue',
                         'recipient_canonical_maps' => 'tableValue',
                         'sender_canonical_maps'    => 'tableValue'
@@ -3044,11 +3168,13 @@ sub check_ldap_configuration {
                         'access'              => 'one',
                         'local_recipient_maps'=> 'one',
                         'alias_maps'          => 'one',
-                        'alias_maps_member'   => 'one',
+                        'alias_maps_folder'   => 'one',
                         'mynetworks'          => 'one',
                         'masquerade_domains'  => 'sub',
                         'mydestination'       => 'sub',
-                        'virtual_alias_maps'  => 'sub',
+                        'virtual_alias_maps_member'   => 'one',
+                        'virtual_alias_maps'  => 'one',
+                        'virtual_alias_domains'  => 'sub',
                         'canonical_maps'      => 'one',
                         'recipient_canonical_maps' => 'one',
                         'sender_canonical_maps'    => 'one'
@@ -3058,18 +3184,20 @@ sub check_ldap_configuration {
                         'smtp_tls_per_site'   => $ldapMap->{'mail_config_dn'},
                         'access'              => $ldapMap->{'mail_config_dn'},
                         'local_recipient_maps'=> $ldapMap->{'user_config_dn'},
-                        'alias_maps'          => $ldapMap->{'group_config_dn'},
-                        'alias_maps_member'   => $ldapMap->{'group_config_dn'},
+                        'alias_maps'          => $ldapMap->{'ldap_domain'},
+                        'alias_maps_folder'   => $ldapMap->{'group_config_dn'},
                         'mynetworks'          => $ldapMap->{'mail_config_dn'},
                         'masquerade_domains'  => $ldapMap->{'dns_config_dn'},
                         'mydestination'       => $ldapMap->{'dns_config_dn'},
-                        'virtual_alias_maps'  => $ldapMap->{'dns_config_dn'},
+                        'virtual_alias_maps_member'   => $ldapMap->{'group_config_dn'},
+                        'virtual_alias_maps'  => $ldapMap->{'group_config_dn'},
+                        'virtual_alias_domains'  => $ldapMap->{'dns_config_dn'},
                         'canonical_maps'      => $ldapMap->{'mail_config_dn'},
                         'recipient_canonical_maps' => $ldapMap->{'mail_config_dn'},
                         'sender_canonical_maps'    => $ldapMap->{'mail_config_dn'}
                        );
     my %special_result_attribute = (
-                        'alias_maps_member'   => 'member',
+                        'virtual_alias_maps_member'   => 'member',
 		       );
 
 

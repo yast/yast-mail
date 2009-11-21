@@ -145,17 +145,17 @@
             list<term> result = [];
             integer i = 0;
 
-            if( is(data["suseMailForwardAaddress"]:(any)"", string)
-                && size (data["suseMailForwardAaddress"]:"") > 0 )
+            if( is(data["suseMailForwardAddress"]:(any)"", string)
+                && size (data["suseMailForwardAddress"]:"") > 0 )
             {
                     result = [`item (`id (i),
-                                     data["suseMailForwardAaddress"]:"")];
+                                     data["suseMailForwardAddress"]:"")];
                     // transforming to list
-                    data["suseMailForwardAaddress"] = [data["suseMailForwardAaddress"]:""];
+                    data["suseMailForwardAddress"] = [data["suseMailForwardAddress"]:""];
             }
-            else if ( is(data["suseMailForwardAaddress"]:(any)[], list) )
+            else if ( is(data["suseMailForwardAddress"]:(any)[], list) )
             {
-                    foreach (string element, data["suseMailForwardAaddress"]:[], ``{
+                    foreach (string element, data["suseMailForwardAddress"]:[], ``{
                         result = add (result, `item (`id (i), element));
                         i = i + 1;
                     });
@@ -169,12 +169,11 @@
         string what    = config["what"]:"user";
         string action  = data["what"]:"";
 
-        if( data["suseMailCommand"]:"" != "" ) {
-            sharedfolder = true;
-        }
         if(  data["suseDeliveryToMember"]:"no" == "yes" ) {
             deliverytomember = true;
-	    sharedfolder     = false;
+        }
+        if(  data["suseDeliveryToFolder"]:"no" == "yes" ) {
+            sharedfolder = true;
         }
 
         map<string, any> tmp_data        = $[];
@@ -334,13 +333,13 @@
                 {
                     if (check_mail_address (emailName))
                     {
-                        if (contains (data["suseMailForwardAaddress"]:[], emailName))
+                        if (contains (data["suseMailForwardAddress"]:[], emailName))
                         {
                             Popup::Error(_("Entry already exists."));
                         }
                         else
                         {
-                            data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[],
+                            data["suseMailForwardAddress"] = add (data["suseMailForwardAddress"]:[],
                                                                  emailName);
                             UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
                             UI::ChangeWidget(`id(`id_emailname), `Value, "");
@@ -355,24 +354,24 @@
             if (ret == `deleteEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[],
+                data["suseMailForwardAddress"] = remove (data["suseMailForwardAddress"]:[],
                                                         id);
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
             if (ret == `editEmail)
             {
                 integer id = (integer) UI::QueryWidget (`id (`table), `CurrentItem);
-                string oldEMAIL = (string)((list) data["suseMailForwardAaddress"]:[])[id]:"";
+                string oldEMAIL = (string)((list) data["suseMailForwardAddress"]:[])[id]:"";
                 string newEMAIL = editEMAIL (oldEMAIL);
 
-                if (contains (data["suseMailForwardAaddress"]:[], newEMAIL))
+                if (contains (data["suseMailForwardAddress"]:[], newEMAIL))
                 {
                     Popup::Error(_("Entry already exists."));
                 }
                 else
                 {
-                    data["suseMailForwardAaddress"] = remove (data["suseMailForwardAaddress"]:[], id);
-                    data["suseMailForwardAaddress"] = add (data["suseMailForwardAaddress"]:[], newEMAIL);
+                    data["suseMailForwardAddress"] = remove (data["suseMailForwardAddress"]:[], id);
+                    data["suseMailForwardAddress"] = add (data["suseMailForwardAddress"]:[], newEMAIL);
                 }
                 UI::ChangeWidget(`id(`table), `Items, getEMAILList ());
             }
@@ -385,13 +384,12 @@
                 }
 // We put it everytime into the LDAP, and the ldap filter control if it is visible
                 data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
-//               if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
-//                   data["suseMailCommand"] = "\"|/usr/bin/formail -I \\\"From \\\" |/usr/lib/cyrus/bin/deliver -r "+data["cn"]:""+" -a cyrus -m "+data["cn"]:""+"\"";
-//               } else {
-//                   if( data["suseMailCommand"]:"" != "" ) {
-//                     data = remove (data, "suseMailCommand");
-//                   }
-//               }
+                if( (boolean) UI::QueryWidget (`id (`sharedfolder), `Value)) {
+		   data["suseDeliveryToFolder"] = "yes";
+                } else {
+                   data["suseDeliveryToFolder"] = "no";
+                }
+
                 string err = UsersPluginMail::Check ( config, (map<string,any>) union (data, tmp_data));
 
                 if (err != "")
@@ -407,10 +405,10 @@
                      data["plugins"] = add (data["plugins"]:[],
                                             "UsersPluginMail");
                  }
-                 if( size(data["suseMailForwardAaddress"]:[]) == 1 ) {
-                     data["suseMailForwardAaddress"] = ((list)data["suseMailForwardAaddress"]:[])[0]:"";
-                 } else if( size(data["suseMailForwardAaddress"]:[]) == 0 ) {
-                     remove(data,"suseMailForwardAaddress");
+                 if( size(data["suseMailForwardAddress"]:[]) == 1 ) {
+                     data["suseMailForwardAddress"] = ((list)data["suseMailForwardAddress"]:[])[0]:"";
+                 } else if( size(data["suseMailForwardAddress"]:[]) == 0 ) {
+                     remove(data,"suseMailForwardAddress");
                  }
 
                  if(data["localdeliverytype"]:"local" == "cyrus" ) {
