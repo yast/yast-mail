@@ -18,9 +18,8 @@ X-SuSE-YaST-AutoInstClonable=true
 X-SuSE-YaST-AutoInstSchema=mail.rnc
 
 Icon=yast-mail
-Exec=/sbin/yast2 mail 
+Exec=xdg-su -c "/sbin/yast2 mail"
 
 Name=Mail Server
 GenericName=Configure mail
-X-KDE-SubstituteUID=true
 StartupNotify=true
