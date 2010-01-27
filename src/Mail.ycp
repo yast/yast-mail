@@ -103,7 +103,7 @@
     /**
      * Do the MTA use TLS for sending the email.
      */
-    global boolean smtp_use_TLS = true;
+    global string smtp_use_TLS = "yes";
 
     /**
      * Mail will appear to come from this domain. Applies also for the
@@ -447,7 +447,7 @@ Configure a scanner manually."));
 	}
 	else if (mta == `postfix)
 	{
-	    smtp_use_TLS = ( (string) SCR::Read (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT) == "yes" );
+	    smtp_use_TLS = (string) SCR::Read (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT);
 	    outgoing_mail_server = (string)
 		SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	}
@@ -783,14 +783,7 @@ a fixed format to be readable by YaST.  For details, see
 	else if (mta == `postfix)
 	{
 	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, outgoing_mail_server);
-	    if( smtp_use_TLS )
-	    {
-	        SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, "yes");
-	    }
-	    else
-	    {
-	        SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, "no");
-	    }
+	    SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, smtp_use_TLS);
 	}
 	else
 	{
