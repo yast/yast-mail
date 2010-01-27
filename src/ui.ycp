@@ -361,7 +361,8 @@ define symbol OutgoingDialog () ``{
 	    `VBox (
 		WJ_MakeWidget (`outgoing_mail_server),
 		// TLS
-                `RadioButtonGroup(`id(`TLS), _("The server use &TLS")
+		`Label (_("The server use &TLS")),
+                `RadioButtonGroup(`id(`TLS),
                   `HBox(
                     `Left(`RadioButton(`id("no"),   _("No"),     TLSnone)),
                     `Left(`RadioButton(`id("yes"),  _("Use"),    TLSuse)),
@@ -422,7 +423,7 @@ define symbol OutgoingDialog () ``{
 
     if (ret == `next || contains (buttons, ret))
     {
-        Mail::smtp_use_TLS = (boolean)UI::QueryWidget (`id (`tls), `Value);
+        Mail::smtp_use_TLS = (string)UI::QueryWidget (`id (`TLS), `Value);
 	WJ_Set (widgets);
     }
     Wizard::RestoreScreenShotName ();
