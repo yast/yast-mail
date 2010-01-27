@@ -4,11 +4,6 @@ Wed Jan 27 15:28:16 CET 2010 - varkoly@suse.de
 - Apply jsuchomes changes from bnc#559145
   Export and Import smtp_use_TLS: no yes may
   Export and Import smtp_use_TLS
-- Adjusted .desktop file(s) to wrap /sbin/yast2/ calls in xdg-su
-  where root privileges are needed, removed X-KDE-SubstituteUID key
-  (bnc#540627)
-- bnc#555814 – VUL-0: SMTPD_LISTEN_REMOTE="yes" by default
-- bnc#532518 – YaST in translation (use 'YaST' instead of 'YaST2')
 - Reorganize ldap tables
 - remove redefinition of read_attribute
 - bnc#491113 - fetchmail demon is started though disabled in runlevel
@@ -17,12 +12,38 @@ Wed Jan 27 15:28:16 CET 2010 - varkoly@suse.de
 - alias map ldap search must be sub
 - bnc#490688 – rename mail server module from "Mail Transfer Agent" to "Mail Server"
 - If starting the virus scanner freshclam have to be started also
+
+-------------------------------------------------------------------
+Sat Nov 21 18:12:51 CET 2009 - varkoly@suse.de
+
+- bnc#532518 - JJ: YaST in translation (use 'YaST' instead of 'YaST2')
+- bnc#555814 – VUL-0: SMTPD_LISTEN_REMOTE="yes" by default
+
+-------------------------------------------------------------------
+Mon Mar  9 22:15:36 CET 2009 - varkoly@suse.de
+
 -  bnc#483639 - yast2 mail server's master.cf parser do not writes some lines
+
+-------------------------------------------------------------------
+Sun Jan 25 19:20:19 CET 2009 - varkoly@suse.de
+
 - saslauthd and cyrus must be started and enabled by YaPI
 - Serial of SOA Record must not be greater then 4294967295
+
+-------------------------------------------------------------------
+Thu Jan 22 10:12:09 CET 2009 - varkoly@suse.de
+
 - bnc#467589 - Cyrus don't create Directory for new LDAP User at first run.
 - bnc#467562 - Yast mail doesn't install needed Spamassassin Package for SPAM learning extension for Mailserver
+
+-------------------------------------------------------------------
+Mon Jan 19 16:49:10 CET 2009 - varkoly@suse.de
+
 - bnc#466748 - yast2-mail-plugins broken
+
+-------------------------------------------------------------------
+Thu Jan  8 13:17:02 CET 2009 - varkoly@suse.de
+
 - avoid undefined variables in the MasterCFParser
 - make progress bar by WriteDialog visable
 - bnc#463589 - YaST2 Mail Server & amavisd
