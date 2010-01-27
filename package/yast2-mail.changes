@@ -1,7 +1,11 @@
 -------------------------------------------------------------------
-Wed Jan 27 16:10:50 CET 2010 - jsuchome@suse.cz
+Wed Jan 27 16:10:50 CET 2010 - varkoly@suse.de
 
 - fixed syntax errors 
+- Apply jsuchomes changes from bnc#559145
+  Export and Import smtp_use_TLS: no yes may
+  Export and Import smtp_use_TLS
+- Reorganize ldap tables
 
 ------------------------------------------------------------------
 Wed Jan 13 18:56:03 CET 2010 - kmachalkova@suse.cz
