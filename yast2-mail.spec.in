@@ -1,6 +1,8 @@
 @HEADER-COMMENT@
 
 @HEADER@
+Group:	System/YaST
+License: GPL v2 or later
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-devtools yast2-testsuite
 BuildRequires:	yast2-perl-bindings yast2-ldap-server yast2-users yast2-network
 BuildRequires:  perl-NetxAP
@@ -12,7 +14,6 @@ Requires:	yast2 >= 2.16.23
 Requires:	yast2-users
 Requires:	yast2-ldap
 Requires:       perl-NetxAP
-
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
@@ -24,23 +25,22 @@ Provides:       yast2-trans-mail = %{version}
 Obsoletes:      yast2-trans-mail <= %{version}
 Provides:       yast2-mail-server = %{version}
 Obsoletes:      yast2-mail-server <= %{version}
-
 Conflicts:	aaa_base < 10.3
-
-BuildArchitectures:	noarch
-
-Summary:	Configuration of mail
+BuildArch:	noarch
+Summary:	YaST2 - Mail Configuration
 
 %description
--
+The YaST2 component for mail configuration. It handles Postfix, Cyrus,
+Amavis and Fetchmail.
 
 %package plugins
-Summary:	Plugins for the YaST2 users modul for enterprise mail server configuration.
+Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
 Group:		System/YaST
 Requires:       perl-NetxAP
 
 %description plugins
--
+Plugins for the YaST2 users modul for enterprise mail server
+configuration.
 
 @PREP@
 

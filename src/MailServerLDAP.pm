@@ -55,7 +55,8 @@ sub ConfigureLDAPServer()
     my $indices = YaPI::LdapServer->ReadIndex( $ldapMap->[2]->{'suffix'} );
     my @attrs = ( "SuSEMailClient", "SUSEMailAcceptAddress", "zoneName",
                   "SuSEMailDomainMasquerading", "relativeDomainName", "suseMailDomainType",
-                  "suseTLSPerSitePeer", "SuSEMailTransportDestination" );
+                  "suseTLSPerSitePeer", "SuSEMailTransportDestination",
+		  "suseDeliveryToFolder", "suseDeliveryToMember" );
     foreach my $attr (@attrs){
         my $curindex;
         if (! defined $indices->{$attr} ) {

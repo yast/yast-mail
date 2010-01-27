@@ -103,7 +103,7 @@
     /**
      * Do the MTA use TLS for sending the email.
      */
-    global boolean smtp_use_TLS = true;
+    global string smtp_use_TLS = "yes";
 
     /**
      * Mail will appear to come from this domain. Applies also for the
@@ -133,16 +133,10 @@
     /**
      * When should fetchmail run:
      * <dl>
-     * <dt> `manual  <dd>
-     * <dt> `ppp     <dd> for a ppp conection, /etc/ppp/ip-{up,down}.d
-     * <dt> `network <dd> for any network connection,
-     *                    /etc/sysconfig/network/if-{up,down}.d
-     * </dl>
-     * #22903
-     * Unused yet!
-     * #37139, just enable rcfetchmail.
+     * <dt> "manual"  <dd>
+     * <dt> "daemon"  <dd>
      */
-    global symbol fetchmail_mode = `manual;
+    global string fetchmail_mode = "manual";
 
     /**
      *List of maps:
@@ -333,7 +327,7 @@ Configure a scanner manually."));
      * @return Whether rcfetchmail should run
      */
     define boolean RunFetchmailGlobally () ``{
-	return size (fetchmail) > 0;
+	return ( fetchmail_mode == "daemon" && size (fetchmail) > 0 );
     }
 
     /**
@@ -453,7 +447,7 @@ Configure a scanner manually."));
 	}
 	else if (mta == `postfix)
 	{
-	    smtp_use_TLS = ( (string) SCR::Read (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT) == "yes" );
+	    smtp_use_TLS = (string) SCR::Read (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT);
 	    outgoing_mail_server = (string)
 		SCR::Read (.sysconfig.postfix.POSTFIX_RELAYHOST);
 	}
@@ -544,9 +538,10 @@ Configure a scanner manually."));
 	{
 	    return false;
 	}
-	// read 4
-	// TODO
-	fetchmail_mode = `manual;
+	if( Service::Enabled ("fetchmail") )
+	{
+		fetchmail_mode = "daemon";
+	}
 
 	// if we are testing as non-root, it will fail, that's OK
 	map out = (map) SCR::Execute (.target.bash_output, "/usr/bin/id --user");
@@ -559,7 +554,7 @@ Configure a scanner manually."));
 	    // %1 is a file name,
 	    // %2 is a long file name - leave it on a separate line
 	    Report::Error (sformat(_("Error reading file %1. The file must have
-a fixed format to be readable by YaST2.  For details, see
+a fixed format to be readable by YaST.  For details, see
 %2"),
 			 "/etc/fetchmailrc",
 			 "/usr/share/doc/packages/yast2-mail/fetchmailrc.txt"));
@@ -635,6 +630,14 @@ a fixed format to be readable by YaST2.  For details, see
     }
 
     /**
+     * Wrapper for global Read function, without the callback argument
+     */
+    global boolean ReadWithoutCallback () {
+	block<boolean> abort_block = ``{ return false; };
+	return Read (abort_block);
+    }
+
+    /**
      * Make up data for screnshots
      */
     global define void Fake () ``{
@@ -681,7 +684,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteGeneral () ``{
+    global define boolean WriteGeneral () ``{
 	// create_config
 	// if the user wanted it false, we did not proceed
 	SCR::Write (.sysconfig.mail.MAIL_CREATE_CONFIG, "yes");
@@ -788,14 +791,7 @@ a fixed format to be readable by YaST2.  For details, see
 	else if (mta == `postfix)
 	{
 	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, outgoing_mail_server);
-	    if( smtp_use_TLS )
-	    {
-	        SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, "yes");
-	    }
-	    else
-	    {
-	        SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, "no");
-	    }
+	    SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, smtp_use_TLS);
 	}
 	else
 	{
@@ -823,7 +819,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteMasquerading () ``{
+    global define boolean WriteMasquerading () ``{
 	// from_header
 	SCR::Write (.sysconfig.mail.FROM_HEADER, from_header);
 	// masquerade_other_domains
@@ -869,7 +865,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteDownloading () ``{
+    global define boolean WriteDownloading () ``{
 	// fetchmail
 	// TODO ?other settings: autofetch? at device up?
 	SCR::Write (.mail.fetchmail.accounts, fetchmail);
@@ -895,7 +891,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteAliasesAndVirtual () ``{
+    global define boolean WriteAliasesAndVirtual () ``{
 	// aliases
 	if (! MailAliases::WriteAliases ())
 	{
@@ -928,7 +924,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteSmtpAuth () ``{
+    global define boolean WriteSmtpAuth () ``{
 	// TODO how to remove the only entry?
 	// filter it out in the dialog?
 	if (enable_smtp_auth != nil)
@@ -962,7 +958,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteFlush () ``{
+    global define boolean WriteFlush () ``{
 	//flush the agents
 	map<string, path> paths = $[
 	    "/etc/sysconfig/mail": .sysconfig.mail,
@@ -1020,7 +1016,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteSuSEconfig () ``{
+    global define boolean WriteSuSEconfig () ``{
 	//run SuSEconfig with the necessary modules
 	// TODO other modules using FROM_HEADER?
 	integer ret = 0;
@@ -1052,7 +1048,7 @@ a fixed format to be readable by YaST2.  For details, see
      * Part of Write.
      * @return success
      */
-    define boolean WriteServices () ``{
+    global define boolean WriteServices () ``{
 	if (amavis_service)
 	{
 	    Service::Stop ("amavis");
@@ -1173,6 +1169,13 @@ a fixed format to be readable by YaST2.  For details, see
 	return true;
     }
 
+    /**
+     * Wrapper for global Write function, without the callback argument
+     */
+    global boolean WriteWithoutCallback () {
+	block<boolean> abort_block = ``{ return false; };
+	return Write (abort_block);
+    }
 
     /**
      * Get all mail settings from the first parameter
@@ -1230,6 +1233,7 @@ a fixed format to be readable by YaST2.  For details, see
 	MailAliases::FilterRootAlias ();
 //	MailAliases::merge_aliases = settings["merge_aliases"]: false;
 	virtual_users = settings["virtual_users"]: [];
+	smtp_use_TLS = settings["smtp_use_TLS"]: "yes";
 	smtp_auth = settings["smtp_auth"]: [];
 	y2debug ("after %1", settings); // may contain passwords
 	return true;
@@ -1257,6 +1261,7 @@ a fixed format to be readable by YaST2.  For details, see
 //	    "merge_aliases": MailAliases::merge_aliases,
 	    "virtual_users": virtual_users,
 	    "smtp_auth": smtp_auth,
+	    "smtp_use_TLS": smtp_use_TLS,
 	    ];
 	if (mta == `postfix)
 	{

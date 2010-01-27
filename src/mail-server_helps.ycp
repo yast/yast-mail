@@ -18,7 +18,7 @@ map HELPS = $[
 
     /* AuthorizingDialog dialog help 1/2 */
     "AuthorizingDialog" : _("<p><b><big>Administrator Authorization</big></b><br>
-To use the YaST2 mail server component, your system must use LDAP
+To use the YaST mail server component, your system must use LDAP
 as a repository for the user and group accounts and for the DNS services.<br>
 Some of the mail server settings will be stored in the LDAP repository, too.<br></p>
 "),
@@ -145,7 +145,7 @@ the final destination.
 <br></p>
 ") +
     /* MailLocalDomains dialog help 2/3 */
-_("<p>Note: You can create and set up the domains with the YaST2 
+_("<p>Note: You can create and set up the domains with the YaST 
 DNS server module. In this module, you only can set the properties
 concerning the mail server.
 </p>
@@ -155,7 +155,7 @@ _("<p><b><big>Type:</big></b><br>
 You can define virtual and local domains. In virtual domains, only users
 assigned a mail address in the domain can receive mail.
 In local domains, all user can get mails. Assign virtual mail 
-addresses in the YaST2 user module.
+addresses in the YaST user module.
 </p>
 "),
 

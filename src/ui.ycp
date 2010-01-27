@@ -91,7 +91,7 @@ SuSEconfig will overwrite manual changes.
 	    // bb) read English
 	    // TODO: look at exim and mention it in the popup
 	    // Translators: error popup
-	    Popup::Error (_("YaST2 can only configure Postfix and Sendmail,
+	    Popup::Error (_("YaST can only configure Postfix and Sendmail,
 but neither of them is installed."));
 	}
     }
@@ -342,6 +342,10 @@ define symbol ConnectionTypeDialog () ``{
 define symbol OutgoingDialog () ``{
     Wizard::SetScreenShotName ("mail-21-outgoing");
 
+    boolean TLSnone = ( Mail::smtp_use_TLS == "no" );
+    boolean TLSuse  = ( Mail::smtp_use_TLS == "yes" );
+    boolean TLSmust = ( Mail::smtp_use_TLS == "must" );
+
     // what buttons can be used to leave this dialog
     //(except the std wizarding ones)
     list<symbol> buttons = [];
@@ -357,7 +361,13 @@ define symbol OutgoingDialog () ``{
 	    `VBox (
 		WJ_MakeWidget (`outgoing_mail_server),
 		// TLS
-		`CheckBox( `id(`tls),    _("The server use &TLS"), Mail::smtp_use_TLS ),
+                `RadioButtonGroup(`id(`TLS), _("The server use &TLS")
+                  `HBox(
+                    `Left(`RadioButton(`id("no"),   _("No"),     TLSnone)),
+                    `Left(`RadioButton(`id("yes"),  _("Use"),    TLSuse)),
+                    `Left(`RadioButton(`id("must"), _("Enforce"),TLSmust))
+                  )
+		),
 		// Translators: button
 		// TODO ...
 		`PushButton (`id(`outgoing_details), _("&Masquerading")),
@@ -479,6 +489,9 @@ define symbol IncomingDialog () ``{
 		`HSpacing (1),
 		// pushbutton
 		`Bottom (`PushButton (`id (`downloading), `opt (`key_F7), _("&Details...")))
+		),
+	    `HBox (
+		`Left(`ComboBox (`id (`fm_start),_("Start &fetchmail"),["manual","daemon"]))
 		)
 	    );
 	// frame label: mail downloading (fetchmail)
@@ -533,6 +546,7 @@ define symbol IncomingDialog () ``{
     WJ_GetWidget (`delivery_mode);
     // initialize the widget (set the current value)
     CWMFirewallInterfaces::OpenFirewallInit (fw_cwm_widget, "");
+    UI::ChangeWidget(`id(`fm_start),`Value, Mail::fetchmail_mode);
 
     // nothing entered in the dowloading items - don't save them
     boolean fm_empty = true;
@@ -557,9 +571,9 @@ define symbol IncomingDialog () ``{
 	}
 	else if (ret == `next || contains (buttons, ret))
 	{
+	    Mail::fetchmail_mode = (string) UI::QueryWidget(`id (`fm_start), `Value);
 	    // input validation
 	    // For consistency, all querywidgets are done here
-
 	    if (WJ_Validate (widgets))
 	    {
 		fm_empty =

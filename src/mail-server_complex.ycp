@@ -127,6 +127,8 @@ symbol ReadDialog()
  */
 symbol WriteDialog()
 {
+    Wizard::CreateDialog ();
+    Wizard::SetDesktopIcon("mail");
     Wizard::RestoreHelp(HELPS["write"]:"");
     boolean ret = MailServer::Write();
     return ret ? `next : `abort;
