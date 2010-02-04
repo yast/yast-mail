@@ -169,6 +169,12 @@
      */
     boolean enable_smtp_auth = false;
 
+    /**
+     * Sysconfig setting which contains the email address which will
+     * be applied as sender for system mails
+     */
+     global string system_mail_sender = "";
+
     /* ---------------------------------------------------------------- */
     // constants
 
@@ -783,7 +789,7 @@ a fixed format to be readable by YaST.  For details, see
 	    return false;
 	}
 
-	// outgoing_mail_server
+	// outgoing_mail_server and system_mail_sender
 	if (mta == `sendmail)
 	{
 	    SCR::Write (.sysconfig.sendmail.SENDMAIL_SMARTHOST, outgoing_mail_server);
@@ -792,6 +798,7 @@ a fixed format to be readable by YaST.  For details, see
 	{
 	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, outgoing_mail_server);
 	    SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, smtp_use_TLS);
+	    SCR::Write (.sysconfig.postfix.POSTFIX_SYSTEM_MAIL_SENDER, system_mail_sender);
 	}
 	else
 	{
@@ -1219,22 +1226,22 @@ a fixed format to be readable by YaST.  For details, see
 	});
 
 	mta = settings["mta"]: `other;
-	connection_type = settings["connection_type"]: `none;
-	listen_remote = settings["listen_remote"]: false;
-	use_amavis = settings["use_amavis"]: false;
-	local_domains = settings["local_domains"]: [];
+	connection_type      = settings["connection_type"]: `none;
+	listen_remote        = settings["listen_remote"]: false;
+	use_amavis           = settings["use_amavis"]: false;
+	local_domains        = settings["local_domains"]: [];
 	outgoing_mail_server = settings["outgoing_mail_server"]: "";
-	postfix_mda = settings["postfix_mda"]: `local;
-	from_header = settings["from_header"]: "";
+	postfix_mda          = settings["postfix_mda"]: `local;
+	from_header          = settings["from_header"]: "";
 	masquerade_other_domains = settings["masquerade_other_domains"]: [];
-	masquerade_users = settings["masquerade_users"]: [];
-	fetchmail = settings["fetchmail"]: [];
+	masquerade_users     = settings["masquerade_users"]: [];
+	fetchmail            = settings["fetchmail"]: [];
 	MailAliases::aliases = settings["aliases"]: [];
 	MailAliases::FilterRootAlias ();
-//	MailAliases::merge_aliases = settings["merge_aliases"]: false;
-	virtual_users = settings["virtual_users"]: [];
-	smtp_use_TLS = settings["smtp_use_TLS"]: "yes";
-	smtp_auth = settings["smtp_auth"]: [];
+	virtual_users        = settings["virtual_users"]: [];
+	smtp_use_TLS         = settings["smtp_use_TLS"]: "yes";
+	smtp_auth            = settings["smtp_auth"]: [];
+	system_mail_sender   = settings["system_mail_sender"]:"";
 	y2debug ("after %1", settings); // may contain passwords
 	return true;
     }
@@ -1262,6 +1269,7 @@ a fixed format to be readable by YaST.  For details, see
 	    "virtual_users": virtual_users,
 	    "smtp_auth": smtp_auth,
 	    "smtp_use_TLS": smtp_use_TLS,
+	    "system_mail_sender":system_mail_sender,
 	    ];
 	if (mta == `postfix)
 	{
