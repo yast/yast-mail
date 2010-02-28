@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sun Feb 28 18:38:18 UTC 2010 - varkoly@novell.com
+
+- bnc#584093 yast2-mail creates bad amavisd.conf
+
+-------------------------------------------------------------------
 Wed Jan 27 16:10:50 CET 2010 - varkoly@suse.de
 
 - fixed syntax errors 

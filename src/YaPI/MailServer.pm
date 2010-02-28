@@ -2403,6 +2403,14 @@ sub WriteMailLocalDomains {
 		# We create all the DNS attributes. `hostname -f` is the NS and MX entry.
 		my $serial = POSIX::strftime("%Y%m%d%H",localtime);
 		my $host   = `hostname -f`; chomp $host;
+		if( ! $host )
+		{
+		        $host = `cat /etc/HOSTNAME`; chomp $host;
+		        if( ! $host )
+		        {
+		     	   $host = 'linux.lokal';
+		        }
+		}
 		my $tmp = { 'Objectclass'                  => [ 'dNSZone','suseMailDomain' ],
 		      'zoneName'                     => $name,
 		      'suseMailDomainType'           => $type,
@@ -2966,6 +2974,19 @@ sub activate_virus_scanner {
    my $ismyhostname = 0;
    my $myhostname   = `hostname -f`; chomp $myhostname;
    my $mydomain     = `hostname -d`; chomp $mydomain;
+   if( ! $myhostname )
+   {
+	   $myhostname = `cat /etc/HOSTNAME`; chomp $myhostname;
+	   if( ! $myhostname )
+	   {
+		   $myhostname = 'linux.lokal';
+	   }
+   }
+   if( ! $mydomain )
+   {
+	   my $tmp;
+	   ( $tmp, $mydomain) = split /,/,$myhostname,2;
+   }
    foreach my $l ( @ACONF )
    {
 	if ( $l =~ s/^\$max_servers = .*;/\$max_servers = $VSCount;/ )
