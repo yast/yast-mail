@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Mar 25 08:39:03 UTC 2010 - varkoly@novell.com
+
+- bnc#421040 - alignment of add/edit/delete in mail transfer agent module 
+
+-------------------------------------------------------------------
 Sun Feb 28 18:38:18 UTC 2010 - varkoly@novell.com
 
 - bnc#584093 yast2-mail creates bad amavisd.conf

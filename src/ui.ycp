@@ -1323,14 +1323,14 @@ define symbol AliasesDialog () ``{
 			 _("Destinations")),
 		makeItems (aliases, ["alias", "destinations"])
 		),
-	    `HBox(
+	    `Left( `HBox(
 		// Translators: button
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
 		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
-		),
+		)),
 	    `VSpacing (0.2)
 	    );
 
@@ -1411,14 +1411,14 @@ define symbol VirtualDialog () ``{
 			 _("Destinations")),
 		makeItems (vu, ["alias", "destinations"])
 		),
-	    `HBox(
+	    `Left(`HBox(
 		// Translators: button
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		// Translators: button
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		// Translators: button
 		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
-		),
+		)),
 	    `VSpacing (0.2)
 	    );
 
