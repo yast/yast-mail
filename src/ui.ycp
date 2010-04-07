@@ -251,6 +251,8 @@ define symbol ConnectionTypeDialog () ``{
 		    `RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup),
 		    // Translators: radio button label
 		    `RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none),
+		    // Translators: radio button label
+		    `RadioButton (`id (`nodaemon), `opt (`notify), _("Do not start Postfix as Daemon"), ct == `nodaemon),
 		    ]
 		)
 	    );
@@ -291,6 +293,11 @@ define symbol ConnectionTypeDialog () ``{
 	    Wizard::RestoreNextButton();
 	    //argh, slow
 	    //Wizard::RestoreNextButton ();
+	}
+	else if (ct == `nodaemon)
+	{
+	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
+	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
 	}
 	else if (ct == `none)
 	{

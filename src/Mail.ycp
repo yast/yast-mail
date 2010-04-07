@@ -237,6 +237,16 @@
     boolean amavis_service = true;
 
     /**
+      * The cron file name for the queue checking.
+      */
+    global string cron_file = "/etc/cron.d/novell.postfix-check-mail-queue";
+
+    /**
+      * The cron interval for the queue checking.
+      */
+    global integer check_interval = 15;
+
+    /**
      * Detect which packages have to be installed
      * and return a descriptive string for a plain text pop-up.
      * @return "" or "Foo will be installed.\nBar will be installed.\n"
@@ -391,6 +401,7 @@ Configure a scanner manually."));
 	// connection_type:
 	boolean nc = false;
 	boolean ex = false;
+	boolean nd = false;
 	// the service must be always running
 	//boolean service = false;
 	if (mta == `sendmail)
@@ -400,14 +411,19 @@ Configure a scanner manually."));
 	}
 	else if (mta == `postfix)
 	{
-	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS) == "yes";
-	    ex = SCR::Read (.sysconfig.postfix.POSTFIX_DIALUP) == "yes";
+	    nc = SCR::Read (.sysconfig.postfix.POSTFIX_NODNS)    == "yes";
+	    ex = SCR::Read (.sysconfig.postfix.POSTFIX_DIALUP)   == "yes";
+	    nd = SCR::Read (.sysconfig.postfix.POSTFIX_NODAEMON) == "yes";
 	}
 	else
 	{
 	    return false;
 	}
-	if (nc)
+	if (nd)
+	{
+	    connection_type = `nodaemon;
+	}
+	else if (nc)
 	{
 	    connection_type = (ex)? `dialup : `none;
 	}
@@ -718,7 +734,13 @@ a fixed format to be readable by YaST.  For details, see
 	    return false;
 	}
 
-	if (connection_type == `permanent)
+	if (connection_type == `nodaemon)
+	{
+	    SCR::Write (.sysconfig.postfix.POSTFIX_NODAEMON, "yes");
+	    SCR::Write (nc_nd, "yes");
+	    SCR::Write (ex_di, "no");
+	}
+	else if (connection_type == `permanent)
 	{
 	    SCR::Write (nc_nd, "no");
 	    SCR::Write (ex_di, "no");
@@ -738,13 +760,22 @@ a fixed format to be readable by YaST.  For details, see
 	    y2internal("Unrecognized connection_type: %1", connection_type);
 	    return false;
 	}
-	Service::Enable (service);
-
+	if (connection_type == `nodaemon)
+	{
+		Service::Disable (service);
+		SCR::Write (.sysconfig.amavis.USE_AMAVIS, "no");
+		SCR::Write (.target.string,cron_file,"-*/"+check_interval+" * * * * root /usr/sbin/check_mail_queue &>/dev/null");
+	}
+	else
+	{
+		SCR::Execute (.target.bash,"test -e "+cron_file+"  && rm "+cron_file+";");
+		Service::Enable (service);
+		Service::Adjust ("amavis", use_amavis? "enable":"disable");
+	}
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
 	// used also in WriteServices
 	amavis_service = true;
-        Service::Adjust ("amavis", use_amavis? "enable":"disable");
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up

@@ -36,7 +36,7 @@ Amavis and Fetchmail.
 %package plugins
 Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
 Group:		System/YaST
-Requires:       perl-NetxAP
+Requires:       perl-NetxAP acl
 
 %description plugins
 Plugins for the YaST2 users modul for enterprise mail server
