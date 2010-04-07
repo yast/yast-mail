@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Wed Apr  7 12:52:37 UTC 2010 - varkoly@novell.com
+
+- Initial version of daemonless postfix solution: A new script
+  /usr/sbin/check_mail_queue can check the queue if there are some
+  messages to deliver. If so postfix will  be started, mails will
+  be delivered, and postfix will be stoped it queue is empty.
+- Add missed requirement for yast2-mail-plugins 
+
+-------------------------------------------------------------------
 Thu Mar 25 08:39:03 UTC 2010 - varkoly@novell.com
 
 - bnc#421040 - alignment of add/edit/delete in mail transfer agent module 
