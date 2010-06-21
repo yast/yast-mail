@@ -1492,7 +1492,7 @@ sub WriteMailPrevention {
 		$ret = $imap->setacl('NoSpam',  'anyone', "lsi");
 		my $lernspam = '#!/bin/bash
 LOG=/var/log/lern-spam
-/usr/share/oss/tools/oss_date.sh >> $LOG
+date +%Y-%m-%d-%H-%M >> $LOG
 if [ ! -d /var/spool/imap/NewSpam ]
 then
   exit
