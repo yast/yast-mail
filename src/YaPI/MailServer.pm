@@ -42,7 +42,8 @@ use Net::IMAP;
 textdomain("mail");
 our %TYPEINFO;
 our @CAPABILITIES = (
-                     'SLES10'
+                     'SLES10',
+                     'SLES11'
                     );
 our $VERSION="2.2.0";
 
