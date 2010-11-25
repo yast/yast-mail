@@ -1,3 +1,14 @@
+------------------------------------------------------------------
+Thu Nov 25 13:42:17 CET 2010 - varkoly@suse.de
+
+- bnc#649549 - yast2-mail doesn't enable and start cyrus-imapd
+
+------------------------------------------------------------------
+Thu Aug 12 15:05:52 UTC 2010 - varkoly@novell.com
+
+- bnc#586486 Multiple Issues with Yast Configuration of Postfix MTA for Relaying over SMTP
+- Enhance warning if use advanced configuration
+
 -------------------------------------------------------------------
 Wed Apr  7 12:52:37 UTC 2010 - varkoly@novell.com
 
