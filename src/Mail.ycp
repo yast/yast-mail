@@ -253,6 +253,7 @@
      */
     global define string ProbePackages () ``{
 	string message = "";
+	boolean newcyrus = false;
 	install_packages = [];
 	remove_packages = [];
 
@@ -302,10 +303,16 @@ Configure a scanner manually."));
 	    install_packages = add(install_packages,"cyrus-imapd");
 	    // Translators: popup message part, ends with a newline
 	    message = message + _("Cyrus-imapd, an IMAP server, will be installed.\n");
+	    newcyrus = true;
 	}
 	if( install_packages != [] )
 	{
 		Package::DoInstall(install_packages);
+	}
+	if( newcyrus )
+	{
+		Service::Enable("cyrus")
+		Service::Start("cyrus")
 	}
 	return message;
     }
@@ -742,16 +749,19 @@ a fixed format to be readable by YaST.  For details, see
 	}
 	else if (connection_type == `permanent)
 	{
+	    SCR::Write (.sysconfig.postfix.POSTFIX_NODAEMON, "no");
 	    SCR::Write (nc_nd, "no");
 	    SCR::Write (ex_di, "no");
 	}
 	else if (connection_type == `dialup)
 	{
+	    SCR::Write (.sysconfig.postfix.POSTFIX_NODAEMON, "no");
 	    SCR::Write (nc_nd, "yes");
 	    SCR::Write (ex_di, "yes");
 	}
 	else if (connection_type == `none)
 	{
+	    SCR::Write (.sysconfig.postfix.POSTFIX_NODAEMON, "no");
 	    SCR::Write (nc_nd, "yes");
 	    SCR::Write (ex_di, "no");
 	}
@@ -821,6 +831,30 @@ a fixed format to be readable by YaST.  For details, see
 	}
 	else if (mta == `postfix)
 	{
+	   if( smtp_use_TLS != "no" )
+	   {
+		string oms = outgoing_mail_server;
+		string oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]:.*") ? regexpsub (oms, ".(.*).:.*", "\\1") : oms;
+		string oms_port        = regexpmatch (oms, "[[][^][]*[]]:.*") ? regexpsub (oms, ".*.:(.*)", "\\1") : "";
+
+		if( oms_no_brackets == oms )
+		{
+			oms_no_brackets = regexpmatch (oms, "[[][^][]*[]]") ?  regexpsub (oms, ".(.*).", "\\1") : oms;
+		}
+		if( oms_no_brackets == oms )
+		{
+			oms_no_brackets = regexpmatch (oms, ".*:.*") ?  regexpsub (oms, "(.*):.*", "\\1") : oms;
+			oms_port        = regexpmatch (oms, ".*:.*") ?  regexpsub (oms, ".*:(.*)", "\\1") : "";
+		}
+		if( oms_port != "" )
+		{
+			outgoing_mail_server = "[" + oms_no_brackets + "]:" + oms_port;
+		}
+		else
+		{
+			outgoing_mail_server = "[" + oms_no_brackets + "]";
+		}
+	    }
 	    SCR::Write (.sysconfig.postfix.POSTFIX_RELAYHOST, outgoing_mail_server);
 	    SCR::Write (.sysconfig.postfix.POSTFIX_SMTP_TLS_CLIENT, smtp_use_TLS);
 	}
@@ -962,7 +996,10 @@ a fixed format to be readable by YaST.  For details, see
 	{
 	    enable_smtp_auth = size (smtp_auth) > 0;
 	}
-
+	if ( smtp_auth[0,"server"]:"" != outgoing_mail_server )
+	{
+		smtp_auth[0,"server"]=outgoing_mail_server;
+	}
 	if (mta == `sendmail)
 	{
 	    SCR::Write (.mail.sendmail.auth.accounts, smtp_auth);

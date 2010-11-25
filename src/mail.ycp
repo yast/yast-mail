@@ -62,7 +62,8 @@ define string StartDialog (string type, boolean first ) ``{
     term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
     string status    =  _("Mail server is not configured.")+"\n"+
 			_("Select configuration type according your personal needs")+"\n"+
-			_("If you want to use sendmail as your MTA you have to use Standard configuration.");
+			_("If you want to use sendmail as your MTA you have to use Standard configuration.")+
+			_("The Advanced configuration use LDAP as backend and will configure your system as LDAP-Client and setup an LDAP-Server if necessary.");
     if( first )
     {
        tskip_ask =  `VSpacing(1);
