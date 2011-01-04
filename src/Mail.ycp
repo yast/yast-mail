@@ -311,8 +311,8 @@ Configure a scanner manually."));
 	}
 	if( newcyrus )
 	{
-		Service::Enable("cyrus")
-		Service::Start("cyrus")
+		Service::Enable("cyrus");
+		Service::Start("cyrus");
 	}
 	return message;
     }
