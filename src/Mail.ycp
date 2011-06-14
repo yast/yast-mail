@@ -254,10 +254,9 @@
 
 	if (use_amavis)
 	{
-	    string pkg  = "amavisd-new";
-	    if (! Package::Installed (pkg))
+	    if (! Package::Installed ("amavisd-new"))
 	    {
-		install_packages = add (install_packages, pkg);
+		install_packages = add (install_packages, "amavisd-new");
 		// Translators: popup message part, ends with a newline
 		message = message + _("AMaViS, a virus scanner, will be installed.\n");
 	    }
@@ -1035,7 +1034,7 @@ a fixed format to be readable by YaST.  For details, see
 	else if (mta == `postfix)
 	{
 	    ret = (integer)
-		SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix");
+		SCR::Execute(.target.bash, "/usr/sbin/SuSEconfig.postfix");
 	}
 	else
 	{
