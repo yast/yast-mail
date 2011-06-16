@@ -356,6 +356,23 @@ define void Set_use_amavis (symbol id) ``{
     Mail::use_amavis = am;
 }
 
+/**
+ * @return a variable to be used by a widget
+ */
+define boolean Get_use_dkim () ``{
+    return Mail::use_dkim;
+}
+
+/**
+ * Set a variable acording to widget value
+ * @param id widget id
+ */
+define void Set_use_dkim (symbol id) ``{
+    boolean dkim = (boolean) UI::QueryWidget (`id (id), `Value);
+    Mail::Touch (Mail::use_dkim != dkim);
+    Mail::use_dkim = dkim;
+}
+
 
 /**
  * @return a variable to be used by a widget
@@ -715,11 +732,18 @@ a POP or an IMAP server using <b>fetchmail</b>.</p>"),
 	"widget": `CheckBox (),
 	// checkbox label
 	"label": _("&Enable virus scanning (AMaViS)"),
+	// we need notify option to enable disable dkim
+	"opt"  : `opt (`notify),
 	// help text
 	"help": _("
-<p>Enabling virus scanning checks incoming and outgoing mail
+<p><b>Enabling virus scanning (AMaViS)</b> checks incoming and outgoing mail
 with AMaViS.</p>
 ")
+	// help text
++ _("<p>Enabling AMaViS will also enable the following modules: </p>
+<p><b>Spamassassin</b> SPAM scanner</p>
+<p><b>DKIM</b> checks Domain Key signed incomming mails</p>
+<p><b>Clamav</b> open source virus scanner engine</p>")
 	// help text
 + _("
 <p>If AMaViS is not installed and you want to use it, it will be installed
@@ -727,6 +751,38 @@ automatically.</p>
 "),
 	"get": Get_use_amavis,
 	"set": Set_use_amavis,
+	],
+    `use_dkim: $[
+	"widget": `CheckBox (),
+	// checkbox label
+	"label": _("&Enable DKIM signing for outgoing mails."),
+	// help text
+	"help": _("
+<p><b>Enabling DKIM signig for outgoing mails.</b></p>
+")
+	// help text
++ _("
+<p>Enabling DKIM for outgoing emails requires additional actions. A SSL key
+will be generated for the 'mydomain'-value defined in postfix. A new service
+'submission' will be configured in postfix. After this is set up you can send
+email with this service 'submission' from 'mynetworks' with enabled SASL
+authentication. Only the emails sent by this new service will be signed with
+the domain key.</p>
+") +
+	// help text
+	_("
+<p>The public key of the domain key needs to be offered by a Domain Name
+Service. The public key will be saved as a DNS TXT record
+into <b>/var/db/dkim/[mydomain].public.txt</b> and needs  to be deployed to an
+according Domain Name Service. If there is a name service
+running on this server, which is the authoritative server for that domain the
+public key will be added as a TXT record to that domain zone
+automatically.</p>
+") +
+	// help text
+	_("Enabling DKIM support the virus scanning (AMaViS) will be enabled too."),
+	"get": Get_use_dkim,
+	"set": Set_use_dkim,
 	],
     `fm_server: $[
 	"widget": `TextEntry (),

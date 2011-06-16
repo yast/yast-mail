@@ -7,7 +7,7 @@
 agent_SCRIPTS = ag_fetchmailrc \
 		ag_smtp_auth \
 		ag_mailtable \
-		\
+		setup_dkim_verifying.pl \
 		ag_mailconfig \
 		ag_postfix_mastercf \
 		MasterCFParser.pm \
