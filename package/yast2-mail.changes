@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun 16 11:10:19 UTC 2011 - varkoly@novell.com
+
+- FATE#311272: Do not rewrite postfix.cf via SuSEconfig
+- FATE#310517: DKIM and DomainKeys support 
+
+-------------------------------------------------------------------
 Sun Feb 28 18:38:18 UTC 2010 - varkoly@novell.com
 
 - bnc#584093 yast2-mail creates bad amavisd.conf
