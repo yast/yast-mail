@@ -98,8 +98,7 @@ configuration.
 @agentdir@/ag_smtp_auth
 @agentdir@/CyrusConfParser.pm
 @agentdir@/MasterCFParser.pm
-%defattr(0755,root,root)
-@agentdir@/setup_dkim_verifying.pl
+%attr(0755,root,root) @agentdir@/setup_dkim_verifying.pl
 
 %dir /etc/openldap/
 %dir /etc/openldap/schema/
