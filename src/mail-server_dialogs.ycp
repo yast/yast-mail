@@ -702,7 +702,7 @@ term MailPreventionDialog(string CID, string CIDRBL)
   term content = `VBox (
         `Left(`CheckBox (`id(`VirusScanning), `opt(`notify), _("Start Virus Scanner AMAVIS"), VirusScanning)),
 	`VSpacing (1),
-	`Left(`IntField (`id(`VSCount),       `opt(`notify), _("Count of Virsus Scanner Process"), 1,50,VSCount)),
+	`Left(`IntField (`id(`VSCount),       `opt(`notify), _("Count of Virus Scanner Process"), 1,50,VSCount)),
 	`VSpacing (1),
 	SpamL,
 	`VSpacing (1),
