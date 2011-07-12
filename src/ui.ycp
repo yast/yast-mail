@@ -256,22 +256,10 @@ define symbol ConnectionTypeDialog () ``{
 		)
 	    );
 
-    boolean amavis_allowed = Mail::amavis_allowed;
-
-    term amavis_t = nil;
-    term dkim_t   = nil;
-    if (amavis_allowed)
-    {
-	amavis_t = `Left (WJ_MakeWidget (`use_amavis));
-	widgets  = add (widgets, `use_amavis);
-	dkim_t   = `Left (WJ_MakeWidget (`use_dkim));
-	widgets  = add (widgets, `use_dkim);
-    }
-    else
-    {
-	amavis_t = `Empty (`id (`use_amavis));
-	dkim_t   = `Empty (`id (`use_dkim));
-    }
+    term amavis_t = `Left (WJ_MakeWidget (`use_amavis));
+    widgets  = add (widgets, `use_amavis);
+    term dkim_t   = `Left (WJ_MakeWidget (`use_dkim));
+    widgets  = add (widgets, `use_dkim);
 
     contents = `HSquash (
 	`VBox (

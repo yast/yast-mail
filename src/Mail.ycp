@@ -79,7 +79,7 @@
     /**
      * Use a virus scanner (AMaViS).
      * amavisd-new (mta-independent) must be installed.
-     * It will be installed if amavis_allowed and it is not installed.
+     * It will be installed if is not installed.
      */
     global boolean use_amavis = false;
 
@@ -89,10 +89,6 @@
      */
     global boolean use_dkim = false;
 
-    /**
-     * Is amavis available on the installation media?
-     */
-    global boolean amavis_allowed = true;
 
     /**
      * Domains for locally delivered mail.
@@ -273,24 +269,8 @@
 
 	    if (! Package::Installed ("clamav"))
 	    {
-		// #115295
-		// Amavis alone will block incoming mail if no scanner is found
-		// We ship clamav but not on opensuse
-		// Clamav can work without clamav-db.rpm if set up manually
-		// so we do not check Installed "clamav-db"
-		y2milestone ("clamav not installed");
-		if (! Package::AvailableAll (["clamav", "clamav-db"]))
-		{
-		    // error popup. 
-		    Report::Error (_("AMaViS needs a virus scanner such as ClamAV
-to do the actual scanning, but ClamAV was not found.
-Configure a scanner manually."));
-		}
-		else
-		{
-		    install_packages = add (install_packages, "clamav");
-		    install_packages = add (install_packages, "clamav-db");
-		}
+                install_packages = add (install_packages, "clamav");
+		message = message + _("ClamAV, a virus scanner engine, will be installed.\n");
 	    }
 	}
 
@@ -432,12 +412,8 @@ Configure a scanner manually."));
 	}
 
 	// amavis
-	string amavis_pkg = "amavisd-new";
-	amavis_allowed = PackageSystem::Installed (amavis_pkg) ||
-	    Mode::commandline ();
-	    // || PackageSystem::Available (amavis_pkg);
-	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
-	use_dkim   = use_amavis     && (SCR::Read (.sysconfig.amavis.USE_DKIM)   == "yes");
+	use_amavis = (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
+	use_dkim   = use_amavis  && (SCR::Read (.sysconfig.amavis.USE_DKIM)   == "yes");
 
 	// local_domains
 	string ld_s = "";
@@ -661,7 +637,6 @@ a fixed format to be readable by YaST.  For details, see
 	create_config = true;
 	listen_remote = true;
 	connection_type = `dialup;
-	amavis_allowed = true;
 	use_amavis = true;
 	use_dkim = true;
 	// good example?

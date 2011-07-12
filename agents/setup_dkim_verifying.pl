@@ -15,7 +15,7 @@ if( ! "$DOMAIN" ) {
 #Generate the key
 if( ! -e "/var/db/dkim/$DOMAIN.pem" ){
 	print "Creating /var/db/dkim/$DOMAIN.pem\n";
-	system( "amavisd genrsa /var/db/dkim/$DOMAIN.pem");
+	system( "mkdir -p /var/db/dkim/; amavisd genrsa /var/db/dkim/$DOMAIN.pem;");
 }
 
 #Introduce key into /etc/amavisd.conf
