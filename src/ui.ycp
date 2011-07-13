@@ -376,7 +376,7 @@ define symbol OutgoingDialog () ``{
                     `Left(`RadioButton(`id("must"), _("Enforce"),TLSmust))
                   )
 		),
-		`ButtonBox(
+		`HBox(
 			`PushButton (`id(`outgoing_details),   _("&Masquerading")),
 			`PushButton (`id(`outgoing_auth_opts), _("&Authentication"))
 			)
@@ -523,7 +523,7 @@ define symbol IncomingDialog () ``{
     i_contents = add (
 	i_contents,
 	// menu button: details of incoming mail
-	    `ButtonBox(
+	    `HBox(
 	    	`PushButton (`id (`aliases), _("&Aliases...")),
 	    	`PushButton (`id (`virtual), _("&Virtual domains..."))
 		)
@@ -825,7 +825,7 @@ define symbol OutgoingDetailsDialog () ``{
 		`HWeight (2, `TextEntry (`id (`address), _("Display as"), "holly@red.dwarf"))
 		),
 */
-	    `ButtonBox(
+	    `HBox(
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		`PushButton(`id(`delete), `opt (`key_F5), _("Dele&te"))
@@ -1078,7 +1078,7 @@ define map FetchmailPopup (map defaultv, list<map> existing) ``{
 		`Left (WJ_MakeWidget (`fm_password)),
 		`Left (WJ_MakeWidget (`fm_local_user)),
 		`VSpacing(0.2),
-		`ButtonBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		`ButtonBox(`PushButton(`id(`ok),     `opt(`default, `key_F10), Label::OKButton()),
 		           `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
@@ -1166,7 +1166,7 @@ define symbol DownloadingDialog () ``{
 			 _("Local user")),
 		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
 		),
-	    `ButtonBox(
+	    `HBox(
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
@@ -1321,7 +1321,7 @@ define symbol AliasesDialog () ``{
 		makeItems (aliases, ["alias", "destinations"])
 		),
 	    `Left(
-		 `ButtonBox(
+		 `HBox(
 			`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 			`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 			`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
@@ -1407,7 +1407,7 @@ define symbol VirtualDialog () ``{
 		makeItems (vu, ["alias", "destinations"])
 		),
 	    `Left(
-		`ButtonBox(
+		`HBox(
 			`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
 			`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
 			`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
