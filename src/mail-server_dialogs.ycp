@@ -478,10 +478,9 @@ void ShowMailTransport(string CID, string ACTION)
            )
 	 )
        ),
-       `HBox(
-	 `PushButton(`id(`cancel),   _("Cancel")),
-         `HStretch(),
-	 `PushButton(`id(`ok),   _("OK"))
+       `ButtonBox(
+	 `PushButton(`id(`cancel), _("Cancel")),
+	 `PushButton(`id(`ok),     _("OK"))
        )
      )
     );
@@ -761,7 +760,7 @@ string RBLAdd ()
     UI::OpenDialog(`opt(`decorated ), `Frame(_("Add New RBL Server"),
             `VBox(
               `TextEntry(`id(`server),  "",  ""),
-              `HBox(
+              `ButtonBox(
 	         `PushButton(`id(`cancel),   _("Cancel")),
 	         `PushButton(`id(`ok),   _("OK"))
                )
@@ -791,7 +790,7 @@ map AccessAdd ()
 	                                                       "OK", "DUNNO", "PREPEND", "HOLD", "DISCARD",
 							       "FILTER", "REDIRECT", "" ]),
               `TextEntry(`id(`NewSenderOption),  _("Option"),  ""),
-              `HBox(
+              `ButtonBox(
 	         `PushButton(`id(`cancel),   _("Cancel")),
 	         `PushButton(`id(`ok),   _("OK"))
                )
@@ -1114,7 +1113,7 @@ map FetchmailAddItem()
               `Password(`id(`password),      Label::Password(),  ""),
               `Password(`id(`cpassword),      Label::ConfirmPassword(),  ""),
               `TextEntry(`id(`local_user),   _("Local User"),  ""),
-              `HBox(
+              `ButtonBox(
 	         `PushButton(`id(`cancel),   _("Cancel")),
 	         `PushButton(`id(`ok),   _("OK"))
                )
@@ -1239,7 +1238,7 @@ void ShowMailLocalDomain(string CID, string ACTION)
 	       `Left(`ComboBox (`id(`Type), _("Type"), MakeSelectedList(Types,Type))),
 	       `VStretch(),
 	       `Left(`CheckBox(`id(`Masquerading),_("Masquerading"),Masquerading)),
-	       `HBox(
+	       `ButtonBox(
 	         `PushButton(`id(`cancel),   _("Cancel")),
 	         `PushButton(`id(`ok),   _("OK"))
 	       )
