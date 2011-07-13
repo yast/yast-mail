@@ -376,12 +376,10 @@ define symbol OutgoingDialog () ``{
                     `Left(`RadioButton(`id("must"), _("Enforce"),TLSmust))
                   )
 		),
-		// Translators: button
-		// TODO ...
-		`PushButton (`id(`outgoing_details), _("&Masquerading")),
-		// Translators: button
-		// TODO ...
-		`PushButton (`id(`outgoing_auth_opts), _("&Authentication"))
+		`ButtonBox(
+			`PushButton (`id(`outgoing_details),   _("&Masquerading")),
+			`PushButton (`id(`outgoing_auth_opts), _("&Authentication"))
+			)
 		)
 	    );
     buttons = add (buttons, `outgoing_details);
@@ -525,12 +523,10 @@ define symbol IncomingDialog () ``{
     i_contents = add (
 	i_contents,
 	// menu button: details of incoming mail
-	`HBox (
-	    // pushbutton
-	    `PushButton (`id (`aliases), _("&Aliases...")),
-	    // pushbutton
-	    `PushButton (`id (`virtual), _("&Virtual domains..."))
-	    )
+	    `ButtonBox(
+	    	`PushButton (`id (`aliases), _("&Aliases...")),
+	    	`PushButton (`id (`virtual), _("&Virtual domains..."))
+		)
 	);
     buttons = flatten ([buttons, [`downloading, `aliases, `virtual]]);
 
@@ -709,8 +705,8 @@ define map MasqueradeUserPopup (map defaultv, list<map> existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`address), _("&Display as"), address)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
+		`ButtonBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		           `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -829,12 +825,9 @@ define symbol OutgoingDetailsDialog () ``{
 		`HWeight (2, `TextEntry (`id (`address), _("Display as"), "holly@red.dwarf"))
 		),
 */
-	    `HBox(
-		// Translators: button
+	    `ButtonBox(
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
-		// Translators: button
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
-		// Translators: button
 		`PushButton(`id(`delete), `opt (`key_F5), _("Dele&te"))
 		),
 	    `VSpacing (1)
@@ -1085,8 +1078,8 @@ define map FetchmailPopup (map defaultv, list<map> existing) ``{
 		`Left (WJ_MakeWidget (`fm_password)),
 		`Left (WJ_MakeWidget (`fm_local_user)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
+		`ButtonBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		           `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1173,12 +1166,9 @@ define symbol DownloadingDialog () ``{
 			 _("Local user")),
 		makeItems (fm, ["server", "protocol", "remote_user", "local_user"])
 		),
-	    `HBox(
-		// Translators: button
+	    `ButtonBox(
 		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
-		// Translators: button
 		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
-		// Translators: button
 		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		),
 	    `VSpacing (0.2)
@@ -1254,8 +1244,8 @@ define map AliasPopup (map defaultv, list<map> existing) ``{
 		// Translators: text entry label
 		`Left (`TextEntry (`id (`destinations), _("&Destinations"), destinations)),
 		`VSpacing(0.2),
-		`HBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
-		      `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
+		`ButtonBox(`PushButton(`id(`ok), `opt(`default, `key_F10), Label::OKButton()),
+		           `PushButton(`id(`cancel), `opt (`key_F9), Label::CancelButton())),
 		`VSpacing(0.2)
 		),
 	    `HSpacing(1)
@@ -1330,13 +1320,11 @@ define symbol AliasesDialog () ``{
 			 _("Destinations")),
 		makeItems (aliases, ["alias", "destinations"])
 		),
-	    `Left( `HBox(
-		// Translators: button
-		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
-		// Translators: button
-		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
-		// Translators: button
-		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
+	    `Left(
+		 `ButtonBox(
+			`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
+			`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
+			`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		)),
 	    `VSpacing (0.2)
 	    );
@@ -1418,13 +1406,11 @@ define symbol VirtualDialog () ``{
 			 _("Destinations")),
 		makeItems (vu, ["alias", "destinations"])
 		),
-	    `Left(`HBox(
-		// Translators: button
-		`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
-		// Translators: button
-		`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
-		// Translators: button
-		`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
+	    `Left(
+		`ButtonBox(
+			`PushButton(`id(`add), `opt (`key_F3), _("A&dd")),
+			`PushButton(`id(`edit), `opt (`key_F4), _("&Edit")),
+			`PushButton(`id(`delete), `opt (`key_F5), _("De&lete"))
 		)),
 	    `VSpacing (0.2)
 	    );
