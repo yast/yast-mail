@@ -737,7 +737,9 @@ a fixed format to be readable by YaST.  For details, see
 	SCR::Write (.sysconfig.amavis.USE_DKIM,   use_dkim  ? "yes":"no");
 	// used also in WriteServices
 	amavis_service = true;
-        Service::Adjust ("amavis", use_amavis? "enable":"disable");
+        Service::Adjust ("amavis",    use_amavis? "enable":"disable");
+        Service::Adjust ("freshclam", use_amavis? "enable":"disable");
+        Service::Adjust ("clamd",     use_amavis? "enable":"disable");
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up
