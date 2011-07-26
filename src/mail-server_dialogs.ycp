@@ -40,7 +40,6 @@ define any CheckLDAPDialog ()
     boolean ldap_server_local = false;
     string  comment           = "";
     Ldap::Read();
-    Ldap::LDAPInit();
     map<string, any>  LDAPSettings = (map <string, any>) Ldap::Export();
     list args = [];
     integer size1 = (integer)SCR::Read(.target.size, "/etc/ssl/servercerts/servercert.pem");
@@ -140,6 +139,11 @@ define any CheckLDAPDialog ()
 	//write the settings: 
 	Ldap::Write(abort_block);
     }
+    else
+    {
+        Ldap::LDAPInit();
+    }
+
     MailServer::AdminPassword = Ldap::LDAPAskAndBind(false);
     if( MailServer::AdminPassword != nil )
     {
