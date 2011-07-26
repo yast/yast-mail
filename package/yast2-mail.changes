@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Jul 26 15:07:45 UTC 2011 - varkoly@novell.com
+
+- bnc#708283 - yast2-mail fails with TLS error when writing LDAP Settings
+- Fix: set boolean ldap attributes to SINGLE-VALUE
+- Create the directory /var/db/dkim/
+
+-------------------------------------------------------------------
 Thu Jun 16 11:10:19 UTC 2011 - varkoly@novell.com
 
 - FATE#311272: Do not rewrite postfix.cf via SuSEconfig
