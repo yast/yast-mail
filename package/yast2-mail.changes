@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Aug  5 12:33:13 CEST 2011 - tgoettlicher@suse.de
+
+- fixed .desktop file (bnc #681249)
+
+-------------------------------------------------------------------
 Tue Jan  4 11:17:20 UTC 2011 - lslezak@suse.cz
 
 - fixed syntax error
