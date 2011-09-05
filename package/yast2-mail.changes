@@ -4,6 +4,11 @@ Fri Aug  5 12:33:13 CEST 2011 - tgoettlicher@suse.de
 - fixed .desktop file (bnc #681249)
 
 -------------------------------------------------------------------
+Mon Jul 25 09:00:35 UTC 2011 - andrea.turrini@gmail.com
+
+- Fixed typo in description of yast2-mail.spec
+
+-------------------------------------------------------------------
 Tue Jan  4 11:17:20 UTC 2011 - lslezak@suse.cz
 
 - fixed syntax error

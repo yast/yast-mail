@@ -39,7 +39,7 @@ Group:		System/YaST
 Requires:       perl-NetxAP acl
 
 %description plugins
-Plugins for the YaST2 users modul for enterprise mail server
+Plugins for the YaST2 users module for enterprise mail server
 configuration.
 
 @PREP@
