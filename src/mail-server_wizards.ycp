@@ -81,7 +81,7 @@ any MailServerSequence() {
     ];
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("mail");
+    Wizard::SetDesktopTitleAndIcon("mail");
 
     any ret = Sequencer::Run(aliases, sequence);
 
@@ -116,7 +116,7 @@ any SetupSequence()
     ];
 
     Wizard::CreateDialog();
-    Wizard::SetDesktopIcon("mail");
+    Wizard::SetDesktopTitleAndIcon("mail");
 
     any ret = Sequencer::Run(aliases, sequence);
 

@@ -100,6 +100,7 @@ define string StartDialog (string type, boolean first ) ``{
                 )
         );
     Wizard::CreateDialog();
+    Wizard::SetDesktopTitleAndIcon("mail");
     Wizard::SetContentsButtons (caption, contents, StartDialogHelp(), Label::BackButton (), Label::NextButton ());
 
     any     ret = nil;

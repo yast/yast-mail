@@ -10,7 +10,8 @@ BuildRequires:  perl-NetxAP
 PreReq:         %fillup_prereq
 
 # new firewall interface
-Requires:	yast2 >= 2.16.23
+# Wizard::SetDesktopTitleAndIcon
+Requires:	yast2 >= 2.21.22
 Requires:	yast2-users
 Requires:	yast2-ldap
 Requires:       perl-NetxAP
