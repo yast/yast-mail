@@ -230,7 +230,8 @@ define symbol ConnectionTypeDialog () ``{
 
     list widgets = [];
 
-    symbol ct = Mail::connection_type;
+    symbol  ct  = Mail::connection_type;
+    boolean ama = Mail::use_amavis;
     if (preselect_connection_type != nil)
     {
 	ct = preselect_connection_type;
@@ -248,33 +249,26 @@ define symbol ConnectionTypeDialog () ``{
 		    // Translators: radio button label
 		    `RadioButton (`id (`permanent), `opt (`notify), _("&Permanent"), ct == `permanent),
 		    // Translators: radio button label
-		    `RadioButton (`id (`dialup), `opt (`notify), _("&Dial-up"), ct == `dialup),
+		    `RadioButton (`id (`dialup),    `opt (`notify), _("&Dial-up"), ct == `dialup),
 		    // Translators: radio button label
-		    `RadioButton (`id (`none), `opt (`notify), _("No &connection"), ct == `none),
-		    // Translators: radio button label
-		    `RadioButton (`id (`nodaemon), `opt (`notify), _("Do not start Postfix as Daemon"), ct == `nodaemon),
+		    `RadioButton (`id (`none),      `opt (`notify), _("No &connection"), ct == `none),
+                    // Translators: radio button label
+                    `RadioButton (`id (`nodaemon),  `opt (`notify), _("Do not start Postfix as Daemon"), ct == `nodaemon),
 		    ]
 		)
 	    );
 
-    boolean amavis_allowed = Mail::amavis_allowed;
-
-    term amavis_t = nil;
-    if (amavis_allowed)
-    {
-	amavis_t = `Left (WJ_MakeWidget (`use_amavis));
-	widgets = add (widgets, `use_amavis);
-    }
-    else
-    {
-	amavis_t = `Empty (`id (`use_amavis));
-    }
+    term amavis_t = `Left (WJ_MakeWidget (`use_amavis));
+    widgets  = add (widgets, `use_amavis);
+    term dkim_t   = `Left (WJ_MakeWidget (`use_dkim));
+    widgets  = add (widgets, `use_dkim);
 
     contents = `HSquash (
 	`VBox (
 	    contents,
 	    `VSpacing (1),
-	    amavis_t
+	    amavis_t,
+	    dkim_t
 	    )
 	);
 
@@ -286,24 +280,37 @@ define symbol ConnectionTypeDialog () ``{
     any ret = nil;
     while (true)
     {
-	ct = (symbol) UI::QueryWidget (`id (`ctg), `CurrentButton);
+	ct = (symbol)  UI::QueryWidget (`id (`ctg), `CurrentButton);
 	if (ct == `permanent || ct == `dialup)
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, true);
+	    UI::ChangeWidget (`id (`use_dkim),   `Enabled, true);
 	    Wizard::RestoreNextButton();
-	    //argh, slow
-	    //Wizard::RestoreNextButton ();
 	}
-	else if (ct == `nodaemon)
-	{
-	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
-	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
-	}
+        else if (ct == `nodaemon)
+        {
+            UI::ChangeWidget (`id (`use_amavis), `Value, false);
+            UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
+	    UI::ChangeWidget (`id (`use_dkim),   `Value, false);
+	    UI::ChangeWidget (`id (`use_dkim),   `Enabled, false);
+        }
 	else if (ct == `none)
 	{
 	    UI::ChangeWidget (`id (`use_amavis), `Value, false);
 	    UI::ChangeWidget (`id (`use_amavis), `Enabled, false);
+	    UI::ChangeWidget (`id (`use_dkim),   `Value, false);
+	    UI::ChangeWidget (`id (`use_dkim),   `Enabled, false);
 	    Wizard::SetNextButton(`next, Label::FinishButton() );
+	}
+	ama = (boolean) UI::QueryWidget (`id (`use_amavis), `Value);
+	if(ama)
+	{
+	    UI::ChangeWidget (`id (`use_dkim),   `Enabled, true);
+	}
+	else
+	{
+	    UI::ChangeWidget (`id (`use_dkim),   `Value, false);
+	    UI::ChangeWidget (`id (`use_dkim),   `Enabled, false);
 	}
 
 	ret = UI::UserInput ();

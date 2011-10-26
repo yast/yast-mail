@@ -79,14 +79,16 @@
     /**
      * Use a virus scanner (AMaViS).
      * amavisd-new (mta-independent) must be installed.
-     * It will be installed if amavis_allowed and it is not installed.
+     * It will be installed if is not installed.
      */
     global boolean use_amavis = false;
 
     /**
-     * Is amavis available on the installation media?
+     * Use a DKIM for outgoing email.
+     * If it is enabled AMaViS will be enabled too.
      */
-    global boolean amavis_allowed = true;
+    global boolean use_dkim = false;
+
 
     /**
      * Domains for locally delivered mail.
@@ -168,6 +170,12 @@
      * Must default to non-nil.
      */
     boolean enable_smtp_auth = false;
+
+    /**
+     * Sysconfig setting which contains the email address which will
+     * be applied as sender for system mails
+     */
+     global string system_mail_sender = "";
 
     /* ---------------------------------------------------------------- */
     // constants
@@ -440,11 +448,8 @@ Configure a scanner manually."));
 	}
 
 	// amavis
-	string amavis_pkg = "amavisd-new";
-	amavis_allowed = PackageSystem::Installed (amavis_pkg) ||
-	    Mode::commandline ();
-	    // || PackageSystem::Available (amavis_pkg);
-	use_amavis = amavis_allowed && (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
+	use_amavis = (SCR::Read (.sysconfig.amavis.USE_AMAVIS) == "yes");
+	use_dkim   = use_amavis  && (SCR::Read (.sysconfig.amavis.USE_DKIM)   == "yes");
 
 	// local_domains
 	string ld_s = "";
@@ -668,8 +673,8 @@ a fixed format to be readable by YaST.  For details, see
 	create_config = true;
 	listen_remote = true;
 	connection_type = `dialup;
-	amavis_allowed = true;
 	use_amavis = true;
+	use_dkim = true;
 	// good example?
 	local_domains = ["branch1.example.com", "branch2.example.com"];
 	outgoing_mail_server = "mail.example.com";
@@ -1096,7 +1101,7 @@ a fixed format to be readable by YaST.  For details, see
 	else if (mta == `postfix)
 	{
 	    ret = (integer)
-		SCR::Execute(.target.bash, "/sbin/SuSEconfig --module postfix");
+		SCR::Execute(.target.bash, "/usr/sbin/SuSEconfig.postfix");
 	}
 	else
 	{
@@ -1128,6 +1133,10 @@ a fixed format to be readable by YaST.  For details, see
 		    Report::Error (sformat (_("Error starting service %1."), "amavis"));
 		    return false;
 		}
+	    }
+	    if (use_dkim)
+	    {
+		SCR::Execute(.target.bash, "/usr/lib/YaST2/servers_non_y2/setup_dkim_verifying.pl");
 	    }
 	}
 
@@ -1287,22 +1296,26 @@ a fixed format to be readable by YaST.  For details, see
 	});
 
 	mta = settings["mta"]: `other;
-	connection_type = settings["connection_type"]: `none;
-	listen_remote = settings["listen_remote"]: false;
-	use_amavis = settings["use_amavis"]: false;
-	local_domains = settings["local_domains"]: [];
+	connection_type      = settings["connection_type"]: `none;
+	listen_remote        = settings["listen_remote"]: false;
+	use_amavis           = settings["use_amavis"]: false;
+	use_dkim             = settings["use_dkim"]: false;
+	local_domains        = settings["local_domains"]: [];
 	outgoing_mail_server = settings["outgoing_mail_server"]: "";
-	postfix_mda = settings["postfix_mda"]: `local;
-	from_header = settings["from_header"]: "";
+	postfix_mda          = settings["postfix_mda"]: `local;
+	from_header          = settings["from_header"]: "";
 	masquerade_other_domains = settings["masquerade_other_domains"]: [];
-	masquerade_users = settings["masquerade_users"]: [];
-	fetchmail = settings["fetchmail"]: [];
+	masquerade_users     = settings["masquerade_users"]: [];
+	fetchmail            = settings["fetchmail"]: [];
 	MailAliases::aliases = settings["aliases"]: [];
 	MailAliases::FilterRootAlias ();
-//	MailAliases::merge_aliases = settings["merge_aliases"]: false;
-	virtual_users = settings["virtual_users"]: [];
-	smtp_use_TLS = settings["smtp_use_TLS"]: "yes";
-	smtp_auth = settings["smtp_auth"]: [];
+	virtual_users        = settings["virtual_users"]: [];
+	smtp_use_TLS         = settings["smtp_use_TLS"]: "yes";
+	smtp_auth            = settings["smtp_auth"]: [];
+	system_mail_sender   = settings["system_mail_sender"]:"";
+	if( use_dkim ) {
+		use_amavis = true;
+	}
 	y2debug ("after %1", settings); // may contain passwords
 	return true;
     }
@@ -1319,6 +1332,7 @@ a fixed format to be readable by YaST.  For details, see
 	    "connection_type": connection_type,
 	    "listen_remote": listen_remote,
 	    "use_amavis": use_amavis,
+	    "use_dkim"  : use_dkim,
 	    "local_domains": local_domains,
 	    "outgoing_mail_server": outgoing_mail_server,
 	    "from_header": from_header,
@@ -1330,6 +1344,7 @@ a fixed format to be readable by YaST.  For details, see
 	    "virtual_users": virtual_users,
 	    "smtp_auth": smtp_auth,
 	    "smtp_use_TLS": smtp_use_TLS,
+	    "system_mail_sender":system_mail_sender,
 	    ];
 	if (mta == `postfix)
 	{
@@ -1434,18 +1449,13 @@ a fixed format to be readable by YaST.  For details, see
 	summary = summary + ListItem (_("Masquerade Users"), masquerade_users, "user");
 	// summary header
 	summary = Summary::AddHeader(summary, _("Accept remote SMTP connections"));
-	summary = Summary::AddLine(summary, (listen_remote) ?
-				   // summary item
-				   _("Yes") :
-				   // summary item
-				   _("No"));
+	summary = Summary::AddLine(summary, (listen_remote) ?  _("Yes") : _("No"));
 	// summary header
 	summary = Summary::AddHeader(summary, _("Use AMaViS"));
-	summary = Summary::AddLine(summary, (use_amavis) ?
-				   // summary item
-				   _("Yes") :
-				   // summary item
-				   _("No"));
+	summary = Summary::AddLine(summary, (use_amavis) ?  _("Yes") : _("No"));
+	// summary header
+	summary = Summary::AddHeader(summary, _("Use DKIM"));
+	summary = Summary::AddLine(summary, (use_dkim) ?  _("Yes") : _("No"));
 	// summary item
 	summary = summary + ListItem (_("Fetchmail"), fetchmail, "server");
 	// summary item

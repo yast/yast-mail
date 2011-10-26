@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Oct 26 07:33:05 UTC 2011 - varkoly@suse.com
+
+- bnc#723742 - SLES11_SP2_LOC : The 'No Outgoing Mail' radio button can't check in Mail server global settings panel! 
+
+-------------------------------------------------------------------
 Thu Sep 29 12:47:58 CEST 2011 - visnov@suse.cz
 
 - set dialog title

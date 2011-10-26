@@ -18,6 +18,16 @@
  *
  */
 
+/**
+ * @param flag "<b>permanent</b>", "<b>dialup</b>", or "<b>screenshots</b>"<br>
+ *  <dl>
+ *  <dt>permanent<dd>preselects permanent connnection
+ *  <dt>dialup<dd>preselects dial-up connnection
+ *  <dt>screenshots
+ *   <dd>uses faked data (see Mail::Fake), enables running the module
+ *    as non-root. (Uses Mode::screen_shot().)
+ *  </dl>
+ */
 {
     /***
      * <h3>Configuration of the mail</h3>
