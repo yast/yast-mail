@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Oct 26 07:35:35 UTC 2011 - varkoly@suse.com
+
+- bnc#723742 - SLES11_SP2_LOC : The 'No Outgoing Mail' radio button can't check in Mail server global settings panel! 
+
+-------------------------------------------------------------------
 Tue Jul 26 15:07:45 UTC 2011 - varkoly@novell.com
 
 - bnc#708283 - yast2-mail fails with TLS error when writing LDAP Settings

@@ -1378,7 +1378,7 @@ y2milestone("FocusedContent %1",FocusedContent);
 	   {
 	       SMT = "NONE";
 	   }
-           MailServer::GlobalSettings["SendingMail","Type"] = UI::QueryWidget(`id(`SendingMailType), `CurrentButton);
+           MailServer::GlobalSettings["SendingMail","Type"] = SMT;
            MailServer::GlobalSettings["SendingMail","TLS"]  = UI::QueryWidget(`id(`SendingMailTLS), `CurrentButton);
            MailServer::GlobalSettings["SendingMail","RelayHost","Name"]     = "";
            MailServer::GlobalSettings["SendingMail","RelayHost","Auth"]     = "0";
