@@ -2,7 +2,7 @@
 
 @HEADER@
 Group:	System/YaST
-License: GPLv2+
+License:        GPL-2.0+
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-devtools yast2-testsuite
 BuildRequires:	yast2-ldap-server yast2-network yast2-perl-bindings yast2-users
 BuildRequires:  perl-NetxAP
