@@ -789,6 +789,7 @@ a fixed format to be readable by YaST.  For details, see
 	}
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
+	SCR::Write (.sysconfig.amavis.USE_DKIM,   use_dkim?   "yes":"no");
 	// used also in WriteServices
 	amavis_service = true;
 
