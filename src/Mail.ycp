@@ -787,11 +787,13 @@ a fixed format to be readable by YaST.  For details, see
 		Service::Enable (service);
 		Service::Adjust ("amavis", use_amavis? "enable":"disable");
 	}
+	Service::Enable (service);
 	// amavis
 	SCR::Write (.sysconfig.amavis.USE_AMAVIS, use_amavis? "yes":"no");
-	SCR::Write (.sysconfig.amavis.USE_DKIM,   use_dkim?   "yes":"no");
+	SCR::Write (.sysconfig.amavis.USE_DKIM,   use_dkim  ? "yes":"no");
 	// used also in WriteServices
 	amavis_service = true;
+	Service::Adjust ("amavis", use_amavis? "enable":"disable");
 
 	// SENDMAIL_ARGS
 	// by default they contain -q30m, not good for dial-up
