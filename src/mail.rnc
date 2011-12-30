@@ -17,6 +17,7 @@ mail =
     outgoing_mail_server? &
     postfix_mda? &
     use_amavis? &
+    use_dkim? &
     virtual_users?
   }
 
@@ -93,6 +94,7 @@ postfix_mda =
   }
 
 use_amavis = element use_amavis { BOOLEAN }
+use_dkim   = element use_dkim   { BOOLEAN }
 
 virtual_users =
   element virtual_users {
