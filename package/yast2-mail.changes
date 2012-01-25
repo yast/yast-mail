@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jan 25 14:44:47 UTC 2012 - varkoly@suse.com
+
+- bnc#743369 - yast2 mail module does not open the firewall 
+
+-------------------------------------------------------------------
 Wed Oct 26 07:35:35 UTC 2011 - varkoly@suse.com
 
 - bnc#723742 - SLES11_SP2_LOC : The 'No Outgoing Mail' radio button can't check in Mail server global settings panel! 
