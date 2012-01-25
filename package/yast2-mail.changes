@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Wed Jan 25 14:42:40 UTC 2012 - varkoly@suse.com
+
+- bnc#743369 - yast2 mail module does not open the firewall 
+
+-------------------------------------------------------------------
 Wed Dec  7 10:05:01 UTC 2011 - coolo@suse.com
 
 - fix license to be in spdx.org format
