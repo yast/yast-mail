@@ -48,18 +48,18 @@
 define string StartDialogHelp () ``{
         return 
           // Translators: start dialog help, part 1 of 4
-          _("<P><B>Email Server Configuration</B><BR>") +
+          _("<P><B>Mail Server Configuration</B><BR>") +
           // Translators: start dialog help, part 2 of 4
           _("<P>This module will configure and start Postfix and, if necessary, the Cyrus IMAP server.</P>")+
           // Translators: start dialog help, part 3 of 4
           _("<P><B>Warning:</B></P>
 <P>Most home users can use the built-in 
-features of their e-mail application to send and
-receive e-mail. They do not need this module.</P>
+features of their email application to send and
+receive email. They do not need this module.</P>
 ")+
           // Translators: start dialog help, part 4 of 4
           _("<P>You need Postfix only to store
-the e-mail on your local system, or for some special cases.</P>
+email on your local system or for some special cases.</P>
 ");
 }
 
@@ -68,11 +68,11 @@ define string StartDialog (string type, boolean first ) ``{
     y2milestone ("Mail configuration type %1", type);
 
     Wizard::SetScreenShotName ("mail-0-start");
-    string caption   =  _("E-Mail Server Configuration");
+    string caption   =  _("Mail Server Configuration");
     term   tskip_ask = `Left(`CheckBox(`id(`skip_ask), _("Skip this page in the future")));
     string status    =  _("Mail server is not configured.")+"\n"+
-			_("Select configuration type according your personal needs")+"\n"+
-			_("If you want to use sendmail as your MTA you have to use Standard configuration.")+
+			_("Select configuration type according your needs.")+"\n"+
+			_("If you want to use sendmail as your MTA, you have to use the Standard configuration.")+
 			_("The Advanced configuration use LDAP as backend and will configure your system as LDAP-Client and setup an LDAP-Server if necessary.");
     if( first )
     {

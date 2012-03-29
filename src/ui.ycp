@@ -375,7 +375,7 @@ define symbol OutgoingDialog () ``{
 	    `VBox (
 		WJ_MakeWidget (`outgoing_mail_server),
 		// TLS
-		`Label (_("The server use &TLS")),
+		`Label (_("The server uses &TLS.")),
                 `RadioButtonGroup(`id(`TLS),
                   `HBox(
                     `Left(`RadioButton(`id("no"),   _("No"),     TLSnone)),

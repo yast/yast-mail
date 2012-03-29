@@ -25,7 +25,7 @@ Some of the mail server settings will be stored in the LDAP repository, too.<br>
 
     /* Setup dialog help 1/1 */
     "setup" : _("<p><b><big>Set Up Mail Server Configuration</big></b><br>
-Please wait...<br></p>
+</p>
 ") ,
     /* Read dialog help 1/2 */
     "read" : _("<p><b><big>Initializing Mail Server Configuration</big></b><br>
@@ -85,18 +85,18 @@ In this dialog, configure this settings.  For example, set access lists or RBL
 ") +
     /* MailPrevention dialog help 2/3 */
 _("<p><b><big>Start Virus Scanner AMAVIS:</big></b><br>
-If you start the virus scanner AMAVIS, your e-mails will be scanned for viruses and and for spam.
+If you start the virus scanner AMAVIS, your emails will be scanned for viruses and and for spam.
 The virus scanner engine <b>Clamavd</b> and the spam finder <b>SpamAssassin</b> will be installed 
-and configured too. You can also install other (commercial) virus scanner engines.
+and configured as well. You can also install other (commercial) virus scanner engines.
 </p>
 ") +
     /* MailPrevention dialog help 3/3 */
 _("<p><b><big>Configure Spam Learning Extension:</big></b><br>
 The spam learning extension can only be configured if the local delivery method is <b>cyrus imapd</b>.
-In this case the shared folders <b>NewSpam</b> and <b>NoSpam</b> will be created. Spam e-mail 
+In this case the shared folders <b>NewSpam</b> and <b>NoSpam</b> will be created. Spam email 
 which was not detected by <b>SpamAssassin</b> should be put into the folder <b>NewSpam</b>.
-If you want your spam finder to be most effective you should also put non spam e-mail into
-the folder <b>NoSpam</b>. The e-mails in this folder cannot be read by anyone.
+If you want your spam finder to be most effective you should also put non-spam email into
+the folder <b>NoSpam</b>. The emails in this folder cannot be read by anyone.
 </p>
 "),
 
@@ -146,15 +146,15 @@ the final destination.
 ") +
     /* MailLocalDomains dialog help 2/3 */
 _("<p>Note: You can create and set up the domains with the YaST 
-DNS server module. In this module, you only can set the properties
+DNS server module. In the current module, you only can set the properties
 concerning the mail server.
 </p>
 ")+
     /* MailLocalDomains dialog help 3/3 */
 _("<p><b><big>Type:</big></b><br>
 You can define virtual and local domains. In virtual domains, only users
-assigned a mail address in the domain can receive mail.
-In local domains, all user can get mails. Assign virtual mail 
+assigned an email address in the domain can receive emails.
+In local domains, all users can get emails. Assign virtual email 
 addresses in the YaST user module.
 </p>
 "),

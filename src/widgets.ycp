@@ -763,8 +763,8 @@ automatically.</p>
 	// help text
 + _("
 <p>Enabling DKIM for outgoing emails requires additional actions. A SSL key
-will be generated for the 'mydomain'-value defined in postfix. A new service
-'submission' will be configured in postfix. After this is set up you can send
+will be generated for the 'mydomain' value defined in Postfix. A new service
+'submission' will be configured in Postfix. After this is set up you can send
 email with this service 'submission' from 'mynetworks' with enabled SASL
 authentication. Only the emails sent by this new service will be signed with
 the domain key.</p>
@@ -773,14 +773,14 @@ the domain key.</p>
 	_("
 <p>The public key of the domain key needs to be offered by a Domain Name
 Service. The public key will be saved as a DNS TXT record
-into <b>/var/db/dkim/[mydomain].public.txt</b> and needs  to be deployed to an
+in <b>/var/db/dkim/[mydomain].public.txt</b> and needs to be deployed to an
 according Domain Name Service. If there is a name service
-running on this server, which is the authoritative server for that domain the
+running on this server, which is the authoritative server for that domain, the
 public key will be added as a TXT record to that domain zone
 automatically.</p>
 ") +
 	// help text
-	_("Enabling DKIM support the virus scanning (AMaViS) will be enabled too."),
+	_("If you enable DKIM support, the virus scanning (AMaViS) will be enabled too."),
 	"get": Get_use_dkim,
 	"set": Set_use_dkim,
 	],
