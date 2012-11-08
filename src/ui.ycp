@@ -76,7 +76,7 @@ define symbol ReadDialog () ``{
 	    was_ok = Popup::ContinueCancel (sformat (_("The setting %1 is turned off. You have
 probably modified the configuration files directly.
 If you continue, it will be turned on and
-SuSEconfig will overwrite manual changes.
+Config Postfix will overwrite manual changes.
 "), setting));
 	}
     }

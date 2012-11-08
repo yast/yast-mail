@@ -653,7 +653,7 @@ define list Choices_delivery_mode () ``{
 	    `item (`id (`dm_cyrus), _("To Cyrus IMAP Server")),
 	    // TODO: should check whether cyrus-imapd is installed.
 	    // And show the choice only if it is.
-	    // But SuSEconfig.postfix falls back to local if it's not, so OK
+	    // But config.postfix falls back to local if it's not, so OK
     ];
 }
 
