@@ -50,7 +50,7 @@
     global symbol mta = nil;
 
     /**
-     *	If true, don't run SuSEconfig or restart the services.
+     *	If true, don't restart the services.
      *  Autoinstall uses this to do  all in one place.
      */
     global boolean write_only = false;
@@ -58,7 +58,7 @@
     boolean create_config = false;
     /**
      * If MAIL_CREATE_CONFIG is not yes, the user
-     * does not want SuSEconfig to modify sendmail.cf/main.cf.
+     * does not want us to modify sendmail.cf/main.cf.
      * So we will warn him before setting it to yes.
      * @return	Is it yes?
      */
@@ -1092,19 +1092,11 @@ a fixed format to be readable by YaST.  For details, see
      * Part of Write.
      * @return success
      */
-    global define boolean WriteSuSEconfig () ``{
-	//run SuSEconfig with the necessary modules
-	// TODO other modules using FROM_HEADER?
+    global define boolean WriteConfig () ``{
 	integer ret = 0;
-	if (mta == `sendmail)
+	if (mta == `postfix)
 	{
-	    ret = (integer)
-		SCR::Execute(.target.bash,"/sbin/SuSEconfig --module sendmail");
-	}
-	else if (mta == `postfix)
-	{
-	    ret = (integer)
-		SCR::Execute(.target.bash, "/usr/sbin/SuSEconfig.postfix");
+	    ret = (integer) SCR::Execute(.target.bash, "/usr/sbin/config.postfix");
 	}
 	else
 	{
@@ -1114,7 +1106,7 @@ a fixed format to be readable by YaST.  For details, see
 	if (ret != 0)
 	{
 	    // Translators: error message
-	    Report::Error (_("Error running SuSEconfig."));
+	    Report::Error (_("Error running config.postfix"));
 	    return false;
 	}
 	return true;
@@ -1216,7 +1208,7 @@ a fixed format to be readable by YaST.  For details, see
 	if (! write_only)
 	{
 	    // Translators: progress label
-	    stages = add (stages, [ _("Running SuSEconfig"), WriteSuSEconfig ]);
+	    stages = add (stages, [ _("Running Config Postfix"), WriteConfig ]);
 
 	    // Translators: progress label
 	    stages = add (stages, [ _("Restarting services"), WriteServices ]);
