@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Nov  8 11:30:50 UTC 2012 - varkoly@suse.com
+
+- bnc#784659 - remove SuSEconfig calls from yast2-mail
+- bnc#782048 - postfix uses /sbin/conf.d
+
+-------------------------------------------------------------------
 Thu Mar 29 15:24:06 CEST 2012 - jsuchome@suse.cz
 
 - merged proofread texts 
