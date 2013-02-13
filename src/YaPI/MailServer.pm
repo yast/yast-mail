@@ -42,8 +42,7 @@ use Net::IMAP;
 textdomain("mail");
 our %TYPEINFO;
 our @CAPABILITIES = (
-                     'SLES10',
-                     'SLES11'
+                     'SLES10'
                     );
 our $VERSION="2.2.0";
 
@@ -2846,6 +2845,7 @@ Needed Parameters are:
       masquerade_exceptions
 
 =cut
+
 BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string"]; }
 sub ResetMailServer {
     my $self            = shift;
@@ -2952,6 +2952,30 @@ fi';
     SCR->Write('.mail.postfix.mastercf',undef);
     SCR->Execute(".target.bash", "touch /var/adm/yast2-mail-server-used");
 
+    return 1;
+}
+
+=item *
+
+C<boolean = UpdateMailServerTables($AdminPassword)>
+
+Funktion to update the mail server tables
+Needed Parameters are:
+   $AdminPassword the Adminstrator Psssword
+
+=cut
+
+BEGIN { $TYPEINFO{UpdateMailServerTables} = ["function",  "boolean" ,"string"]; }
+sub UpdateMailServerTables {
+    my $self            = shift;
+    my $AdminPassword   = shift;
+    my $ldapMap         = $self->ReadLDAPDefaults($AdminPassword);
+    my $MainCf          = SCR->Read('.mail.postfix.main.table');
+    write_ldap_maps($MainCf,$ldapMap);
+    SCR->Write('.mail.postfix.main.table',$MainCf);
+    SCR->Write('.mail.postfix.main',undef);
+    SCR->Execute(".target.bash", "touch /var/adm/yast2-mail-server-ldap-tables-updated");
+    Service->Restart('postfix');
     return 1;
 }
 
@@ -3127,6 +3151,9 @@ sub write_ldap_maps($$)
     );
 
     my $alias_maps      = read_attribute($MainCf,'alias_maps');
+    $alias_maps =~ s#ldap:/etc/postfix/ldap.*cf##g;
+    $alias_maps =~ s#  ##g; $alias_maps =~ s#  ##g;
+    $alias_maps =~ s#,,##g; $alias_maps =~ s#,,##g;
     foreach my $i ( @AliasMaps )
     {
     	check_ldap_configuration($i,$ldapMap);
@@ -3179,8 +3206,8 @@ sub check_ldap_configuration {
                         'mynetworks'              => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
                         'smtp_tls_per_site'       => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
                         'transport_maps'          => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s))',
-                        'group_recipient_maps'    => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s))',
+                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(mailEnabled=no))(!(suseDeliveryToFolder=no)(suseMailForwardAddress=*)))',
+                        'group_recipient_maps'    => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(|(suseDeliveryToFolder=yes)(suseDeliveryToMember=yes)(suseMailForwardAddress=*)))',
                         'ualias_maps_folder'      => '(&(objectClass=suseMailRecipient)(uid=%s)(!(suseDeliveryToFolder=no)))',
                         'ualias_maps_forward'     => '(&(objectClass=suseMailRecipient)(uid=%s)(suseDeliveryToFolder=no))',
                         'galias_maps_both'        => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes)(suseDeliveryToFolder=yes))',
