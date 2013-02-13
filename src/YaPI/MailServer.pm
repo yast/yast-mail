@@ -3206,7 +3206,7 @@ sub check_ldap_configuration {
                         'mynetworks'              => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
                         'smtp_tls_per_site'       => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
                         'transport_maps'          => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(|(mailEnabled=no))(!(suseDeliveryToFolder=no)(suseMailForwardAddress=*)))',
+                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(mailEnabled=no))(|(suseDeliveryToFolder=no)(suseMailForwardAddress=*)))',
                         'group_recipient_maps'    => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(|(suseDeliveryToFolder=yes)(suseDeliveryToMember=yes)(suseMailForwardAddress=*)))',
                         'ualias_maps_folder'      => '(&(objectClass=suseMailRecipient)(uid=%s)(!(suseDeliveryToFolder=no)))',
                         'ualias_maps_forward'     => '(&(objectClass=suseMailRecipient)(uid=%s)(suseDeliveryToFolder=no))',
