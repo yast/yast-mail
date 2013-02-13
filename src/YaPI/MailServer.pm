@@ -3231,7 +3231,7 @@ sub check_ldap_configuration {
                         'canonical_maps'          => 'one',
                         'recipient_canonical_maps'=> 'one',
                         'sender_canonical_maps'   => 'one',
-			'user_recipient_maps'     => 'one'
+			'user_recipient_maps'     => 'one',
 			'group_recipient_maps'    => 'one'
                        );
     my %base            = (
