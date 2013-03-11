@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Mar 11 11:55:20 UTC 2013 - varkoly@suse.com
+
+- bnc#808641 - yast2-mail advanced configuration can create mail loops
+
+-------------------------------------------------------------------
+Tue Jan 15 11:06:04 UTC 2013 - varkoly@suse.com
+
+- bnc#759050 - autoyast mail configuration (postfix) not possible
+
+-------------------------------------------------------------------
 Wed Jan 25 14:44:47 UTC 2012 - varkoly@suse.com
 
 - bnc#743369 - yast2 mail module does not open the firewall 
