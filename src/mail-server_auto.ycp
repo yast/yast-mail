@@ -78,7 +78,6 @@ else if (func == "Read") {
 else if (func == "Write") {
     import "Progress";
     Progress::off();
-    MailServer::write_only = true;
     ret = MailServer::Write();
     Progress::on();
 }
