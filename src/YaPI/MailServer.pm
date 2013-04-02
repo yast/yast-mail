@@ -22,7 +22,7 @@ configuration API to for Perl programs.
 
 =cut
 
-
+BEGIN { push @INC, "/usr/lib/YaST2/servers_non_y2"; }
 
 
 package YaPI::MailServer;
@@ -38,11 +38,13 @@ use YaPI;
 use POSIX;     # Needed for setlocale()
 use Data::Dumper;
 use Net::IMAP;
+use MasterCFParser;
 
 textdomain("mail");
 our %TYPEINFO;
 our @CAPABILITIES = (
-                     'SLES10'
+                     'SLES10',
+                     'SLES11'
                     );
 our $VERSION="2.2.0";
 
@@ -67,21 +69,6 @@ my $aconf    = "/etc/amavisd.conf";
  #
 my $write_only = 0;
 
-BEGIN { $TYPEINFO{ReadMasterCF}  =["function", "any"  ]; }
-sub ReadMasterCF {
-    my $MasterCf  = SCR->Read('.mail.postfix.mastercf');
-
-    return $MasterCf;
-}
-
-BEGIN { $TYPEINFO{findService}  =["function", "any"  ]; }
-sub findService {
-    my ($service, $command ) = @_;
-
-    my $services  = SCR->Read('.mail.postfix.mastercf.findService', $service, $command);
-
-    return $services;
-}
 =item *
 C<$GlobalSettings = ReadGlobalSettings($$AdminPassword)>
 
@@ -187,7 +174,8 @@ sub ReadGlobalSettings {
 
     my $MainCf    = SCR->Read('.mail.postfix.main.table');
     my $SaslPaswd = SCR->Read('.mail.postfix.saslpasswd.table');
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -222,7 +210,7 @@ sub ReadGlobalSettings {
     }
     else
     {
-	my $smtpsrv = SCR->Execute('.mail.postfix.mastercf.findService',
+	my $smtpsrv = $msc->getServiceByAttributes(
 		{ 'service' => 'smtp',
 		  'command' => 'smtp' });
         if( defined $smtpsrv )
@@ -326,7 +314,8 @@ sub WriteGlobalSettings {
     my $RelayHostPassword  = $GlobalSettings->{'SendingMail'}{'RelayHost'}{'Password'};
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
     my $SaslPasswd         = SCR->Read('.mail.postfix.saslpasswd.table');
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -342,12 +331,12 @@ sub WriteGlobalSettings {
     # at master.cf if smt is started
     if($SendingMailType ne 'NONE')
     {
-       my $smtpsrv = SCR->Execute('.mail.postfix.mastercf.findService',
+       my $smtpsrv = $msc->getServiceByAttributes(
                    { 'service' => 'smtp',
                      'command' => 'smtp' });
        if(! defined $smtpsrv )
        {
-           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp',
+           $msc->addService({ 'service' => 'smtp',
                         'type'    => 'inet',
                         'private' => 'n',
                         'unpriv'  => '-',
@@ -381,7 +370,7 @@ sub WriteGlobalSettings {
     }
     elsif ($SendingMailType eq 'NONE')
     {
-	SCR->Execute('.mail.postfix.mastercf.deleteService', { 'service' => 'smtp', 'command' => 'smtp' });
+	$msc->deleteService( { 'service' => 'smtp', 'command' => 'smtp' });
     }
     else
     {
@@ -430,7 +419,7 @@ sub WriteGlobalSettings {
     SCR->Write('.mail.postfix.main',undef);
     SCR->Write('.mail.postfix.saslpasswd.table',$SaslPasswd);
     SCR->Write('.mail.postfix.saslpasswd',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF();
 
     return 1;
 }
@@ -1116,7 +1105,8 @@ sub ReadMailPrevention {
     # First we read the main.cf and master.cf 
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -1167,10 +1157,10 @@ sub ReadMailPrevention {
     }
 
     # Now we looking for if vscan (virusscanning) is started.
-    my $vscanin = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanin = $msc->getServiceByAttributes(
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd'} );
-    my $vscanout = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanout = $msc->getServiceByAttributes(
 		{ 'service' => 'amavis',
 		  'command' => 'lmtp'} );
     my $content_filter = read_attribute($MainCf,'content_filter');
@@ -1244,7 +1234,8 @@ sub WriteMailPrevention {
     # First we read the main.cf
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -1356,7 +1347,6 @@ sub WriteMailPrevention {
        }
     }
 
-    SCR->Read('.mail.postfix.mastercf');
     if( $MailPrevention->{'VirusScanning'} )
     {
 	$MailPrevention->{'VSCount'} = 5 if( ! defined $MailPrevention->{'VSCount'});
@@ -1368,51 +1358,45 @@ sub WriteMailPrevention {
 				   description => "activating the virus scanner failed: $err");
 	}
 	# This is only for systems updated from SLES10
-		my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-					 { 'service' => 'smtps', 'command' => 'smtpd' });
-		if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-		{
-		    my $opts = $smtps->[0]->{options};
-		    if ( defined $opts->{'content_filter'} )
-		    {
-			    delete $opts->{'content_filter'};
-			    SCR->Execute('.mail.postfix.mastercf.modifyService',
-					 { 'service' => 'smtps',
-					   'command' => 'smtpd',
-					   'maxproc' => '-',
-					   'options' => $opts } );
-		    }
-		}
-		my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-					 { 'service' => 'smtp', 'command' => 'smtpd' });
-		if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
-		{
-		    my $opts = $smtp->[0]->{options};
-		    if ( defined $opts->{'content_filter'} )
-		    {
-			    delete $opts->{'content_filter'};
-			    SCR->Execute('.mail.postfix.mastercf.modifyService',
-					 { 'service' => 'smtp',
-					   'command' => 'smtpd',
-					   'maxproc' => '-',
-					   'options' => $opts } );
-		    }
-		}
-	# End This is only for systems updated from SLES10
-	if( SCR->Execute('.mail.postfix.mastercf.findService',
-	    { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
+	my $smtps = $msc->getServiceByAttributes( { 'service' => 'smtps', 'command' => 'smtpd' });
+	if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
 	{
-	    SCR->Execute('.mail.postfix.mastercf.deleteService',
-	        { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	    my $opts = $smtps->[0]->{options};
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    $msc->modifyService(
+				 { 'service' => 'smtps',
+				   'command' => 'smtpd',
+				   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
 	}
-	if( SCR->Execute('.mail.postfix.mastercf.findService',
-	    { 'service' => 'amavis', 'command' => 'lmtp' }))
+	my $smtp = $msc->getServiceByAttributes( { 'service' => 'smtp', 'command' => 'smtpd' });
+	if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
 	{
-	    SCR->Execute('.mail.postfix.mastercf.deleteService',
-	        { 'service' => 'amavis', 'command' => 'lmtp' });
+	    my $opts = $smtp->[0]->{options};
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    $msc->modifyService(
+				 { 'service' => 'smtp',
+				   'command' => 'smtpd',
+				   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
+	}
+	# End This is only for systems updated from SLES10
+	if( $msc->getServiceByAttributes( { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
+	{
+	    $msc->deleteService( { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	}
+	if( $msc->getServiceByAttributes( { 'service' => 'amavis', 'command' => 'lmtp' }))
+	{
+	    $msc->deleteService( { 'service' => 'amavis', 'command' => 'lmtp' });
 	}
 	# create smtpd pocess for getting back the emails
-        SCR->Execute('.mail.postfix.mastercf.addService',
+        $msc->addService(
 		{ 'service' => 'amavis',
 		  'command' => 'lmtp',
 		  'type'    => 'unix',
@@ -1425,7 +1409,7 @@ sub WriteMailPrevention {
 				 lmtp_send_xforward_command => 'yes',
 				 disable_dns_lookups        => 'yes',
 				 max_use                    => 20 } } );
-        SCR->Execute('.mail.postfix.mastercf.addService',
+        $msc->addService(
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd',
 		  'type'    => 'inet',
@@ -1457,10 +1441,8 @@ sub WriteMailPrevention {
     }
     else
     {
-	SCR->Execute('.mail.postfix.mastercf.deleteService',
-	    { 'service' => 'localhost:10025', 'command' => 'smtpd' });
-	SCR->Execute('.mail.postfix.mastercf.deleteService',
-	    { 'service' => 'amavis', 'command' => 'lmtp' });
+	$msc->deleteService( { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	$msc->deleteService( { 'service' => 'amavis', 'command' => 'lmtp' });
 	write_attribute($MainCf,'content_filter','');   
 	
 	Service->Stop('amavis');
@@ -1473,8 +1455,7 @@ sub WriteMailPrevention {
     check_ldap_configuration('access',$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
-
+    $msc->writeMasterCF();
     # make IMAP connection
     my $imap = new Net::IMAP($imaphost, Debug => 0);
     if( $imap )
@@ -1758,12 +1739,13 @@ sub WriteMailRelaying {
                                  code    => "PARAM_CHECK_FAILED" );
     }
     # Searching for the tlsmanager service
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
-       return $self->SetError( summary =>"Couln't open master.cf",
-                               code    => "PARAM_CHECK_FAILED" );
+         return $self->SetError( summary =>"Couln't open master.cf",
+                                 code    => "PARAM_CHECK_FAILED" );
     }
-    my $tlsmgr = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $tlsmgr = $msc->getServiceByAttributes(
                    { 'service' => 'tlsmgr',
                      'command' => 'tlsmgr' });
     if($MailRelaying->{'SMTPDTLSMode'} ne 'none')
@@ -1789,7 +1771,7 @@ sub WriteMailRelaying {
       }
       if(! defined $tlsmgr )
       {
-           SCR->Execute('.mail.postfix.mastercf.addService',
+           $msc->addService(
 	   { 'service' => 'tlsmgr',
 	     'type'    => 'unix',
 	     'private' => '-',
@@ -1804,10 +1786,10 @@ sub WriteMailRelaying {
     {
       if( defined $tlsmgr )
       {
-         SCR->Execute('.mail.postfix.mastercf.deleteService', {'service' => 'tlsmgr','command' => 'tlsmgr'});
+         $msc->deleteService( {'service' => 'tlsmgr','command' => 'tlsmgr'});
       }
     }
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF;
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
 
@@ -2845,7 +2827,6 @@ Needed Parameters are:
       masquerade_exceptions
 
 =cut
-
 BEGIN { $TYPEINFO{ResetMailServer} = ["function",  "boolean" ,"string"]; }
 sub ResetMailServer {
     my $self            = shift;
@@ -2906,12 +2887,13 @@ fi';
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
     # Setup the tlsmanager service if necessary
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
-       return $self->SetError( summary =>"Couln't open master.cf",
-                               code    => "PARAM_CHECK_FAILED" );
+         return $self->SetError( summary =>"Couln't open master.cf",
+                                 code    => "PARAM_CHECK_FAILED" );
     }
-    my $tlsmgr = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $tlsmgr = $msc->getServiceByAttributes(
                    { 'service' => 'tlsmgr',
                      'command' => 'tlsmgr' });
     if( $TLS eq "use" )
@@ -2925,7 +2907,7 @@ fi';
       }
       if(! defined $tlsmgr )
       {
-           SCR->Execute('.mail.postfix.mastercf.addService',
+           $msc->addService(
            { 'service' => 'tlsmgr',
              'type'    => 'unix',
              'private' => '-',
@@ -2940,7 +2922,7 @@ fi';
     {
       if( defined $tlsmgr )
       {
-         SCR->Execute('.mail.postfix.mastercf.deleteService', {'service' => 'tlsmgr','command' => 'tlsmgr'});
+         $msc->delete( {'service' => 'tlsmgr','command' => 'tlsmgr'});
       }
     }
     write_attribute($MainCf,'masquerade_classes','envelope_sender, header_sender, header_recipient');
@@ -2949,7 +2931,7 @@ fi';
     write_ldap_maps($MainCf,$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF();
     SCR->Execute(".target.bash", "touch /var/adm/yast2-mail-server-used");
 
     return 1;
