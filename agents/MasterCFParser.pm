@@ -297,6 +297,9 @@ sub addService {
 		my ($nc, $cmd) = $this->nextCommand($c);
 		if( $cmd eq "pipe" ) {
 		    push @$newcf, $srv;
+                    while($c < $nc) {
+                        push @$newcf, $this->{MCF}->[$c++];
+                    }
 		    $srv = undef;
 		}
 	    }
