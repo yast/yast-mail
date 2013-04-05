@@ -44,6 +44,7 @@ Plugins for the YaST2 users module for enterprise mail server
 configuration.
 
 @PREP@
+cp agents/MasterCFParser.pm src
 
 @BUILD@
 
