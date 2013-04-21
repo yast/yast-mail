@@ -1,4 +1,16 @@
 -------------------------------------------------------------------
+Sun Apr 21 08:03:06 UTC 2013 - varkoly@suse.com
+
+- bnc#800788 - ag_postfix_mastercf process hangs the system,
+  after which it is killed by kernel, when saving
+  mail server settings with Yast "Mail Server" module
+- Mark permissions files as %config
+- The ldap tables was not proper. All functions for forwarding
+  and delivery must be placed in alias_maps and not in
+  virtual_alias_map. Forwarding or delivering actions in virtual_alias_map
+  may cause mail loops.
+
+-------------------------------------------------------------------
 Thu Nov  8 11:30:50 UTC 2012 - varkoly@suse.com
 
 - bnc#784659 - remove SuSEconfig calls from yast2-mail
