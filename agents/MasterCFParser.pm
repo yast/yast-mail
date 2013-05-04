@@ -80,26 +80,18 @@ no warnings 'redefine';
 =item *
 C<new();>
 
-Instantiating a MasterCFParser instance. Optional parameter can be a different
-path to master.cf and a reference to a logging function.
-
+Instantiating a MasterCFParser instance.
 EXAMPLE:
 
-  $_CFINST = new MasterCFParser( $config->{"path"}, \&y2error );
+  $_CFINST = new MasterCFParser( );
 
 =cut
 sub new {
     my $this  = shift;
-    my $path   = shift  || "/etc/postfix";
-    my $logref = shift;
-
-    if( defined $logref && $logref ne "" ) {
-	*logger = $logref;
-    }
 
     my $class = ref($this) || $this;
     my $self = {};
-    $self->{cffile} = $path."/master.cf";
+    $self->{cffile} = "/etc/postfix/master.cf";
 
     bless $self, $class;
     return $self;
@@ -144,7 +136,8 @@ sub readMasterCF {
 		push @$cfa, line2service($line);
 	}
     }
-    $this->{MCF} = $cfa;
+    $this->{MCF}  = $cfa;
+    $this->{SMCF} = scalar(@$cfa);
     return 0;
 }
 
@@ -172,7 +165,7 @@ sub writeMasterCF {
 	return 1;
     }
 
-    for(my $c=0; $c<scalar(@{$this->{MCF}}); $c++ ) {
+    for(my $c=0; $c<$this->{SMCF}; $c++ ) {
 	print $fd service2line($this->{MCF}->[$c])."\n";
     }
 
@@ -209,7 +202,7 @@ sub deleteService {
 	return 1;
     }
 
-    for(my $c=0; $c<scalar(@{$this->{MCF}}); $c++ ) {
+    for(my $c=0; $c<$this->{SMCF}; $c++ ) {
 	next if ! defined $this->{MCF}->[$c]->{service};
 	if( $this->{MCF}->[$c]->{service} eq $srv->{service} &&
 	    $this->{MCF}->[$c]->{command} eq $srv->{command} ) {
@@ -299,18 +292,21 @@ sub addService {
 	push @{$this->{MCF}}, $srv;
     } else {
 	my $newcf;
-	for(my $c=0; $c<scalar(@{$this->{MCF}}); $c++ ) {
+	for(my $c=0; $c<$this->{SMCF}; $c++ ) {
 	    if( defined $srv ) {
 		my ($nc, $cmd) = $this->nextCommand($c);
 		if( $cmd eq "pipe" ) {
 		    push @$newcf, $srv;
-		    while($c < $nc) {
-			push @$newcf, $this->{MCF}->[$c++];
-		    }
+                    while($c < $nc) {
+                        push @$newcf, $this->{MCF}->[$c++];
+                    }
 		    $srv = undef;
 		}
 	    }
 	    push @$newcf, $this->{MCF}->[$c];
+	}
+        if( defined $srv ) {
+		    push @$newcf, $srv;
 	}
 	$this->{MCF} = $newcf;
     }
@@ -396,7 +392,7 @@ sub nextCommand {
     my $pos  = shift;
 
     return ($pos, $this->{MCF}->[$pos]->{command}) if defined $this->{MCF}->[$pos]->{command};
-    while( ! defined $this->{MCF}->[$pos]->{command} ) {
+    while( ! defined $this->{MCF}->[$pos]->{command} && $pos < $this->{SMCF} ) {
 	$pos++;
     }
     

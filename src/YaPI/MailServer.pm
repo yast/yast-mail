@@ -22,7 +22,7 @@ configuration API to for Perl programs.
 
 =cut
 
-
+BEGIN { push @INC, "/usr/lib/YaST2/servers_non_y2"; }
 
 
 package YaPI::MailServer;
@@ -38,6 +38,7 @@ use YaPI;
 use POSIX;     # Needed for setlocale()
 use Data::Dumper;
 use Net::IMAP;
+use MasterCFParser;
 
 textdomain("mail");
 our %TYPEINFO;
@@ -68,21 +69,6 @@ my $aconf    = "/etc/amavisd.conf";
  #
 my $write_only = 0;
 
-BEGIN { $TYPEINFO{ReadMasterCF}  =["function", "any"  ]; }
-sub ReadMasterCF {
-    my $MasterCf  = SCR->Read('.mail.postfix.mastercf');
-
-    return $MasterCf;
-}
-
-BEGIN { $TYPEINFO{findService}  =["function", "any"  ]; }
-sub findService {
-    my ($service, $command ) = @_;
-
-    my $services  = SCR->Read('.mail.postfix.mastercf.findService', $service, $command);
-
-    return $services;
-}
 =item *
 C<$GlobalSettings = ReadGlobalSettings($$AdminPassword)>
 
@@ -188,7 +174,8 @@ sub ReadGlobalSettings {
 
     my $MainCf    = SCR->Read('.mail.postfix.main.table');
     my $SaslPaswd = SCR->Read('.mail.postfix.saslpasswd.table');
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -223,7 +210,7 @@ sub ReadGlobalSettings {
     }
     else
     {
-	my $smtpsrv = SCR->Execute('.mail.postfix.mastercf.findService',
+	my $smtpsrv = $msc->getServiceByAttributes(
 		{ 'service' => 'smtp',
 		  'command' => 'smtp' });
         if( defined $smtpsrv )
@@ -327,7 +314,8 @@ sub WriteGlobalSettings {
     my $RelayHostPassword  = $GlobalSettings->{'SendingMail'}{'RelayHost'}{'Password'};
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
     my $SaslPasswd         = SCR->Read('.mail.postfix.saslpasswd.table');
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -343,12 +331,12 @@ sub WriteGlobalSettings {
     # at master.cf if smt is started
     if($SendingMailType ne 'NONE')
     {
-       my $smtpsrv = SCR->Execute('.mail.postfix.mastercf.findService',
+       my $smtpsrv = $msc->getServiceByAttributes(
                    { 'service' => 'smtp',
                      'command' => 'smtp' });
        if(! defined $smtpsrv )
        {
-           SCR->Execute('.mail.postfix.mastercf.addService', { 'service' => 'smtp',
+           $msc->addService({ 'service' => 'smtp',
                         'type'    => 'inet',
                         'private' => 'n',
                         'unpriv'  => '-',
@@ -382,7 +370,7 @@ sub WriteGlobalSettings {
     }
     elsif ($SendingMailType eq 'NONE')
     {
-	SCR->Execute('.mail.postfix.mastercf.deleteService', { 'service' => 'smtp', 'command' => 'smtp' });
+	$msc->deleteService( { 'service' => 'smtp', 'command' => 'smtp' });
     }
     else
     {
@@ -431,7 +419,7 @@ sub WriteGlobalSettings {
     SCR->Write('.mail.postfix.main',undef);
     SCR->Write('.mail.postfix.saslpasswd.table',$SaslPasswd);
     SCR->Write('.mail.postfix.saslpasswd',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF();
 
     return 1;
 }
@@ -1117,7 +1105,8 @@ sub ReadMailPrevention {
     # First we read the main.cf and master.cf 
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -1168,10 +1157,10 @@ sub ReadMailPrevention {
     }
 
     # Now we looking for if vscan (virusscanning) is started.
-    my $vscanin = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanin = $msc->getServiceByAttributes(
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd'} );
-    my $vscanout = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $vscanout = $msc->getServiceByAttributes(
 		{ 'service' => 'amavis',
 		  'command' => 'lmtp'} );
     my $content_filter = read_attribute($MainCf,'content_filter');
@@ -1245,7 +1234,8 @@ sub WriteMailPrevention {
     # First we read the main.cf
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
          return $self->SetError( summary =>"Couln't open master.cf",
                                  code    => "PARAM_CHECK_FAILED" );
@@ -1357,7 +1347,6 @@ sub WriteMailPrevention {
        }
     }
 
-    SCR->Read('.mail.postfix.mastercf');
     if( $MailPrevention->{'VirusScanning'} )
     {
 	$MailPrevention->{'VSCount'} = 5 if( ! defined $MailPrevention->{'VSCount'});
@@ -1369,51 +1358,45 @@ sub WriteMailPrevention {
 				   description => "activating the virus scanner failed: $err");
 	}
 	# This is only for systems updated from SLES10
-		my $smtps = SCR->Execute('.mail.postfix.mastercf.findService',
-					 { 'service' => 'smtps', 'command' => 'smtpd' });
-		if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
-		{
-		    my $opts = $smtps->[0]->{options};
-		    if ( defined $opts->{'content_filter'} )
-		    {
-			    delete $opts->{'content_filter'};
-			    SCR->Execute('.mail.postfix.mastercf.modifyService',
-					 { 'service' => 'smtps',
-					   'command' => 'smtpd',
-					   'maxproc' => '-',
-					   'options' => $opts } );
-		    }
-		}
-		my $smtp = SCR->Execute('.mail.postfix.mastercf.findService',
-					 { 'service' => 'smtp', 'command' => 'smtpd' });
-		if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
-		{
-		    my $opts = $smtp->[0]->{options};
-		    if ( defined $opts->{'content_filter'} )
-		    {
-			    delete $opts->{'content_filter'};
-			    SCR->Execute('.mail.postfix.mastercf.modifyService',
-					 { 'service' => 'smtp',
-					   'command' => 'smtpd',
-					   'maxproc' => '-',
-					   'options' => $opts } );
-		    }
-		}
-	# End This is only for systems updated from SLES10
-	if( SCR->Execute('.mail.postfix.mastercf.findService',
-	    { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
+	my $smtps = $msc->getServiceByAttributes( { 'service' => 'smtps', 'command' => 'smtpd' });
+	if( ref($smtps) eq 'ARRAY' && defined $smtps->[0]->{options} )
 	{
-	    SCR->Execute('.mail.postfix.mastercf.deleteService',
-	        { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	    my $opts = $smtps->[0]->{options};
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    $msc->modifyService(
+				 { 'service' => 'smtps',
+				   'command' => 'smtpd',
+				   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
 	}
-	if( SCR->Execute('.mail.postfix.mastercf.findService',
-	    { 'service' => 'amavis', 'command' => 'lmtp' }))
+	my $smtp = $msc->getServiceByAttributes( { 'service' => 'smtp', 'command' => 'smtpd' });
+	if( ref($smtp) eq 'ARRAY' && defined $smtp->[0]->{options} )
 	{
-	    SCR->Execute('.mail.postfix.mastercf.deleteService',
-	        { 'service' => 'amavis', 'command' => 'lmtp' });
+	    my $opts = $smtp->[0]->{options};
+	    if ( defined $opts->{'content_filter'} )
+	    {
+		    delete $opts->{'content_filter'};
+		    $msc->modifyService(
+				 { 'service' => 'smtp',
+				   'command' => 'smtpd',
+				   'maxproc' => '-',
+				   'options' => $opts } );
+	    }
+	}
+	# End This is only for systems updated from SLES10
+	if( $msc->getServiceByAttributes( { 'service' => 'localhost:10025', 'command' => 'smtpd' }))
+	{
+	    $msc->deleteService( { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	}
+	if( $msc->getServiceByAttributes( { 'service' => 'amavis', 'command' => 'lmtp' }))
+	{
+	    $msc->deleteService( { 'service' => 'amavis', 'command' => 'lmtp' });
 	}
 	# create smtpd pocess for getting back the emails
-        SCR->Execute('.mail.postfix.mastercf.addService',
+        $msc->addService(
 		{ 'service' => 'amavis',
 		  'command' => 'lmtp',
 		  'type'    => 'unix',
@@ -1426,7 +1409,7 @@ sub WriteMailPrevention {
 				 lmtp_send_xforward_command => 'yes',
 				 disable_dns_lookups        => 'yes',
 				 max_use                    => 20 } } );
-        SCR->Execute('.mail.postfix.mastercf.addService',
+        $msc->addService(
 		{ 'service' => 'localhost:10025',
 		  'command' => 'smtpd',
 		  'type'    => 'inet',
@@ -1458,10 +1441,8 @@ sub WriteMailPrevention {
     }
     else
     {
-	SCR->Execute('.mail.postfix.mastercf.deleteService',
-	    { 'service' => 'localhost:10025', 'command' => 'smtpd' });
-	SCR->Execute('.mail.postfix.mastercf.deleteService',
-	    { 'service' => 'amavis', 'command' => 'lmtp' });
+	$msc->deleteService( { 'service' => 'localhost:10025', 'command' => 'smtpd' });
+	$msc->deleteService( { 'service' => 'amavis', 'command' => 'lmtp' });
 	write_attribute($MainCf,'content_filter','');   
 	
 	Service->Stop('amavis');
@@ -1474,8 +1455,7 @@ sub WriteMailPrevention {
     check_ldap_configuration('access',$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
-
+    $msc->writeMasterCF();
     # make IMAP connection
     my $imap = new Net::IMAP($imaphost, Debug => 0);
     if( $imap )
@@ -1759,12 +1739,13 @@ sub WriteMailRelaying {
                                  code    => "PARAM_CHECK_FAILED" );
     }
     # Searching for the tlsmanager service
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
-       return $self->SetError( summary =>"Couln't open master.cf",
-                               code    => "PARAM_CHECK_FAILED" );
+         return $self->SetError( summary =>"Couln't open master.cf",
+                                 code    => "PARAM_CHECK_FAILED" );
     }
-    my $tlsmgr = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $tlsmgr = $msc->getServiceByAttributes(
                    { 'service' => 'tlsmgr',
                      'command' => 'tlsmgr' });
     if($MailRelaying->{'SMTPDTLSMode'} ne 'none')
@@ -1790,7 +1771,7 @@ sub WriteMailRelaying {
       }
       if(! defined $tlsmgr )
       {
-           SCR->Execute('.mail.postfix.mastercf.addService',
+           $msc->addService(
 	   { 'service' => 'tlsmgr',
 	     'type'    => 'unix',
 	     'private' => '-',
@@ -1805,10 +1786,10 @@ sub WriteMailRelaying {
     {
       if( defined $tlsmgr )
       {
-         SCR->Execute('.mail.postfix.mastercf.deleteService', {'service' => 'tlsmgr','command' => 'tlsmgr'});
+         $msc->deleteService( {'service' => 'tlsmgr','command' => 'tlsmgr'});
       }
     }
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF;
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
 
@@ -2906,12 +2887,13 @@ fi';
     my $MainCf             = SCR->Read('.mail.postfix.main.table');
 
     # Setup the tlsmanager service if necessary
-    if( ! SCR->Read('.mail.postfix.mastercf') )
+    my $msc = new MasterCFParser();
+    if( $msc->readMasterCF() )
     {
-       return $self->SetError( summary =>"Couln't open master.cf",
-                               code    => "PARAM_CHECK_FAILED" );
+         return $self->SetError( summary =>"Couln't open master.cf",
+                                 code    => "PARAM_CHECK_FAILED" );
     }
-    my $tlsmgr = SCR->Execute('.mail.postfix.mastercf.findService',
+    my $tlsmgr = $msc->getServiceByAttributes(
                    { 'service' => 'tlsmgr',
                      'command' => 'tlsmgr' });
     if( $TLS eq "use" )
@@ -2925,7 +2907,7 @@ fi';
       }
       if(! defined $tlsmgr )
       {
-           SCR->Execute('.mail.postfix.mastercf.addService',
+           $msc->addService(
            { 'service' => 'tlsmgr',
              'type'    => 'unix',
              'private' => '-',
@@ -2940,7 +2922,7 @@ fi';
     {
       if( defined $tlsmgr )
       {
-         SCR->Execute('.mail.postfix.mastercf.deleteService', {'service' => 'tlsmgr','command' => 'tlsmgr'});
+         $msc->delete( {'service' => 'tlsmgr','command' => 'tlsmgr'});
       }
     }
     write_attribute($MainCf,'masquerade_classes','envelope_sender, header_sender, header_recipient');
@@ -2949,9 +2931,33 @@ fi';
     write_ldap_maps($MainCf,$ldapMap);
     SCR->Write('.mail.postfix.main.table',$MainCf);
     SCR->Write('.mail.postfix.main',undef);
-    SCR->Write('.mail.postfix.mastercf',undef);
+    $msc->writeMasterCF();
     SCR->Execute(".target.bash", "touch /var/adm/yast2-mail-server-used");
 
+    return 1;
+}
+
+=item *
+
+C<boolean = UpdateMailServerTables($AdminPassword)>
+
+Funktion to update the mail server tables
+Needed Parameters are:
+   $AdminPassword the Adminstrator Psssword
+
+=cut
+
+BEGIN { $TYPEINFO{UpdateMailServerTables} = ["function",  "boolean" ,"string"]; }
+sub UpdateMailServerTables {
+    my $self            = shift;
+    my $AdminPassword   = shift;
+    my $ldapMap         = $self->ReadLDAPDefaults($AdminPassword);
+    my $MainCf          = SCR->Read('.mail.postfix.main.table');
+    write_ldap_maps($MainCf,$ldapMap);
+    SCR->Write('.mail.postfix.main.table',$MainCf);
+    SCR->Write('.mail.postfix.main',undef);
+    SCR->Execute(".target.bash", "touch /var/adm/yast2-mail-server-ldap-tables-updated");
+    Service->Restart('postfix');
     return 1;
 }
 
@@ -3116,15 +3122,27 @@ sub read_attribute {
 sub write_ldap_maps($$)
 {
     my( $MainCf, $ldapMap ) = @_;
+    my @AliasMaps = qw(
+    alias_maps
+    galias_maps_both
+    galias_maps_member
+    galias_maps_folder
+    galias_maps_forward
+    ualias_maps_folder
+    ualias_maps_forward
+    );
 
     my $alias_maps      = read_attribute($MainCf,'alias_maps');
-    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps_folder.cf/) 
+    $alias_maps =~ s#ldap:/etc/postfix/ldap.*cf##g;
+    $alias_maps =~ s#  ##g; $alias_maps =~ s#  ##g;
+    $alias_maps =~ s#,,##g; $alias_maps =~ s#,,##g;
+    foreach my $i ( @AliasMaps )
     {
-    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps_folder.cf';
-    }
-    if($alias_maps !~ /ldap:\/etc\/postfix\/ldapalias_maps.cf/) 
-    {
-    	$alias_maps .= ', ldap:/etc/postfix/ldapalias_maps.cf';
+    	check_ldap_configuration($i,$ldapMap);
+        if($alias_maps !~ /ldap:\/etc\/postfix\/ldap$i.cf/) 
+        {
+        	$alias_maps .= ', ldap:/etc/postfix/ldap'.$i.'.cf';
+        }
     }
     write_attribute($MainCf,'alias_maps',$alias_maps);
     my $masquerade_domains      = read_attribute($MainCf,'masquerade_domains');
@@ -3142,20 +3160,15 @@ sub write_ldap_maps($$)
     write_attribute($MainCf,'smtpd_sender_restrictions','ldap:/etc/postfix/ldapaccess.cf');   
     write_attribute($MainCf,'smtp_tls_per_site','ldap:/etc/postfix/ldapsmtp_tls_per_site.cf');
     write_attribute($MainCf,'transport_maps','ldap:/etc/postfix/ldaptransport_maps.cf');
-    write_attribute($MainCf,'virtual_alias_maps', 'ldap:/etc/postfix/ldapuser_recipient_maps.cf, ldap:/etc/postfix/ldapvalias_maps_both.cf, ldap:/etc/postfix/ldapvalias_maps_member.cf, ldap:/etc/postfix/ldapvalias_maps_folder.cf, ldap:/etc/postfix/ldapvalias_maps_forward.cf');
+    write_attribute($MainCf,'virtual_alias_maps', 'ldap:/etc/postfix/ldapuser_recipient_maps.cf, ldap:/etc/postfix/ldapgroup_recipient_maps.cf');
     write_attribute($MainCf,'virtual_alias_domains','ldap:/etc/postfix/ldapvirtual_alias_domains.cf');
     check_ldap_configuration('access',$ldapMap);
-    check_ldap_configuration('alias_maps',$ldapMap);
-    check_ldap_configuration('alias_maps_folder',$ldapMap);
     check_ldap_configuration('masquerade_domains',$ldapMap);
     check_ldap_configuration('mydestination',$ldapMap);
     check_ldap_configuration('smtp_tls_per_site',$ldapMap);
     check_ldap_configuration('transport_maps',$ldapMap);
     check_ldap_configuration('user_recipient_maps',$ldapMap);
-    check_ldap_configuration('valias_maps_both',$ldapMap);
-    check_ldap_configuration('valias_maps_member',$ldapMap);
-    check_ldap_configuration('valias_maps_folder',$ldapMap);
-    check_ldap_configuration('valias_maps_forward',$ldapMap);
+    check_ldap_configuration('group_recipient_maps',$ldapMap);
     check_ldap_configuration('virtual_alias_domains',$ldapMap);
 
 }
@@ -3170,17 +3183,19 @@ sub check_ldap_configuration {
     my %query_filter     = (
                         'access'                  => '(&(objectClass=suseMailAccess)(suseMailClient=%s))',
                         'alias_maps'              => '(&(objectClass=suseMailTable)(tableKey=%s))',
-                        'alias_maps_folder'       => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToFolder=yes))',
                         'masquerade_domains'      => '(&(objectClass=suseMailDomain)(zoneName=%s)(suseMailDomainMasquerading=yes))',
                         'mydestination'           => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(!(suseMailDomainType=virtual)))',
                         'mynetworks'              => '(&(objectClass=suseMailMyNetworks)(suseMailClient=%s))',
                         'smtp_tls_per_site'       => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
                         'transport_maps'          => '(&(objectClass=suseMailTransport)(suseMailTransportDestination=%s))',
-                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s))',
-                        'valias_maps_both'        => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes)(suseDeliveryToFolder=yes))',
-                        'valias_maps_member'      => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(suseDeliveryToMember=yes)(!(suseDeliveryToFolder=yes)))',
-                        'valias_maps_folder'      => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(suseDeliveryToMember=yes))(suseDeliveryToFolder=yes))',
-                        'valias_maps_forward'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(suseDeliveryToMember=yes))(!(suseDeliveryToFolder=yes)))',
+                        'user_recipient_maps'     => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(!(mailEnabled=no))(|(!(suseDeliveryToFolder=no))(suseMailForwardAddress=*)))',
+                        'group_recipient_maps'    => '(&(objectClass=suseMailRecipient)(suseMailAcceptAddress=%s)(|(suseDeliveryToFolder=yes)(suseDeliveryToMember=yes)(suseMailForwardAddress=*)))',
+                        'ualias_maps_folder'      => '(&(objectClass=suseMailRecipient)(uid=%s)(!(suseDeliveryToFolder=no)))',
+                        'ualias_maps_forward'     => '(&(objectClass=suseMailRecipient)(uid=%s)(suseDeliveryToFolder=no))',
+                        'galias_maps_both'        => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes)(suseDeliveryToFolder=yes))',
+                        'galias_maps_member'      => '(&(objectClass=suseMailRecipient)(cn=%s)(suseDeliveryToMember=yes)(!(suseDeliveryToFolder=yes)))',
+                        'galias_maps_folder'      => '(&(objectClass=suseMailRecipient)(cn=%s)(!(suseDeliveryToMember=yes))(suseDeliveryToFolder=yes))',
+                        'galias_maps_forward'     => '(&(objectClass=suseMailRecipient)(cn=%s)(!(suseDeliveryToMember=yes))(!(suseDeliveryToFolder=yes)))',
                         'virtual_alias_domains'   => '(&(objectClass=suseMailDomain)(zoneName=%s)(relativeDomainName=@)(suseMailDomainType=virtual))',
                         'canonical_maps'          => '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=both))',
                         'recipient_canonical_maps'=> '(&(objectClass=suseCanonicalTable)(tableKey=%s)(valueType=recipient))',
@@ -3189,63 +3204,69 @@ sub check_ldap_configuration {
     my %result_attribute = (
                         'access'                  => 'suseMailAction',
                         'alias_maps'              => 'tableValue',
-                        'alias_maps_folder'       => 'suseMailCommand',
                         'masquerade_domains'      => 'zoneName',
                         'mydestination'           => 'zoneName',
                         'mynetworks'              => 'suseMailClient',
                         'transport_maps'          => 'suseMailTransportNexthop',
-                        'valias_maps_both'        => 'suseMailForwardAddress,cn,uid',
-                        'valias_maps_member'      => 'suseMailForwardAddress,uid',
-                        'valias_maps_folder'      => 'suseMailForwardAddress,cn',
-                        'valias_maps_forward'     => 'suseMailForwardAddress',
+			'ualias_maps_folder'	  => 'suseMailForwardAddress,uid',
+			'ualias_maps_forward'     => 'suseMailForwardAddress',
+                        'galias_maps_both'        => 'suseMailForwardAddress,suseMailCommand,uid',
+                        'galias_maps_member'      => 'suseMailForwardAddress,uid',
+                        'galias_maps_folder'      => 'suseMailForwardAddress,suseMailCommand',
+                        'galias_maps_forward'     => 'suseMailForwardAddress',
                         'virtual_alias_domains'   => 'zoneName',
                         'canonical_maps'          => 'tableValue',
                         'recipient_canonical_maps'=> 'tableValue',
                         'smtp_tls_per_site'       => 'suseMailTransportNexthop',
                         'sender_canonical_maps'   => 'tableValue',
-                        'user_recipient_maps'     => 'uid,suseMailForwardAddress'
+                        'user_recipient_maps'     => 'uid',
+			'group_recipient_maps'	  => 'cn'
                        );
     my %scope            = (
                         'access'                  => 'one',
                         'alias_maps'              => 'one',
-                        'alias_maps_folder'       => 'one',
                         'masquerade_domains'      => 'sub',
                         'mydestination'           => 'sub',
                         'mynetworks'              => 'one',
                         'transport_maps'          => 'one',
                         'smtp_tls_per_site'       => 'one',
-                        'valias_maps_both'        => 'one',
-                        'valias_maps_member'      => 'one',
-                        'valias_maps_folder'      => 'one',
-                        'valias_maps_forward'     => 'one',
+			'ualias_maps_folder'      => 'one',
+			'ualias_maps_forward'     => 'one',
+                        'galias_maps_both'        => 'one',
+                        'galias_maps_member'      => 'one',
+                        'galias_maps_folder'      => 'one',
+                        'galias_maps_forward'     => 'one',
                         'virtual_alias_domains'   => 'sub',
                         'canonical_maps'          => 'one',
                         'recipient_canonical_maps'=> 'one',
                         'sender_canonical_maps'   => 'one',
-			'user_recipient_maps'     => 'one'
+			'user_recipient_maps'     => 'one',
+			'group_recipient_maps'    => 'one'
                        );
     my %base            = (
                         'access'                  => $ldapMap->{'mail_config_dn'},
                         'alias_maps'              => 'ou=Aliases,'.$ldapMap->{'mail_config_dn'},
-                        'alias_maps_folder'       => $ldapMap->{'group_config_dn'},
                         'masquerade_domains'      => $ldapMap->{'dns_config_dn'},
                         'mydestination'           => $ldapMap->{'dns_config_dn'},
                         'mynetworks'              => $ldapMap->{'mail_config_dn'},
                         'smtp_tls_per_site'       => $ldapMap->{'mail_config_dn'},
                         'transport_maps'          => $ldapMap->{'mail_config_dn'},
-                        'valias_maps_both'        => $ldapMap->{'group_config_dn'},
-                        'valias_maps_member'      => $ldapMap->{'group_config_dn'},
-                        'valias_maps_folder'      => $ldapMap->{'group_config_dn'},
-                        'valias_maps_forward'     => $ldapMap->{'group_config_dn'},
+			'ualias_maps_folder'      => $ldapMap->{'user_config_dn'},
+			'ualias_maps_forward'     => $ldapMap->{'user_config_dn'},
+                        'galias_maps_both'        => $ldapMap->{'group_config_dn'},
+                        'galias_maps_member'      => $ldapMap->{'group_config_dn'},
+                        'galias_maps_folder'      => $ldapMap->{'group_config_dn'},
+                        'galias_maps_forward'     => $ldapMap->{'group_config_dn'},
                         'virtual_alias_domains'   => $ldapMap->{'dns_config_dn'},
                         'canonical_maps'          => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
                         'recipient_canonical_maps'=> 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
                         'sender_canonical_maps'   => 'ou=Canonical,'.$ldapMap->{'mail_config_dn'},
+                        'group_recipient_maps'    => $ldapMap->{'group_config_dn'},
                         'user_recipient_maps'     => $ldapMap->{'user_config_dn'}
                        );
     my %special_result_attribute = (
-                        'valias_maps_both'        => 'member',
-                        'valias_maps_member'      => 'member'
+                        'galias_maps_both'        => 'member',
+                        'galias_maps_member'      => 'member'
 		       );
 
     my %terminal_result_attribute = (
@@ -3254,11 +3275,11 @@ sub check_ldap_configuration {
 		       );
 
 
-if( ! defined $result_attribute{$config} )
-{
-	print STDERR "BAJAVAN $config";
-	return;
-}
+    if( ! defined $result_attribute{$config} )
+    {
+    	print STDERR "Unknown LDAP-table: $config\n";
+    	return;
+    }
     #First we read the whool main.cf configuration
     my $LDAPCF    = SCR->Read('.mail.ldaptable',$config);
 
