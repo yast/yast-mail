@@ -1,0 +1,7 @@
+{
+	textdomain "openschool-server";
+	import "YaPI::MailServer";
+	map out = (map)SCR::Execute( .target.bash_output, "/usr/sbin/oss_get_admin_pw");
+	string ldappasswd = tostring(out["stdout"]:"");
+	YaPI::MailServer::UpdateMailServerTables(ldappasswd);
+}

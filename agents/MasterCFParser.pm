@@ -396,7 +396,7 @@ sub nextCommand {
     my $pos  = shift;
 
     return ($pos, $this->{MCF}->[$pos]->{command}) if defined $this->{MCF}->[$pos]->{command};
-    while( ! defined $this->{MCF}->[$pos]->{command} ) {
+    while( ! defined $this->{MCF}->[$pos]->{command} && $pos < scalar(@{$this->{MCF}}) ) {
 	$pos++;
     }
     
