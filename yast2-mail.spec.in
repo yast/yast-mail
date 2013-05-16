@@ -44,6 +44,7 @@ Plugins for the YaST2 users module for enterprise mail server
 configuration.
 
 @PREP@
+cp agents/MasterCFParser.pm src
 
 @BUILD@
 
@@ -87,7 +88,6 @@ configuration.
 @scrconfdir@/mail_cyrusconf.scr
 @scrconfdir@/mail_ldaptable.scr
 @scrconfdir@/mail_maincf.scr
-@scrconfdir@/mail_mastercf.scr
 @scrconfdir@/mail_saslpasswd.scr
 %dir @agentdir@
 @agentdir@/ag_cyrus_conf
@@ -95,7 +95,6 @@ configuration.
 @agentdir@/ag_mailconfig
 @agentdir@/ag_mail_ldaptable
 @agentdir@/ag_mailtable
-@agentdir@/ag_postfix_mastercf
 @agentdir@/ag_smtp_auth
 @agentdir@/CyrusConfParser.pm
 @agentdir@/MasterCFParser.pm
@@ -104,7 +103,7 @@ configuration.
 %dir /etc/openldap/
 %dir /etc/openldap/schema/
 /etc/openldap/schema/suse-mailserver.schema
-/etc/permissions.d/mail-server*
+%config /etc/permissions.d/mail-server*
 %doc @docdir@
 
 #%files aliases

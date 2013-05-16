@@ -9,7 +9,6 @@ agent_SCRIPTS = ag_fetchmailrc \
 		ag_mailtable \
 		setup_dkim_verifying.pl \
 		ag_mailconfig \
-		ag_postfix_mastercf \
 		MasterCFParser.pm \
 		ag_mail_ldaptable \
                 ag_cyrus_conf \
@@ -31,7 +30,6 @@ scrconf_DATA = \
 	\
 	mail_maincf.scr \
 	mail_saslpasswd.scr \
-	mail_mastercf.scr \
 	etc_imapd_conf.scr \
         mail_ldaptable.scr \
 	mail_cyrusconf.scr \
