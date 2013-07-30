@@ -28,6 +28,8 @@ Provides:       yast2-mail-server = %{version}
 Obsoletes:      yast2-mail-server <= %{version}
 Conflicts:	aaa_base < 10.3
 BuildArch:	noarch
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Mail Configuration
 
 %description
@@ -35,6 +37,8 @@ The YaST2 component for mail configuration. It handles Postfix, Cyrus,
 Amavis and Fetchmail.
 
 %package plugins
+Requires:       yast2-ruby-bindings >= 1.0.0
+
 Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
 Group:		System/YaST
 Requires:       perl-NetxAP acl
@@ -44,7 +48,6 @@ Plugins for the YaST2 users module for enterprise mail server
 configuration.
 
 @PREP@
-cp agents/MasterCFParser.pm src
 
 @BUILD@
 
@@ -62,11 +65,9 @@ cp agents/MasterCFParser.pm src
 %dir @clientdir@
 @clientdir@/mail*
 %dir @moduledir@
-@moduledir@/Mail.ybc
-@moduledir@/MailServer.ybc
-@moduledir@/MailServer.ycp
+@moduledir@/MailServer.rb
 @moduledir@/MailServerLDAP.pm
-@moduledir@/Mail.ycp
+@moduledir@/Mail.rb
 %dir @moduledir@/YaPI
 @moduledir@/YaPI/Mail*
 %dir @desktopdir@
