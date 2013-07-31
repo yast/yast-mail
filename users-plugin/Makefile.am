@@ -1,14 +1,12 @@
-# Makefile.am for mail/src
+# Sources for mail
 
-yncludedir = @yncludedir@/mail
+module_DATA = \
+  modules/UsersPluginMail.pm
 
-client_DATA =			\
-	users_plugin_mail.ycp   \
-	users_plugin_mail_groups.ycp
+client_DATA = \
+  clients/users_plugin_mail_groups.rb \
+  clients/users_plugin_mail.rb
 
-module_DATA =			\
-	UsersPluginMail.pm      
-
-EXTRA_DIST = $(client_DATA) $(module_DATA)
+EXTRA_DIST = $(module_DATA) $(client_DATA)
 
 include $(top_srcdir)/Makefile.am.common
