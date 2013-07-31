@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Jul 31 08:32:47 UTC 2013 - yast-devel@opensuse.org
+
+- converted from YCP to Ruby by YCP Killer
+  (https://github.com/yast/ycp-killer)
+- version 3.0.0
+
+-------------------------------------------------------------------
 Sun Apr 21 08:03:06 UTC 2013 - varkoly@suse.com
 
 - bnc#800788 - ag_postfix_mastercf process hangs the system,
