@@ -397,7 +397,7 @@ module Yast
         VBox(
           WJ_MakeWidget(:outgoing_mail_server),
           # TLS
-          Label(_("The server uses &TLS.")),
+          Label(_("TLS encryption")),
           RadioButtonGroup(
             Id(:TLS),
             HBox(
