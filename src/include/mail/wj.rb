@@ -92,7 +92,9 @@ module Yast
           i = 0
           new_data = Builtins.maplist(data) do |e|
             i = Ops.add(i, 1)
-            Ops.subtract(i, 1) == entryno ? Builtins.union(old_entry, entry) : e
+            Ops.subtract(i, 1) == entryno ?
+              Builtins.union(old_entry, entry) :
+              deep_copy(e)
           end
           touched = true
         else
