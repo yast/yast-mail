@@ -96,7 +96,6 @@ module Yast
       # Write givven settings
       elsif @func == "Write"
         Yast.import "Progress"
-        Mail.write_only = true
         @progress_orig = Progress.set(false)
         @ret = Mail.Write(@abort_block)
         Progress.set(@progress_orig)

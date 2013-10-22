@@ -74,7 +74,6 @@ module Yast
       elsif @func == "Write"
         Yast.import "Progress"
         Progress.off
-        MailServer.write_only = true
         @ret = MailServer.Write
         Progress.on
       else

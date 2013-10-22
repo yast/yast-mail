@@ -34,10 +34,6 @@ module Yast
 
       @proposal_valid = false
 
-      # Write only, used during autoinstallation.
-      # Don't run services, it's all done at one place.
-      @write_only = false
-
       # Abort function
       # return boolean return true if abort
       @AbortFunction = fun_ref(method(:Modified), "boolean ()")
@@ -822,7 +818,6 @@ module Yast
     publish :function => :Modified, :type => "boolean ()"
     publish :variable => :modified, :type => "boolean"
     publish :variable => :proposal_valid, :type => "boolean"
-    publish :variable => :write_only, :type => "boolean"
     publish :variable => :AbortFunction, :type => "boolean ()"
     publish :function => :Abort, :type => "boolean ()"
     publish :variable => :setup, :type => "boolean"

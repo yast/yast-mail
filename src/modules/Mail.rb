@@ -46,10 +46,6 @@ module Yast
       # Initialized by ReadMta
       @mta = nil
 
-      #	If true, don't restart the services.
-      #  Autoinstall uses this to do  all in one place.
-      @write_only = false
-
       @create_config = false
 
       # `permanent, `dialup or `none
@@ -1085,25 +1081,24 @@ module Yast
           fun_ref(method(:WriteFlush), "boolean ()")
         ]
       )
-      # autoinstallation does it all together later
-      if !@write_only
-        # Translators: progress label
-        stages = Builtins.add(
-          stages,
-          [
-            _("Running Config Postfix"),
-            fun_ref(method(:WriteConfig), "boolean ()")
-          ]
-        )
+      # Translators: progress label
+      stages = Builtins.add(
+        stages,
+        [
+          _("Running Config Postfix"),
+          fun_ref(method(:WriteConfig), "boolean ()")
+        ]
+      )
 
-        # Translators: progress label
-        stages = Builtins.add(
-          stages,
-          [
-            _("Restarting services"),
-            fun_ref(method(:WriteServices), "boolean ()")
-          ]
-        )
+      # Translators: progress label
+      if Mode.mode() == "normal"
+         stages = Builtins.add(
+           stages,
+           [
+             _("Restarting services"),
+             fun_ref(method(:WriteServices), "boolean ()")
+           ]
+         )
       end
 
       # Translators: dialog caption
