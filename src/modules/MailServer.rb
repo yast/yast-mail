@@ -807,7 +807,7 @@ module Yast
     end
 
     # Return packages needed to be installed and removed during
-    # Autoinstallation to insure module has all needed software
+    # Autoinstallation to ensure module has all needed software
     # installed.
     # @return [Hash] with 2 lists.
     def AutoPackages
