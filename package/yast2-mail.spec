@@ -27,7 +27,7 @@ Source0:        %{name}-%{version}.tar.bz2
 Group:	        System/YaST
 License:        GPL-2.0+
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-testsuite
-BuildRequires:  yast2-devtools >= 3.0.6
+BuildRequires:  yast2-devtools >= 3.1.10
 BuildRequires:	yast2-ldap-server yast2-network yast2-perl-bindings yast2-users
 BuildRequires:  perl-NetxAP
 
