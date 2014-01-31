@@ -200,7 +200,7 @@ module Yast
     # @return "" or "Foo will be installed.\nBar will be installed.\n"
     def ProbePackages
       message = ""
-      newcyrus = false
+      newimap = false
       @install_packages = []
       @remove_packages = []
 
@@ -248,19 +248,19 @@ module Yast
         )
       end
 
-      if @postfix_mda == :cyrus && !Package.Installed("cyrus-imapd")
-        @install_packages = Builtins.add(@install_packages, "cyrus-imapd")
+      if @postfix_mda == :imap && !Package.Installed("dovecot")
+        @install_packages = Builtins.add(@install_packages, "dovecot")
         # Translators: popup message part, ends with a newline
         message = Ops.add(
           message,
-          _("Cyrus-imapd, an IMAP server, will be installed.\n")
+          _("Dovecot IMAP server, will be installed.\n")
         )
-        newcyrus = true
+        newimap = true
       end
       Package.DoInstall(@install_packages) if @install_packages != []
-      if newcyrus
-        Service.Enable("cyrus")
-        Service.Start("cyrus")
+      if newimap
+        Service.Enable("dovecot")
+        Service.Start("dovecot")
       end
       message
     end
@@ -414,8 +414,8 @@ module Yast
           @postfix_mda = :local
         elsif postfix_mda_s == "procmail"
           @postfix_mda = :procmail
-        elsif postfix_mda_s == "cyrus"
-          @postfix_mda = :cyrus
+        elsif postfix_mda_s == "imap"
+          @postfix_mda = :imap
         else
           @postfix_mda = nil
         end
@@ -787,8 +787,8 @@ module Yast
         s_mda = "local" # default to local
         if @postfix_mda == :procmail
           s_mda = "procmail"
-        elsif @postfix_mda == :cyrus
-          s_mda = "cyrus"
+        elsif @postfix_mda == :imap
+          s_mda = "imap"
         end
         SCR.Write(path(".sysconfig.postfix.POSTFIX_MDA"), s_mda)
       end
@@ -1171,7 +1171,7 @@ module Yast
         elsif k == "postfix_mda" && v == "procmail"
           next { "postfix_mda" => :procmail }
         elsif k == "postfix_mda"
-          next { "postfix_mda" => :cyrus }
+          next { "postfix_mda" => :imap }
         else
           next { k => v }
         end

@@ -223,7 +223,7 @@ module Yast
           ) +
           # helptext 3/3
           _(
-            "<p>If you have selected \"cyrus\" for the local delivery of mails, you can set the size limit for the users mail box.\n           If you do not set any value the mail box size is unlimited.</p>"
+            "<p>If you have selected \"imap\" for the local delivery of mails, you can set the size limit for the users mail box.\n           If you do not set any value the mail box size is unlimited.</p>"
           )
 
         @items = nil
@@ -309,7 +309,7 @@ module Yast
           )
         )
 
-        if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus"
+        if Ops.get_string(@data, "localdeliverytype", "local") == "imap"
           @shared = Frame(
             _("Delivery of group Mails"),
             VBox(
@@ -432,7 +432,7 @@ module Yast
             UI.QueryWidget(Id(:table), :CurrentItem) != nil
           )
 
-          if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus" &&
+          if Ops.get_string(@data, "localdeliverytype", "local") == "imap" &&
               !@deliverytomember
             UI.ChangeWidget(Id(:sharedfolder), :Enabled, true)
             if @sharedfolder
@@ -443,7 +443,7 @@ module Yast
               UI.ChangeWidget(Id(:imapQuota), :Enabled, false)
             end
           else
-            # If there is no cyrus, we have only delivery to member
+            # If there is no imap, we have only delivery to member
             @deliverytomember = true
             UI.ChangeWidget(Id(:deliverytomember), :Value, @deliverytomember)
             UI.ChangeWidget(Id(:enableImpapquota), :Enabled, false)
@@ -534,6 +534,7 @@ module Yast
               Ops.set(@data, "suseDeliveryToMember", "no")
             end
             # We put it everytime into the LDAP, and the ldap filter control if it is visible
+#TODO we need an other way
             Ops.set(
               @data,
               "suseMailCommand",
@@ -602,7 +603,7 @@ module Yast
               Builtins.remove(@data, "suseMailForwardAddress")
             end
 
-            if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus"
+            if Ops.get_string(@data, "localdeliverytype", "local") == "imap"
               if Convert.to_boolean(
                   UI.QueryWidget(Id(:enableImpapquota), :Value)
                 )

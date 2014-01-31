@@ -1045,7 +1045,7 @@ module Yast
           false
         )
       )
-      if Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "cyrus"
+      if Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "imap"
         _SpamL = Left(
           CheckBox(
             Id(:SpamLearning),
@@ -1340,7 +1340,7 @@ module Yast
 
     def MailLocalDeliveryDialog
       Builtins.y2milestone("--Start MailLocalDeliveryDialog ---")
-      _TypeCYRUS = Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "cyrus"
+      _TypeIMAP = Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "imap"
       _TypePROCMAIL = Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "procmail"
       _TypeLOCAL = Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "local"
       _TypeNONE = Ops.get_string(MailServer.MailLocalDelivery, "Type", "") == "none"
@@ -1355,7 +1355,7 @@ module Yast
 
 
       settings = HBox()
-      if _TypeCYRUS
+      if _TypeIMAP
         _QuotaLimit = Builtins.tointeger(
           Ops.get_string(MailServer.MailLocalDelivery, "QuotaLimit", "0")
         )
@@ -1387,7 +1387,7 @@ module Yast
           "0"
         ) == "1"
         settings = Frame(
-          _("Cyrus IMAP Settings"),
+          _("IMAP Settings"),
           VBox(
             HBox(
               Label(" "),
@@ -1587,10 +1587,10 @@ module Yast
               VBox(
                 Left(
                   RadioButton(
-                    Id("cyrus"),
+                    Id("imap"),
                     Opt(:notify),
-                    _("Cyrus IMAP"),
-                    _TypeCYRUS
+                    _("IMAP"),
+                    _TypeIMAP
                   )
                 ),
                 Left(

@@ -59,7 +59,7 @@ my $proposal_valid = 0;
 
 ##
  # Some global variables
-my $imapadm  = "cyrus";
+my $imapadm  = "imap";
 my $imaphost = "localhost";
 my $aconf    = "/etc/amavisd.conf";
 
@@ -1472,6 +1472,7 @@ sub WriteMailPrevention {
 		$ret = $imap->setacl('NewSpam', 'anyone', "lrswi");
 		$ret = $imap->setacl('NoSpam',  'anyone', "lsi");
 		my $lernspam = '#!/bin/bash
+#TODO we have to adapt this for dovecot
 LOG=/var/log/lern-spam
 date +%Y-%m-%d-%H-%M >> $LOG
 if [ ! -d /var/spool/imap/NewSpam ]
@@ -1492,7 +1493,6 @@ do
    rm $i
 done
 ) >> $LOG  2>&1
-su - cyrus -c "reconstruct NewSpam" &>/dev/null
 
 (
 for i in `ls /var/spool/imap/NoSpam/[0-9]* 2> /dev/null`
@@ -1503,7 +1503,6 @@ do
    rm $i
 done
 ) >> $LOG  2>&1
-su - cyrus -c "reconstruct NoSpam" &>/dev/null
 chown -R vscan /var/spool/amavis/.spamassassin/
 
 setfacl -b /var/spool/imap /var/spool/imap/{NoSpam,NewSpam}
@@ -1864,7 +1863,8 @@ sub ReadMailLocalDelivery {
     }
     elsif($MailboxTransport =~ /lmtp:unix:\/var\/lib\/imap\/socket\/lmtp/)
     {
-        $MailLocalDelivery{'Type'} = 'cyrus';
+        $MailLocalDelivery{'Type'} = 'imap';
+	#TODO READ dovecot
         $MailLocalDelivery{'MailboxSizeLimit'}         = SCR->Read('.etc.imapd_conf.autocreatequota') || 0;
         $MailLocalDelivery{'QuotaLimit'}               = SCR->Read('.etc.imapd_conf.quotawarn') || 0;
         $MailLocalDelivery{'ImapIdleTime'}             = SCR->Read('.etc.imapd_conf.timeout') || 0;
@@ -1886,7 +1886,7 @@ sub ReadMailLocalDelivery {
 	{
             $MailLocalDelivery{'HardQuotaLimit'}       = 0; 
         }
-	SCR->Read('.mail.cyrusconf');
+	SCR->Read('.mail.imap');
 	if( SCR->Read('.etc.imapd_conf.tls_cert_file') && SCR->Read('.etc.imapd_conf.tls_cert_file') ne '' &&
 	    SCR->Read('.etc.imapd_conf.tls_key_file')  && SCR->Read('.etc.imapd_conf.tls_key_file')  ne '' &&
 	    SCR->Read('.etc.imapd_conf.tls_ca_path')   && SCR->Read('.etc.imapd_conf.tls_ca_path')   ne '' &&
@@ -1972,7 +1972,7 @@ sub WriteMailLocalDelivery {
 	write_attribute($MainCf,'mailbox_command','/usr/bin/procmail');
 	write_attribute($MainCf,'mailbox_transport','');
     }
-    elsif( $MailLocalDelivery->{'Type'} eq 'cyrus')
+    elsif( $MailLocalDelivery->{'Type'} eq 'imap')
     {
         write_attribute($MainCf,'home_mailbox','');
 	write_attribute($MainCf,'mail_spool_directory','');
@@ -2031,6 +2031,7 @@ sub WriteMailLocalDelivery {
               #SCR->Write('.etc.imapd_conf.tls_ca_file','/etc/ssl/certs/YaST-CA.pem');
               SCR->Write('.etc.imapd_conf.tls_ca_path','/etc/ssl/certs');
           }
+	  #TODO READ dovecot
 	  SCR->Read('.mail.cyrusconf');
 	  if( SCR->Execute('.mail.cyrusconf.serviceExists', 'imaps') &&
 	      ! SCR->Execute('.mail.cyrusconf.serviceEnabled', 'imaps') )
@@ -2070,7 +2071,7 @@ sub WriteMailLocalDelivery {
 	  }
       }
       Service->Enable('saslauthd');
-      Service->Enable('cyrus');
+      Service->Enable('dovecot');
       if( !Service->Status('saslauthd') )
       {
           Service->Restart('saslauthd');
@@ -2079,13 +2080,13 @@ sub WriteMailLocalDelivery {
       {
           Service->Start('saslauthd');
       }
-      if( !Service->Status('cyrus') )
+      if( !Service->Status('dovecot') )
       {
-          Service->Restart('cyrus');
+          Service->Restart('dovecot');
       }
       else
       {
-          Service->Start('cyrus');
+          Service->Start('dovecot');
       }
     }
     elsif(  $MailLocalDelivery->{'Type'} eq 'none')
@@ -2097,7 +2098,7 @@ sub WriteMailLocalDelivery {
     else
     {
         return $self->SetError( summary => 'Bad value for MailLocalDeliveryType. Possible values are:'.
-                                           '"none", "local", "procmail" or "cyrus".',
+                                           '"none", "local", "procmail" or "imap".',
                                   code  => "PARAM_CHECK_FAILED" );
     }
 

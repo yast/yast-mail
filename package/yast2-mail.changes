@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan 31 08:51:14 UTC 2014 - varkoly@suse.com
+
+- Use dovecot instead of cyrus for imap. 
+
+-------------------------------------------------------------------
 Thu Sep 19 10:26:56 UTC 2013 - lslezak@suse.cz
 
 - do not use *.spec.in template, use *.spec file with RPM macros

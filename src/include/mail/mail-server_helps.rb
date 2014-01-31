@@ -93,7 +93,7 @@ module Yast
           # MailPrevention dialog help 3/3
           _(
             "<p><b><big>Configure Spam Learning Extension:</big></b><br>\n" +
-              "The spam learning extension can only be configured if the local delivery method is <b>cyrus imapd</b>.\n" +
+              "The spam learning extension can only be configured if the local delivery method is <b>dovecot imap</b>.\n" +
               "In this case the shared folders <b>NewSpam</b> and <b>NoSpam</b> will be created. Spam email \n" +
               "which was not detected by <b>SpamAssassin</b> should be put into the folder <b>NewSpam</b>.\n" +
               "If you want your spam finder to be most effective you should also put non-spam email into\n" +

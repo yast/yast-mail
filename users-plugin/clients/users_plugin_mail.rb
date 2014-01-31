@@ -228,7 +228,7 @@ module Yast
           ) +
           # helptext 3/3
           _(
-            "<p>If you have selected \"cyrus\" for the local delivery of mails, you can set the size limit for the users mail box.\n           If you do not set any value the mail box size is unlimited.</p>"
+            "<p>If you have selected \"imap\" for the local delivery of mails, you can set the size limit for the users mail box.\n           If you do not set any value the mail box size is unlimited.</p>"
           )
 
         @items = nil
@@ -306,7 +306,7 @@ module Yast
           )
         end
 
-        if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus"
+        if Ops.get_string(@data, "localdeliverytype", "local") == "imap"
           @imap = Frame(
             _("IMAP Quota"),
             VBox(
@@ -374,7 +374,7 @@ module Yast
             :Enabled,
             UI.QueryWidget(Id(:table), :CurrentItem) != nil
           )
-          if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus"
+          if Ops.get_string(@data, "localdeliverytype", "local") == "imap"
             UI.ChangeWidget(
               Id(:imapquota),
               :Enabled,
@@ -510,7 +510,7 @@ module Yast
               Builtins.remove(@data, "suseMailAcceptAddress")
             end
 
-            if Ops.get_string(@data, "localdeliverytype", "local") == "cyrus"
+            if Ops.get_string(@data, "localdeliverytype", "local") == "imap"
               if Convert.to_boolean(
                   UI.QueryWidget(Id(:enableImapquota), :Value)
                 )

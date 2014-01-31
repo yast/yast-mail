@@ -112,12 +112,10 @@ configuration.
 %{yast_scrconfdir}/mail_s_virtuser.scr
 %{yast_scrconfdir}/cfg_fetchmail.scr
 %{yast_scrconfdir}/etc_imapd_conf.scr
-%{yast_scrconfdir}/mail_cyrusconf.scr
 %{yast_scrconfdir}/mail_ldaptable.scr
 %{yast_scrconfdir}/mail_maincf.scr
 %{yast_scrconfdir}/mail_saslpasswd.scr
 %dir %{yast_agentdir}
-%{yast_agentdir}/ag_cyrus_conf
 %{yast_agentdir}/ag_fetchmailrc
 %{yast_agentdir}/ag_mailconfig
 %{yast_agentdir}/ag_mail_ldaptable

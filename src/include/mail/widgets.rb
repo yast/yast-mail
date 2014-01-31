@@ -787,7 +787,7 @@ module Yast
       scr2ui = {
         :local    => :dm_local,
         :procmail => :dm_procmail,
-        :cyrus    => :dm_cyrus
+        :imap     => :dm_imap 
       }
       val = Ops.get_symbol(scr2ui, Mail.postfix_mda, :dm_local)
       val
@@ -800,7 +800,7 @@ module Yast
       ui2scr = {
         :dm_local    => :local,
         :dm_procmail => :procmail,
-        :dm_cyrus    => :cyrus
+        :dm_imap     => :imap 
       }
       val = Ops.get_symbol(ui2scr, val, :local)
       Mail.Touch(Mail.postfix_mda != val)
@@ -854,7 +854,7 @@ module Yast
 
     # @return [Array] of choides for a combo box
     def Choices_delivery_mode
-      # TODO: should check whether cyrus-imapd is installed.
+      # TODO: should check whether imap -imapd is installed.
       # And show the choice only if it is.
       # But config.postfix falls back to local if it's not, so OK
       [
@@ -865,8 +865,8 @@ module Yast
         # deliver mail through procmail
         Item(Id(:dm_procmail), _("Through procmail")),
         # combo box choice:
-        # deliver mail to cyrus-imapd using LMTP
-        Item(Id(:dm_cyrus), _("To Cyrus IMAP Server"))
+        # deliver mail to imap -imapd using LMTP
+        Item(Id(:dm_imap ), _("To IMAP Server"))
       ]
     end
   end

@@ -90,7 +90,7 @@ module Yast
       @nss_ldap_installed = false
       @procmail_installed = false
       @ldap_installed = false
-      @cyrus_installed = false
+      @imap_installed = false
       @postfix_installed = false
       @fetchmail_installed = false
       @sasl_installed = false
@@ -235,7 +235,7 @@ module Yast
       @pam_ldap_installed = Installed("pam_ldap")
       @nss_ldap_installed = Installed("nss_ldap")
       @procmail_installed = Installed("procmail")
-      @cyrus_installed = Installed("cyrus-imapd")
+      @imap_installed = Installed("dovecot")
       @postfix_installed = Installed("postfix")
       @fetchmail_installed = Installed("fetchmail")
       @ldap_installed = Installed("yast2-ldap-client")
@@ -586,29 +586,30 @@ module Yast
         Service.Enable("saslauthd")
       end
 
-      if Ops.get_string(@MailLocalDelivery, "Type", "none") == "cyrus"
-        if !@cyrus_installed
+      if Ops.get_string(@MailLocalDelivery, "Type", "none") == "imap"
+        if !@imap_installed
           if Report.AnyQuestion(
               "",
-              _("You have not installed all needed packages.") + "\n cyrus-imapd \n",
+              _("You have not installed all needed packages.") + "\n dovecot \n",
               Label.InstallButton,
               Label.AbortButton,
               :focus_yes
             )
-            Package.DoInstall(["cyrus-imapd"])
+            Package.DoInstall(["dovecot"])
             SCR.UnmountAgent(path(".etc.imapd_conf"))
           else
             return false
           end
         end
+#TODO dovecot's admin password!
         crypted = Users.CryptPassword(@AdminPassword, "system", "foo")
         SCR.Write(path(".target.passwd.cyrus"), crypted)
-        Builtins.y2milestone("--- Enabling cyrus --")
-        Service.Enable("cyrus")
+        Builtins.y2milestone("--- Enabling dovecot --")
+        Service.Enable("dovecot")
       else
-        if @cyrus_installed
-          Service.Stop("cyrus")
-          Service.Disable("cyrus")
+        if @imap_installed
+          Service.Stop("dovecot")
+          Service.Disable("dovecot")
         end
       end
       return false if Abort()
@@ -622,11 +623,11 @@ module Yast
             _("Cannot write the mail server local delivery settings.")
           )
         end
-        if Ops.get_string(@MailLocalDelivery, "Type", "none") == "cyrus"
-          Builtins.y2milestone("--- Stop cyrus --")
-          Service.Stop("cyrus")
-          Builtins.y2milestone("--- Start cyrus --")
-          Service.Start("cyrus")
+        if Ops.get_string(@MailLocalDelivery, "Type", "none") == "imap"
+          Builtins.y2milestone("--- Stop imap --")
+          Service.Stop("dovecot")
+          Builtins.y2milestone("--- Start dovecot --")
+          Service.Start("dovecot")
           Builtins.sleep(10000)
           YaPI::MailServer.CreateRootMailbox(@AdminPassword)
         end
@@ -837,7 +838,7 @@ module Yast
     publish :variable => :nss_ldap_installed, :type => "boolean"
     publish :variable => :procmail_installed, :type => "boolean"
     publish :variable => :ldap_installed, :type => "boolean"
-    publish :variable => :cyrus_installed, :type => "boolean"
+    publish :variable => :imap_installed, :type => "boolean"
     publish :variable => :postfix_installed, :type => "boolean"
     publish :variable => :fetchmail_installed, :type => "boolean"
     publish :variable => :sasl_installed, :type => "boolean"
