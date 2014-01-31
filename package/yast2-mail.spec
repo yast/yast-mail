@@ -100,7 +100,6 @@ configuration.
 %{yast_desktopdir}/mail.desktop
 %dir %{yast_schemadir}/autoyast/rnc
 %{yast_schemadir}/autoyast/rnc/mail.rnc
-%dir %{yast_scrconfdir}
 %{yast_scrconfdir}/*
 %dir %{yast_agentdir}
 %{yast_agentdir}/ag_fetchmailrc
