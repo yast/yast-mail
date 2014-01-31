@@ -40,7 +40,7 @@ superserver configuration file master.cf.
     print "ERROR in getServiceByAttributes()\n";
   }
 
-  if( $msc->modifyService( { 'service' => 'cyrus1',
+  if( $msc->modifyService( { 'service' => 'imap',
 			     'command' => 'pipe',
 			     'type'    => 'unix' } ) ) {
     print "ERROR in modifyService()\n";
@@ -324,7 +324,7 @@ given keys.
 
 EXAMPLE:
 
-    $msc->modifyService( { 'service' => 'cyrus1',
+    $msc->modifyService( { 'service' => 'imap',
 			   'command' => 'pipe',
 			   'type'    => 'unix' } );
 

@@ -28,7 +28,7 @@ Group:	        System/YaST
 License:        GPL-2.0+
 BuildRequires:	perl-XML-Writer update-desktop-files yast2-testsuite
 BuildRequires:  yast2-devtools >= 3.1.10
-BuildRequires:	yast2-ldap-server yast2-network yast2-perl-bindings yast2-users
+BuildRequires:	yast2-auth-server yast2-network yast2-perl-bindings yast2-users
 BuildRequires:  perl-NetxAP
 
 PreReq:         %fillup_prereq
@@ -100,48 +100,23 @@ configuration.
 %{yast_desktopdir}/mail.desktop
 %dir %{yast_schemadir}/autoyast/rnc
 %{yast_schemadir}/autoyast/rnc/mail.rnc
-%dir %{yast_scrconfdir}
-%{yast_scrconfdir}/cfg_amavis.scr
-%{yast_scrconfdir}/cfg_postfix.scr
-%{yast_scrconfdir}/cfg_sendmail.scr
-%{yast_scrconfdir}/mail_p_auth.scr
-%{yast_scrconfdir}/mail_p_canonical.scr
-%{yast_scrconfdir}/mail_p_virtual.scr
-%{yast_scrconfdir}/mail_s_auth.scr
-%{yast_scrconfdir}/mail_s_generics.scr
-%{yast_scrconfdir}/mail_s_virtuser.scr
-%{yast_scrconfdir}/cfg_fetchmail.scr
-%{yast_scrconfdir}/etc_imapd_conf.scr
-%{yast_scrconfdir}/mail_cyrusconf.scr
-%{yast_scrconfdir}/mail_ldaptable.scr
-%{yast_scrconfdir}/mail_maincf.scr
-%{yast_scrconfdir}/mail_saslpasswd.scr
+%{yast_scrconfdir}/*
 %dir %{yast_agentdir}
-%{yast_agentdir}/ag_cyrus_conf
 %{yast_agentdir}/ag_fetchmailrc
 %{yast_agentdir}/ag_mailconfig
 %{yast_agentdir}/ag_mail_ldaptable
 %{yast_agentdir}/ag_mailtable
 %{yast_agentdir}/ag_smtp_auth
-%{yast_agentdir}/CyrusConfParser.pm
 %{yast_agentdir}/MasterCFParser.pm
+%{yast_agentdir}/ag_fetchmailrc
+%{yast_agentdir}/ag_mailtable
 %attr(0755,root,root) %{yast_agentdir}/setup_dkim_verifying.pl
 
 %dir /etc/openldap/
 %dir /etc/openldap/schema/
 /etc/openldap/schema/suse-mailserver.schema
-%config /etc/permissions.d/mail-server*
 %doc %{yast_docdir}
 
-#%files aliases
-%defattr(-,root,root)
-%dir %{yast_scrconfdir}
-%{yast_scrconfdir}/cfg_mail.scr
-%{yast_scrconfdir}/mail_aliases.scr
-%{yast_scrconfdir}/mail_fetchmail.scr
-%dir %{yast_agentdir}
-%{yast_agentdir}/ag_fetchmailrc
-%{yast_agentdir}/ag_mailtable
 
 /var/adm/fillup-templates/sysconfig.mail
 

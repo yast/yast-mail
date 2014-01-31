@@ -41,7 +41,6 @@ scrconf_DATA = \
   scrconf/cfg_sendmail.scr \
   scrconf/cfg_mail.scr \
   scrconf/mail_p_auth.scr \
-  scrconf/mail_cyrusconf.scr \
   scrconf/mail_p_virtual.scr \
   scrconf/mail_ldaptable.scr \
   scrconf/mail_aliases.scr \
@@ -54,10 +53,8 @@ agent_SCRIPTS = \
   servers_non_y2/ag_mail_ldaptable \
   servers_non_y2/ag_fetchmailrc \
   servers_non_y2/MasterCFParser.pm \
-  servers_non_y2/ag_cyrus_conf \
   servers_non_y2/setup_dkim_verifying.pl \
   servers_non_y2/ag_mailtable \
-  servers_non_y2/CyrusConfParser.pm \
   servers_non_y2/ag_mailconfig \
   servers_non_y2/ag_smtp_auth
 

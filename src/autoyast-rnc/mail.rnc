@@ -90,7 +90,7 @@ outgoing_mail_server = element outgoing_mail_server { text }
 postfix_mda =
   element postfix_mda {
     mail_SYMBOL_OR_TEXT,
-    ( "local" | "procmail" | "cyrus" )
+    ( "local" | "procmail" | "imap" )
   }
 
 use_amavis = element use_amavis { BOOLEAN }

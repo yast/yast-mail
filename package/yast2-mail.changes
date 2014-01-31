@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Fri Jan 31 08:51:14 UTC 2014 - varkoly@suse.com
+
+- Use dovecot instead of cyrus for imap. 
+
+-------------------------------------------------------------------
 Wed Nov 13 15:56:18 UTC 2013 - jreidinger@suse.com
 
 - Add explicit COPYING file

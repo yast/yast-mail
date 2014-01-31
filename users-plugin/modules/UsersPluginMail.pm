@@ -268,7 +268,7 @@ sub AddBefore {
     my $imapadmpw  = Ldap->bind_pass();
     my $MailLocalDelivery = YaPI::MailServer->ReadMailLocalDelivery($imapadmpw);
     $data->{'localdeliverytype'} = $MailLocalDelivery->{'Type'};
-    if($data->{'localdeliverytype'} eq 'cyrus' && ! defined $data->{'suseImapQuota'} ) {
+    if($data->{'localdeliverytype'} eq 'imap' && ! defined $data->{'suseImapQuota'} ) {
         $data->{'suseImapQuota'} =  $ldapret->[0]->{'suseImapDefaultQuota'}->[0];
     }
 
@@ -653,10 +653,11 @@ sub cond_IMAP_OP {
     my $op     = shift || "add";
 
     my $fname  = "";
-    if(!defined $data->{'localdeliverytype'} || $data->{'localdeliverytype'} ne 'cyrus') {
+    if(!defined $data->{'localdeliverytype'} || $data->{'localdeliverytype'} ne 'imap') {
 	return $data
     }
-    my $imapadm    = "cyrus";
+#TODO DOVECOTs administrator
+    my $imapadm    = "imap";
     my $imaphost   = "localhost";
     my $imapquota  = "-1";
 
