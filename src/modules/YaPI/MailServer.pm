@@ -2795,7 +2795,7 @@ sub Overview {
 
 ##
  # Return packages needed to be installed and removed during
- # Autoinstallation to insure module has all needed software
+ # Autoinstallation to ensure module has all needed software
  # installed.
  # @return hash with 2 lists.
  #
