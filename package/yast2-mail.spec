@@ -91,11 +91,7 @@ configuration.
 %dir %{yast_clientdir}
 %{yast_clientdir}/mail*
 %dir %{yast_moduledir}
-%{yast_moduledir}/MailServer.rb
-%{yast_moduledir}/MailServerLDAP.pm
 %{yast_moduledir}/Mail.rb
-%dir %{yast_moduledir}/YaPI
-%{yast_moduledir}/YaPI/Mail*
 %dir %{yast_desktopdir}
 %{yast_desktopdir}/mail.desktop
 %dir %{yast_schemadir}/autoyast/rnc
