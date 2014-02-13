@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Feb 13 21:51:32 UTC 2014 - varkoly@suse.com
+
+- Remove advanced mode 
+
+-------------------------------------------------------------------
 Fri Jan 31 08:51:14 UTC 2014 - varkoly@suse.com
 
 - Use dovecot instead of cyrus for imap. 
