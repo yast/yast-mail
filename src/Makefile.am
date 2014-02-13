@@ -1,7 +1,7 @@
 # Sources for mail
 
 module_DATA = \
-  modules/Mail.rb \
+  modules/Mail.rb 
 
 client_DATA = \
   clients/mail.rb \
