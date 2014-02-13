@@ -1,32 +1,16 @@
 # Sources for mail
 
 module_DATA = \
-  modules/MailServer.rb \
   modules/Mail.rb \
-  modules/MailServerLDAP.pm
-
-module1dir = @moduledir@/YaPI
-module1_DATA = \
-  modules/YaPI/MailServer.pm
 
 client_DATA = \
   clients/mail.rb \
-  clients/mail-server.rb \
-  clients/mail-server_ldap-setup.rb \
-  clients/mail-server_proposal.rb \
-  clients/mail-advanced.rb \
-  clients/mail-standard.rb \
-  clients/mail-server_auto.rb \
   clients/mail_auto.rb
 
 yncludedir = @yncludedir@/mail
 ynclude_DATA = \
   include/mail/widgets.rb \
-  include/mail/mail-server_dialogs.rb \
-  include/mail/mail-server_helps.rb \
-  include/mail/mail-server_complex.rb \
   include/mail/ui.rb \
-  include/mail/mail-server_wizards.rb \
   include/mail/wj.rb \
   include/mail/helps.rb
 
