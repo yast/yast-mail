@@ -61,14 +61,14 @@ module Yast
           "Configuration of mail"
         ),
         "guihandler" => fun_ref(method(:MailSequence), "symbol ()"),
-        "initialize" => fun_ref(method(:MailRead), "boolean ()"),
+        "initialize" => fun_ref(method(:mail_read), "boolean ()"),
         "finish"     => fun_ref(
           Mail.method(:Write),
           "boolean (block <boolean>)"
         ),
         "actions"    => {
           "summary" => {
-            "handler" => fun_ref(method(:MailSummaryHandler), "boolean (map)"),
+            "handler" => fun_ref(method(:mail_summary_handler), "boolean (map)"),
             # command line action help
             "help"    => _(
               "Mail configuration summary"
@@ -92,7 +92,7 @@ module Yast
     # Print summary in command line
     # @param [Hash] options command options
     # @return false so that Write is not called in non-interactive mode
-    def MailSummaryHandler(options)
+    def mail_summary_handler(options)
       options = deep_copy(options)
       CommandLine.Print(RichText.Rich2Plain(Mail.Summary))
       false
@@ -100,7 +100,7 @@ module Yast
 
     # CLI initializer.
     # @return whether successful
-    def MailRead
+    def mail_read
       callback = lambda { false }
       Mail.Read(callback)
     end
