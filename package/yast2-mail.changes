@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
 Thu Feb 13 21:51:32 UTC 2014 - varkoly@suse.com
 
-- Remove advanced mode 
+- Remove advanced mode. The new LDA dovecot provides a more 
+  complex ldap and sql backend than postfix. Therefore we
+  do not provide the yast2-mail advanced mode any more.
 
 -------------------------------------------------------------------
 Fri Jan 31 08:51:14 UTC 2014 - varkoly@suse.com
