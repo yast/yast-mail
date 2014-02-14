@@ -17,7 +17,7 @@
 
 
 Name:           yast2-mail
-Version:        3.1.1
+Version:        3.1.2
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -38,7 +38,6 @@ PreReq:         %fillup_prereq
 Requires:	yast2 >= 2.21.22
 Requires:	yast2-users
 Requires:	yast2-ldap
-Requires:       perl-NetxAP
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
@@ -60,17 +59,6 @@ Summary:	YaST2 - Mail Configuration
 The YaST2 component for mail configuration. It handles Postfix, Cyrus,
 Amavis and Fetchmail.
 
-%package plugins
-Requires:       yast2-ruby-bindings >= 1.0.0
-
-Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
-Group:		System/YaST
-Requires:       perl-NetxAP acl
-
-%description plugins
-Plugins for the YaST2 users module for enterprise mail server
-configuration.
-
 %prep
 %setup -n %{name}-%{version}
 
@@ -91,11 +79,7 @@ configuration.
 %dir %{yast_clientdir}
 %{yast_clientdir}/mail*
 %dir %{yast_moduledir}
-%{yast_moduledir}/MailServer.rb
-%{yast_moduledir}/MailServerLDAP.pm
 %{yast_moduledir}/Mail.rb
-%dir %{yast_moduledir}/YaPI
-%{yast_moduledir}/YaPI/Mail*
 %dir %{yast_desktopdir}
 %{yast_desktopdir}/mail.desktop
 %dir %{yast_schemadir}/autoyast/rnc
@@ -119,11 +103,4 @@ configuration.
 
 
 /var/adm/fillup-templates/sysconfig.mail
-
-%files plugins
-%defattr(-,root,root)
-%dir %{yast_moduledir}
-%{yast_moduledir}/UsersPluginMail.pm
-%dir %{yast_clientdir}
-%{yast_clientdir}/users*
 
