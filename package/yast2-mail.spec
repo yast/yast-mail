@@ -38,7 +38,6 @@ PreReq:         %fillup_prereq
 Requires:	yast2 >= 2.21.22
 Requires:	yast2-users
 Requires:	yast2-ldap
-Requires:       perl-NetxAP
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
 Provides:	yast2-config-sendmail yast2-config-sendmail-devel
 Obsoletes:	yast2-config-sendmail yast2-config-sendmail-devel
