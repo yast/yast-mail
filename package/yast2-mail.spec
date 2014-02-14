@@ -60,17 +60,6 @@ Summary:	YaST2 - Mail Configuration
 The YaST2 component for mail configuration. It handles Postfix, Cyrus,
 Amavis and Fetchmail.
 
-%package plugins
-Requires:       yast2-ruby-bindings >= 1.0.0
-
-Summary:	YaST2 - Users/Group Plugins for the mail delivery configuration
-Group:		System/YaST
-Requires:       perl-NetxAP acl
-
-%description plugins
-Plugins for the YaST2 users module for enterprise mail server
-configuration.
-
 %prep
 %setup -n %{name}-%{version}
 
@@ -115,11 +104,4 @@ configuration.
 
 
 /var/adm/fillup-templates/sysconfig.mail
-
-%files plugins
-%defattr(-,root,root)
-%dir %{yast_moduledir}
-%{yast_moduledir}/UsersPluginMail.pm
-%dir %{yast_clientdir}
-%{yast_clientdir}/users*
 
