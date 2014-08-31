@@ -17,7 +17,7 @@
 
 
 Name:           yast2-mail
-Version:        3.1.2
+Version:        3.1.3
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -49,6 +49,8 @@ Provides:       yast2-trans-mail = %{version}
 Obsoletes:      yast2-trans-mail <= %{version}
 Provides:       yast2-mail-server = %{version}
 Obsoletes:      yast2-mail-server <= %{version}
+Provides:       yast2-mail-plugins = %{version}
+Obsoletes:      yast2-mail-plugins <= %{version}
 Conflicts:	aaa_base < 10.3
 BuildArch:	noarch
 Requires:       yast2-ruby-bindings >= 1.0.0
