@@ -520,7 +520,7 @@ module Yast
               ComboBox(
                 Id(:fm_start),
                 _("Start &fetchmail"),
-                ["manual", "daemon"]
+                [ Item(Id("manual"),_("manual")), Item(Id("daemon"),_("daemon"))]
               )
             )
           )
