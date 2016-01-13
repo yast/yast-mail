@@ -16,6 +16,8 @@ mail =
     mta &
     outgoing_mail_server? &
     postfix_mda? &
+    smtp_use_TLS? &
+    system_mail_sender? &
     use_amavis? &
     use_dkim? &
     virtual_users?
@@ -92,6 +94,12 @@ postfix_mda =
     mail_SYMBOL_OR_TEXT,
     ( "local" | "procmail" | "imap" )
   }
+
+smtp_use_TLS =
+  element smtp_use_TLS { "yes" | "must" | "no" }
+
+system_mail_sender =
+  element system_mail_sender { text }
 
 use_amavis = element use_amavis { BOOLEAN }
 use_dkim   = element use_dkim   { BOOLEAN }
