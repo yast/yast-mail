@@ -23,7 +23,6 @@ scrconf_DATA = \
   scrconf/mail_fetchmail.scr \
   scrconf/cfg_fetchmail.scr \
   scrconf/cfg_sendmail.scr \
-  scrconf/cfg_mail.scr \
   scrconf/mail_p_auth.scr \
   scrconf/mail_p_virtual.scr \
   scrconf/mail_ldaptable.scr \
