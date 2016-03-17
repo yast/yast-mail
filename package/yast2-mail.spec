@@ -17,7 +17,7 @@
 
 
 Name:           yast2-mail
-Version:        3.1.6
+Version:        3.1.7
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -35,7 +35,8 @@ PreReq:         %fillup_prereq
 
 # new firewall interface
 # Wizard::SetDesktopTitleAndIcon
-Requires:	yast2 >= 2.21.22
+# cfg_mail.scr
+Requires:	yast2 >= 3.1.179
 Requires:	yast2-users
 Requires:	yast2-ldap
 Provides:	yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
