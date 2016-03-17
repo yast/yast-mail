@@ -2,7 +2,7 @@
 Wed Mar 16 16:04:55 UTC 2016 - knut.anderssen@suse.com
 
 - Moved cfg_mail.scr to yast2 due to circular dependencies with
-  yast2-security and yast2-users.
+  yast2-security and yast2-users. (FATE#319711)
 - 3.1.7
 
 -------------------------------------------------------------------
