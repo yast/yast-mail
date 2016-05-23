@@ -382,7 +382,7 @@ module Yast
       Wizard.SetScreenShotName("mail-21-outgoing")
 
       _TLSnone = Mail.smtp_use_TLS == "no"
-      _TLSuse = Mail.smtp_use_TLS == "yes"
+      _TLSuse  = Mail.smtp_use_TLS == "yes"
       _TLSmust = Mail.smtp_use_TLS == "must"
 
       # what buttons can be used to leave this dialog
@@ -396,6 +396,8 @@ module Yast
       o_contents = VSquash(
         VBox(
           WJ_MakeWidget(:outgoing_mail_server),
+          # OUTGOING NOMX
+          Left(CheckBox(Id(:NOMX), _("Do not make MX lookup for the outgoing mail server."), Mail.outgoing_mail_server_nomx )),
           # TLS
           Label(_("TLS encryption")),
           RadioButtonGroup(
@@ -447,7 +449,8 @@ module Yast
       end
 
       if ret == :next || Builtins.contains(buttons, ret)
-        Mail.smtp_use_TLS = Convert.to_string(UI.QueryWidget(Id(:TLS), :Value))
+        Mail.smtp_use_TLS              = Convert.to_string(UI.QueryWidget(Id(:TLS), :Value))
+        Mail.outgoing_mail_server_nomx = Convert.to_boolean(UI.QueryWidget(Id(:NOMX), :Value))
         WJ_Set(widgets)
       end
       Wizard.RestoreScreenShotName
