@@ -403,11 +403,9 @@ module Yast
         @outgoing_mail_server = Convert.to_string(
           SCR.Read(path(".sysconfig.postfix.POSTFIX_RELAYHOST"))
         )
-Builtins.y2milestone("@outgoing_mail_server befor: %1",@outgoing_mail_server)
 	if @outgoing_mail_server.length > 0 and @outgoing_mail_server.delete!("[]") == nil
 	   @outgoing_mail_server_nomx = false
 	end
-Builtins.y2milestone("@outgoing_mail_server after: %1",@outgoing_mail_server)
       else
         return false
       end
