@@ -357,7 +357,7 @@ module Yast
       elsif @mta == :postfix
         nc = SCR.Read(path(".sysconfig.postfix.POSTFIX_NODNS")) == "yes"
         ex = SCR.Read(path(".sysconfig.postfix.POSTFIX_DIALUP")) == "yes"
-        nd = SCR.Read(path(".sysconfig.postfix.POSTFIX_NODAEMON")) == "yes"
+        nd = Service.Enabled("postfix")
       else
         return false
       end
@@ -647,19 +647,15 @@ module Yast
       end
 
       if @connection_type == :nodaemon
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "yes")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "no")
       elsif @connection_type == :permanent
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "no")
         SCR.Write(ex_di, "no")
       elsif @connection_type == :dialup
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "yes")
       elsif @connection_type == :none
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "no")
       else

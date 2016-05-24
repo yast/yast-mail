@@ -2,6 +2,7 @@
 Tue May 24 04:12:36 UTC 2016 - varkoly@suse.com
 
 - bnc#981103 - yast2 mail uses always brackets for relayhost
+- bnc#981101 - yast2 mail adds POSTFIX_NODAEMON to /etc/sysconfig/postfix
 - 3.1.8 
 
 -------------------------------------------------------------------
