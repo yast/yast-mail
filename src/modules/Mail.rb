@@ -69,8 +69,10 @@ module Yast
       @local_domains = []
 
       # A relay server for outgoing mail.
-      # May be enclosed in [brackets] to prevent MX lookups.
       @outgoing_mail_server = ""
+
+      # Shall be enclosed in [brackets] to prevent MX lookups.
+      @outgoing_mail_server_nomx = true
 
       # Do the MTA use TLS for sending the email.
       @smtp_use_TLS = "yes"
@@ -355,7 +357,7 @@ module Yast
       elsif @mta == :postfix
         nc = SCR.Read(path(".sysconfig.postfix.POSTFIX_NODNS")) == "yes"
         ex = SCR.Read(path(".sysconfig.postfix.POSTFIX_DIALUP")) == "yes"
-        nd = SCR.Read(path(".sysconfig.postfix.POSTFIX_NODAEMON")) == "yes"
+        nd = Service.Enabled("postfix")
       else
         return false
       end
@@ -401,6 +403,9 @@ module Yast
         @outgoing_mail_server = Convert.to_string(
           SCR.Read(path(".sysconfig.postfix.POSTFIX_RELAYHOST"))
         )
+	if @outgoing_mail_server.length > 0 and @outgoing_mail_server.delete!("[]") == nil
+	   @outgoing_mail_server_nomx = false
+	end
       else
         return false
       end
@@ -575,6 +580,7 @@ module Yast
       # good example?
       @local_domains = ["branch1.example.com", "branch2.example.com"]
       @outgoing_mail_server = "mail.example.com"
+      @outgoing_mail_server_nomx = true
       @from_header = "example.com"
       @masquerade_other_domains = []
       @masquerade_users = [
@@ -641,19 +647,15 @@ module Yast
       end
 
       if @connection_type == :nodaemon
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "yes")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "no")
       elsif @connection_type == :permanent
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "no")
         SCR.Write(ex_di, "no")
       elsif @connection_type == :dialup
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "yes")
       elsif @connection_type == :none
-        SCR.Write(path(".sysconfig.postfix.POSTFIX_NODAEMON"), "no")
         SCR.Write(nc_nd, "yes")
         SCR.Write(ex_di, "no")
       else
@@ -739,37 +741,17 @@ module Yast
           @outgoing_mail_server
         )
       elsif @mta == :postfix
-        if @smtp_use_TLS != "no"
-          oms = @outgoing_mail_server
-          oms_no_brackets = Builtins.regexpmatch(oms, "[[][^][]*[]]:.*") ?
-            Builtins.regexpsub(oms, ".(.*).:.*", "\\1") :
-            oms
-          oms_port = Builtins.regexpmatch(oms, "[[][^][]*[]]:.*") ?
-            Builtins.regexpsub(oms, ".*.:(.*)", "\\1") :
-            ""
-
-          if oms_no_brackets == oms
-            oms_no_brackets = Builtins.regexpmatch(oms, "[[][^][]*[]]") ?
-              Builtins.regexpsub(oms, ".(.*).", "\\1") :
-              oms
-          end
-          if oms_no_brackets == oms
-            oms_no_brackets = Builtins.regexpmatch(oms, ".*:.*") ?
-              Builtins.regexpsub(oms, "(.*):.*", "\\1") :
-              oms
-            oms_port = Builtins.regexpmatch(oms, ".*:.*") ?
-              Builtins.regexpsub(oms, ".*:(.*)", "\\1") :
-              ""
-          end
-          if oms_port != ""
-            @outgoing_mail_server = Ops.add(
-              Ops.add(Ops.add("[", oms_no_brackets), "]:"),
-              oms_port
-            )
-          else
-            @outgoing_mail_server = Ops.add(Ops.add("[", oms_no_brackets), "]")
-          end
-        end
+	if Mode.mode != "autoinstallation"
+           @outgoing_mail_server.delete("[]")
+           if @outgoing_mail_server_nomx
+             l_oms = @outgoing_mail_server.split(/:/)
+             if l_oms.length == 2
+                @outgoing_mail_server = "[" + l_oms[0] + "]" + ":" + l_oms[1]
+             else
+                @outgoing_mail_server = "[" + l_oms[0] + "]"
+             end
+           end
+	end
         SCR.Write(
           path(".sysconfig.postfix.POSTFIX_RELAYHOST"),
           @outgoing_mail_server
@@ -1389,8 +1371,8 @@ module Yast
 
     publish :variable => :required_packages, :type => "list"
     publish :variable => :mta, :type => "symbol"
+    publish :variable => :outgoing_mail_server_nomx, :type => "boolean"
     publish :variable => :write_only, :type => "boolean"
-    publish :function => :CreateConfig, :type => "boolean ()"
     publish :variable => :connection_type, :type => "symbol"
     publish :variable => :listen_remote, :type => "boolean"
     publish :variable => :use_amavis, :type => "boolean"
@@ -1409,11 +1391,12 @@ module Yast
     publish :variable => :system_mail_sender, :type => "string"
     publish :variable => :protocol_choices, :type => "list <string>"
     publish :variable => :touched, :type => "boolean"
-    publish :function => :Touch, :type => "void (boolean)"
     publish :variable => :install_packages, :type => "list <string>"
     publish :variable => :remove_packages, :type => "list <string>"
     publish :variable => :cron_file, :type => "string"
     publish :variable => :check_interval, :type => "integer"
+    publish :function => :Touch, :type => "void (boolean)"
+    publish :function => :CreateConfig, :type => "boolean ()"
     publish :function => :ProbePackages, :type => "string ()"
     publish :function => :Read, :type => "boolean (block <boolean>)"
     publish :function => :ReadWithoutCallback, :type => "boolean ()"
