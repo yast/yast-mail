@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun  7 11:30:38 UTC 2016 - igonzalezsosa@suse.com
+
+- Stop generating autodocs (fate#320356)
+- 3.1.9
+
+-------------------------------------------------------------------
 Tue May 24 04:12:36 UTC 2016 - varkoly@suse.com
 
 - bnc#981103 - yast2 mail uses always brackets for relayhost

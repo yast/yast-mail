@@ -4,8 +4,6 @@
 # $Id$
 #
 
-SUBDIRS = autodocs
-
 htmldir = $(docdir)
 
 doc_DATA = fetchmailrc.txt
