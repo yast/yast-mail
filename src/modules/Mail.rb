@@ -357,7 +357,7 @@ module Yast
       elsif @mta == :postfix
         nc = SCR.Read(path(".sysconfig.postfix.POSTFIX_NODNS")) == "yes"
         ex = SCR.Read(path(".sysconfig.postfix.POSTFIX_DIALUP")) == "yes"
-        nd = Service.Enabled("postfix")
+        nd = ! Service.Enabled("postfix")
       else
         return false
       end
@@ -690,7 +690,7 @@ module Yast
         Service.Enable(service)
         Service.Adjust("amavis", @use_amavis ? "enable" : "disable")
       end
-      Service.Enable(service)
+
       # amavis
       SCR.Write(
         path(".sysconfig.amavis.USE_AMAVIS"),
