@@ -31,19 +31,3 @@ MAIL_CREATE_CONFIG="yes"
 # will be accepted.
 #
 SMTPD_LISTEN_REMOTE="no"
-
-## Type:        yesno
-## Default:     no
-#
-# Set this to "yes" if the yast2 mail module must not
-# start with the wizard for asking the 
-# configuration type of the mail server.
-#
-SKIP_ASK="no"
-
-## Type:        string(standard,advanced,undef)
-## Default:     undef
-#
-# This variable contains the type of the mail server configuration.
-#
-CONFIG_TYPE="undef"
