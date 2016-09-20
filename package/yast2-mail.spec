@@ -36,8 +36,6 @@ PreReq:         %fillup_prereq
 Requires:       yast2 >= 3.1.179
 Requires:       yast2-ldap
 Requires:       yast2-users
-Provides:       yast2-config-network:/usr/lib/YaST2/clients/lan_sendmail.ycp
-Conflicts:      aaa_base < 10.3
 BuildArch:      noarch
 Requires:       yast2-ruby-bindings >= 1.0.0
 
