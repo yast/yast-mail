@@ -2,6 +2,7 @@
 Wed Feb  1 16:20:17 UTC 2017 - varkoly@suse.com
 
 - bnc#1022360 Crash during E-Mail-Server setup, when outgoing mailserver is empty
+- bnc#994317 yast2 mailserver does not preserve startup setting 
 - 3.1.11
 
 -------------------------------------------------------------------
