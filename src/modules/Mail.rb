@@ -747,7 +747,7 @@ module Yast
              l_oms = @outgoing_mail_server.split(/:/)
              if l_oms.length == 2
                 @outgoing_mail_server = "[" + l_oms[0] + "]" + ":" + l_oms[1]
-             else
+             elsif l_oms.length == 1
                 @outgoing_mail_server = "[" + l_oms[0] + "]"
              end
            end
