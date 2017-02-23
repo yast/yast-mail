@@ -67,6 +67,7 @@ Amavis and Fetchmail.
 %{yast_clientdir}/mail*
 %dir %{yast_moduledir}
 %{yast_moduledir}/Mail.rb
+%{yast_moduledir}/Mail*.pm
 %dir %{yast_desktopdir}
 %{yast_desktopdir}/mail.desktop
 %dir %{yast_schemadir}/autoyast/rnc

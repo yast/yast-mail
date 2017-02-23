@@ -1,7 +1,9 @@
 # Sources for mail
 
 module_DATA = \
-  modules/Mail.rb 
+  modules/Mail.rb \
+  modules/MailTable.pm \
+  modules/MailTableInclude.pm
 
 client_DATA = \
   clients/mail.rb \
