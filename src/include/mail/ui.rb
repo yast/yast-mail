@@ -368,7 +368,7 @@ module Yast
         Mail.Touch(Mail.connection_type != ct)
         Mail.connection_type = ct
 
-        ret = ct == :none ? :none : ret
+        ret = ct == :none ? :none : deep_copy(ret)
       end
       # avoid overriding the choice the user has made
       @preselect_connection_type = nil
@@ -1107,7 +1107,7 @@ module Yast
       WJ_Set(widgets) # TODO hope it is ok to mess it up
       UI.CloseDialog
 
-      ret == :ok ? @fetchmail_item : {}
+      ret == :ok ? deep_copy(@fetchmail_item) : {}
     end
 
 
