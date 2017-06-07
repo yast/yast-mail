@@ -27,3 +27,8 @@ Makefile.am.common
 .dep
 tmp.*
 *.log
+.yardoc
+/doc/autodocs
+/test-driver
+/agents/*.trs
+/agents/*.tmp
