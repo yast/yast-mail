@@ -2,6 +2,8 @@ Makefile
 /Makefile.am
 Makefile.in
 aclocal.m4
+agents/*.tmp
+agents/test-mailtable.trs
 autom4te.cache
 config.cache
 config.guess
@@ -13,6 +15,7 @@ config.sub
 configure
 configure.ac
 depcomp
+doc
 install-sh
 *.pot
 libtool
@@ -21,9 +24,11 @@ ltmain.sh
 missing
 mkinstalldirs
 stamp-h*
+test-driver
 Makefile.am.common
 *.ami
 *.bz2
 .dep
 tmp.*
 *.log
+.yardoc
