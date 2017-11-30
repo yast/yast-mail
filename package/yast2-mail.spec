@@ -16,6 +16,11 @@
 #
 
 
+#Compat macro for new _fillupdir macro introduced in Nov 2017
+%if ! %{defined _fillupdir}
+  %define _fillupdir /var/adm/fillup-templates
+%endif
+
 Name:           yast2-mail
 Version:        3.1.11
 Release:        0
@@ -88,6 +93,6 @@ Amavis and Fetchmail.
 /etc/openldap/schema/suse-mailserver.schema
 %doc %{yast_docdir}
 
-/var/adm/fillup-templates/sysconfig.mail
+%{_fillupdir}/sysconfig.mail
 
 %changelog
