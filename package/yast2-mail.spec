@@ -22,7 +22,7 @@
 %endif
 
 Name:           yast2-mail
-Version:        3.1.11
+Version:        4.0.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
