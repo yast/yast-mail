@@ -16,7 +16,7 @@
 #
 
 Name:           yast2-mail
-Version:        4.0.0
+Version:        4.0.1
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -29,10 +29,8 @@ BuildRequires:  yast2-testsuite
 
 PreReq:         %fillup_prereq
 
-# new firewall interface
-# Wizard::SetDesktopTitleAndIcon
-# cfg_mail.scr
-Requires:       yast2 >= 3.1.179
+# SuSEFirewall2 replaced by firewalld (fate#323460)
+Requires:       yast2 >= 4.0.39
 Requires:       yast2-ldap
 Requires:       yast2-users
 BuildArch:      noarch
