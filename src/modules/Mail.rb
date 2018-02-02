@@ -18,6 +18,7 @@
 # Input and output routines.
 #
 require "yast"
+require "y2firewall/firewalld"
 
 module Yast
   class MailClass < Module
@@ -33,8 +34,6 @@ module Yast
       Yast.import "Progress"
       Yast.import "Package"
       Yast.import "PackageSystem"
-
-      Yast.import "SuSEFirewall"
 
       # ----------------------------------------------------------------
 
@@ -341,9 +340,7 @@ module Yast
 
       # open port
       @listen_remote = SCR.Read(path(".sysconfig.mail.SMTPD_LISTEN_REMOTE")) == "yes"
-      progress_orig = Progress.set(false)
-      SuSEFirewall.Read
-      Progress.set(progress_orig)
+      Y2Firewall::Firewalld.instance.read
 
       # connection_type:
       nc = false
@@ -624,9 +621,7 @@ module Yast
         path(".sysconfig.mail.SMTPD_LISTEN_REMOTE"),
         @listen_remote ? "yes" : "no"
       )
-      progress_orig = Progress.set(false)
-      SuSEFirewall.WriteOnly
-      Progress.set(progress_orig)
+      Y2Firewall::Firewalld.instance.write_only
 
       # connection_type
       # nocanonify/nodns
@@ -997,8 +992,7 @@ module Yast
       end
 
       # ServiceAdjust enable/disable is done in WriteGeneral
-
-      SuSEFirewall.ActivateConfiguration
+      Y2Firewall::Firewalld.instance.reload
     end
 
     # Update the SCR according to mail settings
