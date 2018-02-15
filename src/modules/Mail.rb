@@ -416,7 +416,7 @@ module Yast
           @postfix_mda = :local
         elsif postfix_mda_s == "procmail"
           @postfix_mda = :procmail
-        elsif postfix_mda_s == "imap"
+        elsif postfix_mda_s == "dovecot"
           @postfix_mda = :imap
         else
           @postfix_mda = nil
@@ -765,7 +765,7 @@ module Yast
         if @postfix_mda == :procmail
           s_mda = "procmail"
         elsif @postfix_mda == :imap
-          s_mda = "imap"
+          s_mda = "dovecot"
         end
         SCR.Write(path(".sysconfig.postfix.POSTFIX_MDA"), s_mda)
       end
