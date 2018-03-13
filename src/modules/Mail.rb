@@ -232,7 +232,7 @@ module Yast
           # Clamav can work without clamav-db.rpm if set up manually
           # so we do not check Installed "clamav-db"
           Builtins.y2milestone("clamav not installed")
-          if !Package.AvailableAll(["clamav", "clamav-db"])
+          if !Package.AvailableAll(["clamav"])
             # error popup.
             Report.Error(
               _(
@@ -243,7 +243,6 @@ module Yast
             )
           else
             @install_packages = Builtins.add(@install_packages, "clamav")
-            @install_packages = Builtins.add(@install_packages, "clamav-db")
           end
         end
       end
@@ -693,6 +692,8 @@ module Yast
         )
         Service.Enable(service)
         Service.Adjust("amavis", @use_amavis ? "enable" : "disable")
+	Service.Adjust("freshclam", @use_amavis ? "enable" : "disable")
+	Service.Adjust("clamd",     @use_amavis ? "enable" : "disable")
       end
 
       # amavis
