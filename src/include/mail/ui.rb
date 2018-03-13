@@ -468,7 +468,7 @@ module Yast
       widgets = [:listen_remote]
       # firewall widget using CWM
       fw_settings = {
-        "services"        => ["smtp"],
+        "services"        => ["smtp", "smtps", "smtp-submission"],
         "display_details" => true
       }
       fw_cwm_widget = CWMFirewallInterfaces.CreateOpenFirewallWidget(
