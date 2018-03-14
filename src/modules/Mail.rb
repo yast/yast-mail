@@ -216,15 +216,6 @@ module Yast
           )
         end
 
-        if !Package.Installed("spamassassin")
-          #If spamassassin is not installaed amavisd can not work
-          @install_packages = Builtins.add(@install_packages, "spamassassin")
-          # Translators: popup message part, ends with a newline
-          message = Ops.add(
-            message,
-            _("SpamAssassin will be installed.\n")
-          )
-	end
         if !Package.Installed("clamav")
           # #115295
           # Amavis alone will block incoming mail if no scanner is found
