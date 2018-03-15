@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Tue Mar 13 09:46:58 UTC 2018 - varkoly@suse.com
+
+- bsc#1071932 YaST2 Mail Server Configuration - throws Error for 
+  starting service amavis
+  Install spamassassasin and call sa-update before starting amavisd
+  Enable clamd and freshclam.
+  Do not install clamav-db.
+- 4.0.3
+
+-------------------------------------------------------------------
 Mon Mar 12 11:52:40 UTC 2018 - knut.anderssen@suse.com
 
 - SuSEFirewall2 defined the ports to be opened in a single service
