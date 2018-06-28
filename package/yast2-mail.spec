@@ -16,7 +16,7 @@
 #
 
 Name:           yast2-mail
-Version:        4.0.3
+Version:        4.0.4
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
