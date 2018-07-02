@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Thu Jun 28 15:45:59 CEST 2018 - schubi@suse.de
+
+- Added additional searchkeys to desktop file (fate#321043).
+- 4.0.4
+
+-------------------------------------------------------------------
 Tue Mar 13 09:46:58 UTC 2018 - varkoly@suse.com
 
 - bsc#1071932 YaST2 Mail Server Configuration - throws Error for 
