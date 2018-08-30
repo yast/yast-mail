@@ -24,15 +24,20 @@ my $enable_dkim_signing = 0;
 open IN, "</etc/amavisd.conf";
 while(<IN>)
 {
-	if( /^\$inet_socket_port/ )
+	if( /^\s*\$inet_socket_port/ )
 	{
 		$amavisd .= '$inet_socket_port = [10024,10026];'."\n";
 		next;
 	}
-	if( /^\$enable_dkim_signing/ )
+	if( /^\s*\$enable_dkim_signing/ )
 	{
 		$amavisd .= '$enable_dkim_signing = 1;'."\n";
 		$enable_dkim_signing = 1;
+		next;
+	}
+	if( /^\s*forward_method =>/ )
+	{
+		$amavisd .= '#'.$_;
 		next;
 	}
 	if( $enable_dkim_signing )
@@ -67,7 +72,7 @@ if( ! $msc->serviceExists( { service => 'submission' , command => 'smtpd' } ))
 	                        'wakeup'  => '-',
 	                        'maxproc' => '-',
 	                        'command' => 'smtpd',
-	                        'options' => { 'content_filte' => 'amavis:[127.0.0.1]:10026',
+	                        'options' => { 'content_filter' => 'amavis:[127.0.0.1]:10026',
 	                                       'smtpd_recipient_restrictions' => 'permit_sasl_authenticated,permit_mynetworks,reject' }
 	                  }) )
 	{
@@ -84,7 +89,7 @@ else
 	                        'wakeup'  => '-',
 	                        'maxproc' => '-',
 	                        'command' => 'smtpd',
-	                        'options' => { 'content_filte' => 'amavis:[127.0.0.1]:10026',
+	                        'options' => { 'content_filter' => 'amavis:[127.0.0.1]:10026',
 	                                       'smtpd_recipient_restrictions' => 'permit_sasl_authenticated,permit_mynetworks,reject' }
 	                  }) )
 	{
