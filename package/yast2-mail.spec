@@ -84,6 +84,7 @@ Amavis and Fetchmail.
 %dir /etc/openldap/schema/
 /etc/openldap/schema/suse-mailserver.schema
 %doc %{yast_docdir}
+%license COPYING
 
 %{_fillupdir}/sysconfig.mail
 
