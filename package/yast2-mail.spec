@@ -16,7 +16,7 @@
 #
 
 Name:           yast2-mail
-Version:        4.0.4
+Version:        4.1.0
 Release:        0
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
@@ -85,6 +85,7 @@ Amavis and Fetchmail.
 /etc/openldap/schema/suse-mailserver.schema
 %doc %{yast_docdir}
 %license COPYING
+%{_datadir}/icons/*
 
 %{_fillupdir}/sysconfig.mail
 
