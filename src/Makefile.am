@@ -46,7 +46,7 @@ schemafiles_DATA = \
   autoyast-rnc/mail.rnc
 
 desktop_DATA = \
-  desktop/org.openSUSE.YaST.Mail.desktop
+  desktop/org.opensuse.yast.Mail.desktop
 
 fillup_DATA = \
   fillup/sysconfig.mail
