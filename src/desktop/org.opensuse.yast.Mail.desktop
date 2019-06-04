@@ -19,6 +19,7 @@ X-SuSE-YaST-Keywords=network,internet
 Icon=yast-mail
 Exec=xdg-su -c "/sbin/yast2 mail"
 
-Name=Mail Server
-GenericName=Configure mail
+Name=YaST Mail Server
+GenericName=Mail Server
+Comment=Configure your Mail Server
 StartupNotify=true

@@ -1476,7 +1476,7 @@ module Yast
       }
 
       Wizard.CreateDialog
-      Wizard.SetDesktopTitleAndIcon("mail")
+      Wizard.SetDesktopTitleAndIcon("org.opensuse.yast.Mail")
 
       # the second map must override the first!
       sequence = Builtins.union(@common_sequence, sequence)
@@ -1504,7 +1504,7 @@ module Yast
       contents = Label(_("Initializing..."))
 
       Wizard.CreateDialog
-      Wizard.SetDesktopIcon("mail")
+      Wizard.SetDesktopIcon("org.opensuse.yast.Mail")
       Wizard.SetContentsButtons(
         caption,
         contents,
