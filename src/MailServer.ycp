@@ -177,8 +177,6 @@ void Check_Mail_Domain()
         map LDAPSettings  = Ldap::Export();
         string DNSWarning = _("There is no main mail domain defined. Please fix it!");
 
-        SCR::Execute(.ldap);
-        SCR::Execute (.ldap.bind);
         /* looking if a mail domain exist */
         map searchmap = $[
                         "base_dn"     :  LDAPSettings["base_config_dn"]:"",
