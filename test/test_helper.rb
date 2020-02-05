@@ -19,6 +19,7 @@
 
 # Set the paths
 SRC_PATH = File.expand_path("../src", __dir__)
+DATA_PATH = File.expand_path("data", __dir__)
 ENV["Y2DIR"] = SRC_PATH
 
 # make sure we run the tests in English locale

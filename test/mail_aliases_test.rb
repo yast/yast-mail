@@ -20,6 +20,7 @@
 
 require_relative "test_helper"
 
+Yast.import "MailTable"
 Yast.import "MailAliases"
 
 describe Yast::MailAliases do
@@ -102,6 +103,20 @@ describe Yast::MailAliases do
       it "returns an empty table" do
         expect(described_class.mergeTables(new1, old1)).to eq []
       end
+    end
+  end
+
+  # NOTE:
+  #   This is a highly simplified version of the old rootalias.rb test.
+  #   To be a real substitute we should test the effect of #SetRootAlias
+  #   as well.
+  describe ".GetRootAlias" do
+    before do
+      Yast::MailTable.SetFileName("aliases", "#{DATA_PATH}/aliases")
+    end
+
+    it "returns the value from the aliases file" do
+      expect(described_class.GetRootAlias).to eq "leaf"
     end
   end
 end
