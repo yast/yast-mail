@@ -2,38 +2,49 @@ default namespace = "http://www.suse.com/1.0/yast2ns"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace config = "http://www.suse.com/1.0/configns"
 
+include "common.rnc"
+
 mail =
   element mail {
-    aliases? &
-    connection_type &
-    fetchmail? &
-    from_header? &
-    listen_remote? &
-    local_domains? &
-    mail_smtp_auth? &
-    masquerade_other_domains? &
-    masquerade_users? &
-    mta &
-    outgoing_mail_server? &
-    postfix_mda? &
-    smtp_use_TLS? &
-    system_mail_sender? &
-    use_amavis? &
-    use_dkim? &
-    virtual_users?
+    MAP,
+    (
+      aliases? &
+      connection_type &
+      fetchmail? &
+      from_header? &
+      listen_remote? &
+      local_domains? &
+      mail_smtp_auth? &
+      masquerade_other_domains? &
+      masquerade_users? &
+      mta &
+      outgoing_mail_server? &
+      postfix_mda? &
+      smtp_use_TLS? &
+      system_mail_sender? &
+      use_amavis? &
+      use_dkim? &
+      virtual_users?
+    )
   }
 
 # we have code to accept it as symbol or string
 mail_SYMBOL_OR_TEXT =
-  attribute config:type { "symbol" }? 
+  (
+    attribute config:type { "symbol" }? |
+    STRING_ATTR
+  )
 
 aliases =
   element aliases {
     LIST,
     element alias {
-      element alias { text } &
-      element destinations { text } &
-      element comment { text }?
+      MAP,
+      (
+        element alias { STRING } &
+        element destinations { STRING } &
+        element comment { STRING }?
+      )
     }*
   }
 
@@ -47,37 +58,40 @@ fetchmail =
   element fetchmail {
     LIST,
     element fetchmail_entry {
-      element server { text } &
-      element protocol { text } &
-      element remote_user { text } &
-      element local_user { text } &
-      element password { text }
+      MAP,
+      (
+        element server { STRING } &
+        element protocol { STRING } &
+        element remote_user { STRING } &
+        element local_user { STRING } &
+        element password { STRING }
+      )
     }+
   }
 
-from_header = element from_header { text }
+from_header = element from_header { STRING }
 
 listen_remote = element listen_remote { BOOLEAN }
 
 local_domains =
   element local_domains {
     LIST,
-    element domains { text }*
+    element domains { STRING }*
   }
 
 masquerade_other_domains =
   element masquerade_other_domains {
     LIST,
-    element domain { text }*
+    element domain { STRING }*
   }
 
 masquerade_users =
   element masquerade_users {
     LIST,
     element masquerade_user {
-      element user { text } &
-      element address { text } &
-      element comment { text }?
+      element user { STRING } &
+      element address { STRING } &
+      element comment { STRING }?
     }*
   }
 
@@ -87,7 +101,7 @@ mta =
     ( "sendmail" | "postfix" )
   }
 
-outgoing_mail_server = element outgoing_mail_server { text }
+outgoing_mail_server = element outgoing_mail_server { STRING }
 
 postfix_mda =
   element postfix_mda {
@@ -96,10 +110,10 @@ postfix_mda =
   }
 
 smtp_use_TLS =
-  element smtp_use_TLS { "yes" | "must" | "no" }
+  element smtp_use_TLS { STRING_ATTR, ("yes" | "must" | "no") }
 
 system_mail_sender =
-  element system_mail_sender { text }
+  element system_mail_sender { STRING }
 
 use_amavis = element use_amavis { BOOLEAN }
 use_dkim   = element use_dkim   { BOOLEAN }
@@ -108,9 +122,9 @@ virtual_users =
   element virtual_users {
     LIST,
     element virtual_user {
-      element alias { text } &
-      element destinations { text } &
-      element comment { text }?
+      element alias { STRING } &
+      element destinations { STRING } &
+      element comment { STRING }?
     }*
   }
 
@@ -118,9 +132,9 @@ mail_smtp_auth =
   element smtp_auth {
     LIST,
     element smtp_auth_entry {
-      element password { text } &
-      element server   { text } &
-      element user     { text }
+      element password { STRING } &
+      element server   { STRING } &
+      element user     { STRING }
     }*
   }
 

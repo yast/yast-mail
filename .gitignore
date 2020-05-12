@@ -32,3 +32,4 @@ Makefile.am.common
 tmp.*
 *.log
 .yardoc
+/coverage
