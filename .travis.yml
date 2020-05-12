@@ -8,4 +8,4 @@ before_install:
 script:
   # the "yast-travis-ruby" script is included in the base yastdevel/ruby image
   # see https://github.com/yast/docker-yast-ruby/blob/master/yast-travis-ruby
-  - docker run -it --rm -e TRAVIS=1 -e TRAVIS_JOB_ID="$TRAVIS_JOB_ID" -e PERL5LIB=./src/servers_non_y2 yast-mail-image yast-travis-ruby
+  - docker run -it --privileged --rm -e TRAVIS=1 -e TRAVIS_JOB_ID="$TRAVIS_JOB_ID" -e PERL5LIB=./src/servers_non_y2 yast-mail-image yast-travis-ruby
