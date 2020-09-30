@@ -187,4 +187,4 @@ else
 	}
 }
 
-$msc->wramavisiteMasterCF();
+$msc->writeMasterCF();
