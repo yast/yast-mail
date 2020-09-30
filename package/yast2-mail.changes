@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep 30 20:03:51 UTC 2020 - Peter Varkoly <varkoly@suse.com>
+
+- bsc#1176645 - Running Yast2 Mail multiple times creates excess
+  brackets in postfix configuration 
+- 4.2.3 
+
+-------------------------------------------------------------------
 Tue Aug 27 18:06:21 CEST 2019 - schubi@suse.de
 
 - Set X-SuSE-YaST-AutoInstResource in desktop file (bsc#144894).
