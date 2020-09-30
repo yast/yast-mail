@@ -989,7 +989,9 @@ module Yast
         config = Builtins.add(config, "password", "")
       end
 
-      UI.ChangeWidget(Id(:server), :Value, Ops.get_string(config, "server", ""))
+      server = Ops.get_string(config, "server", "")
+      server.delete!("[]")
+      UI.ChangeWidget(Id(:server), :Value, server)
       UI.ChangeWidget(Id(:user), :Value, Ops.get_string(config, "user", ""))
       UI.ChangeWidget(
         Id(:passw),
