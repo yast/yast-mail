@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Wed Sep 30 19:59:30 UTC 2020 - Peter Varkoly <varkoly@suse.com>
+
+- bsc#1176645 - Running Yast2 Mail multiple times creates excess
+  brackets in postfix configuration 
+- 3.1.12 
+
+-------------------------------------------------------------------
 Wed Feb  1 16:20:17 UTC 2017 - varkoly@suse.com
 
 - bnc#1022360 Crash during E-Mail-Server setup, when outgoing mailserver is empty
