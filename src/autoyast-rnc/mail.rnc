@@ -32,6 +32,7 @@ mail =
 mail_SYMBOL_OR_TEXT =
   (
     attribute config:type { "symbol" }? |
+    attribute t { "symbol" }? |
     STRING_ATTR
   )
 
@@ -89,9 +90,12 @@ masquerade_users =
   element masquerade_users {
     LIST,
     element masquerade_user {
-      element user { STRING } &
-      element address { STRING } &
-      element comment { STRING }?
+      MAP,
+      (
+        element user { STRING } &
+        element address { STRING } &
+        element comment { STRING }?
+      )
     }*
   }
 
