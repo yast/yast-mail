@@ -1,5 +1,8 @@
 # YaST - The Mail Configuration #
 
-[![Travis Build](https://travis-ci.org/yast/yast-mail.svg?branch=master)](https://travis-ci.org/yast/yast-mail)
-[![Jenkins Build](http://img.shields.io/jenkins/s/https/ci.opensuse.org/yast-mail-master.svg)](https://ci.opensuse.org/view/Yast/job/yast-mail-master/)
-
+[![Workflow Status](https://github.com/yast/yast-mail/workflows/CI/badge.svg?branch=master)](
+https://github.com/yast/yast-mail/actions?query=branch%3Amaster)
+[![Jenkins Status](https://ci.opensuse.org/buildStatus/icon?job=yast-yast-mail-master)](
+https://ci.opensuse.org/view/Yast/job/yast-yast-mail-master/)
+[![Coverage Status](https://img.shields.io/coveralls/yast/yast-mail.svg)](https://coveralls.io/r/yast/yast-mail?branch=master)
+[![inline docs](http://inch-ci.org/github/yast/yast-mail.svg?branch=master)](http://inch-ci.org/github/yast/yast-mail)
