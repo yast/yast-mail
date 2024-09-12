@@ -1,7 +1,7 @@
 #
 # spec file for package yast2-mail
 #
-# Copyright (c) 2016 SUSE LINUX GmbH, Nuernberg, Germany.
+# Copyright (c) 2023 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -15,13 +15,14 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 #
 
+
 Name:           yast2-mail
 Version:        4.6.0
 Release:        0
 Summary:        YaST2 - Mail Configuration
 License:        GPL-2.0-or-later
 Group:          System/YaST
-Url:            https://github.com/yast/yast-mail
+URL:            https://github.com/yast/yast-mail
 
 Source0:        %{name}-%{version}.tar.bz2
 
@@ -35,8 +36,8 @@ PreReq:         %fillup_prereq
 # SuSEFirewall2 replaced by firewalld (fate#323460)
 Requires:       yast2 >= 4.0.39
 Requires:       yast2-ldap
-Requires:       yast2-users
 Requires:       yast2-ruby-bindings >= 1.0.0
+Requires:       yast2-users
 
 Supplements:    autoyast(mail)
 
