@@ -16,7 +16,7 @@
 #
 
 Name:           yast2-mail
-Version:        5.0.0
+Version:        5.0.1
 Release:        0
 Summary:        YaST2 - Mail Configuration
 License:        GPL-2.0-or-later
@@ -25,7 +25,6 @@ Url:            https://github.com/yast/yast-mail
 
 Source0:        %{name}-%{version}.tar.bz2
 
-BuildRequires:  update-desktop-files
 BuildRequires:  yast2
 BuildRequires:  yast2-devtools >= 4.2.2
 BuildRequires:  yast2-testsuite
