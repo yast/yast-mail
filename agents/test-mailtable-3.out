@@ -1,7 +1,0 @@
-nil
-" leading comment\n precedes a blank line\n"
-[
-$["comment":" leading whitespace means a continuation line\n", "key":"alias1", "value":"destination1  destination2\tdestination3"], 
-$["comment":" backslash before newline means continuation too\n", "key":"alias2", "value":"foobar  baz  qux"], 
-$["comment":" now a combination of the two\n", "key":"alias3", "value":"fred    frog   quak"]]
-" trailing\n comment\n"

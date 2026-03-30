@@ -1,7 +1,0 @@
-#
-# test driver for External Parser AGents
-#
-
-load_lib "yast2_epag.exp"
-# no normalization yet
-#run_epag_tests "ag_fetchmailrc"
