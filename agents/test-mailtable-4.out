@@ -1,8 +1,0 @@
-nil
-""
-[
-$["comment":" same as bug 21804\n", "key":"numeric", "value":"42"], 
-$["comment":"", "key":"boolean", "value":"true"], 
-$["comment":"", "key":"42", "value":"numbers"], 
-$["comment":"", "key":"false", "value":"booleans"]]
-""

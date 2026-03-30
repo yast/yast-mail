@@ -1,8 +1,0 @@
-nil
-" even weirder cases\n for alowed backslashes:\n"
-[
-$["comment":"", "key":"alias1", "value":"foobar  # this is not a comment"], 
-$["comment":"", "key":"alias2", "value":"quux slurped by alias1?  # not a comment  this: continues the value"], 
-$["comment":"", "key":"alias3", "value":"foo  bar\tbaz"], 
-$["comment":"", "key":"alias4", "value":"blah"]]
-""

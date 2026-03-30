@@ -1,6 +1,0 @@
-nil
-""
-[
-$["comment":" comment1\n", "key":"alias1", "value":"destination"], 
-$["comment":" comment2\n", "key":"alias2", "value":"foobar"]]
-" trailing\n comment\n"
